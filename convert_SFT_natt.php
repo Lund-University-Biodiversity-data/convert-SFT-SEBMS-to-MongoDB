@@ -1,4 +1,5 @@
 <?php
+require "config.php";
 
 // format: caracters spearated by '-'. Example: xxxx-xxxx-xxxx-xxxxxxxxx
 // generates an unique ID with hexa digits.
@@ -45,7 +46,7 @@ function convertTime($time) {
 
 echo "****CONVERT SFT mattrutter to MongoDB JSON****\n";
 
-$db_connection = pg_connect("host=localhost dbname=sft_ake user=postgres")  or die("CONNECT:" . pg_result_error());
+$db_connection = pg_connect("host=".$DB["host"]." dbname=".$DB["database"]." user=".$DB["username"]." password=".$DB["password"])  or die("CONNECT:" . pg_result_error());
 
 
 $commonFields=array();
