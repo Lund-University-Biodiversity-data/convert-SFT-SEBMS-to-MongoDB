@@ -1,0 +1,483 @@
+<?php
+$database="SFT";
+require "config.php";
+require "functions.php";
+
+echo consoleMessage("info", "Script starts");
+
+
+// parameters
+// 1- protocol: std (standardrutterna) - natt (nattrutterna)
+$arr_protocol=array("std", "natt");
+
+if (!isset($argv[1]) || !in_array(trim($argv[1]), $arr_protocol)) {
+	echo consoleMessage("error", "First parameter missing: std / natt");
+}
+else {
+
+	$protocol=$argv[1];
+
+
+
+	$commonFields=array();
+	//$commonFields["occurenceID"]="????";
+	$commonFields["status"]="active";
+	$commonFields["recordedBy"]="Mathieu Blanchet";
+	$commonFields["rightsHolder"]="Lund University";
+	$commonFields["institutionID"]=$commonFields["rightsHolder"];
+	$commonFields["basisOfRecord"]="HumanObservation";
+
+	//$commonFields["eventTime"]=array("datetime", true, "08:42 AM");
+	//$commonFields["verbatimCoordinates"]="";
+	$commonFields["multimedia"]="[ ]";
+	//$commonFields["activityId"]=?????;
+	//$commonFields["eventID"]=$commonFields["activityId;
+
+
+	//$commonFields["projectActivityId"]=array("string", true, "17ee4c9f-abe7-4926-b2d7-244f008ceaeb");
+	$commonFields["userId"]=5;
+
+	switch($protocol) {
+		case "std":
+			$qEvents="
+			select P.efternamn, P.fornamn, TS.datum , p1, p2, p3, p4, p5, p6, p7, p8, l1, l2, l3, l4, l5, l6, l7, l8, TS.karta AS karta
+			from totalstandard TS
+			left join personer P on P.persnr = TS.persnr 
+			where TS.karta='07D7C'  
+			AND TS.art='000'
+			order by datum
+			";
+
+			$commonFields["projectActivityId"]="ee9f5f91-0e0d-47ed-8229-9a9fc0016240";
+			//$commonFields["projectActivityId"]="c9336d88-9436-48b0-9613-c0d77d7ac342";
+			$commonFields["datasetId"]=$commonFields["projectActivityId"];
+			$commonFields["datasetName"]="test stadanrdrutter";
+			//$commonFields["datasetName"]="Second STD survey";
+			$commonFields["type"]="Bird Surveys - standardrutterna";
+			$commonFields["name"]="standardrutterna";
+
+			$commonFields["projectId"]="dab767a5-929e-4733-b8eb-c9113194201f";
+
+			$commonFields["locationID"]="507cb6c5-d439-4020-b7f7-b87d767541fa"; /* create an array of sites */
+			$commonFields["locationName"]="STD_02C7H"; /* create an array of sites */
+			$commonFields["decimalLatitude"]=55.78454; /* create an array of sites */
+			$commonFields["decimalLongitude"]=13.2069; /* create an array of sites */
+
+
+			break;
+		case "natt":
+			// LPAD(cast(LEAST(p01, p02, p03, p04, p05, p06, p07, p08, p09, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20) as text), 4, '0')
+			$qEvents="
+			select P.efternamn, P.fornamn, TN.datum , p01, p02, p03, p04, p05, p06, p07, p08, p09, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, TN.kartatx AS karta
+			from totalnatt TN
+			left join personer P on P.persnr = TN.persnr 
+			where TN.kartatx='02DSV'  
+			AND TN.art='000'
+			order by datum
+			";
+
+			$commonFields["projectActivityId"]="7a47e9c7-ee3a-4681-939b-b144a1269fd0";
+			$commonFields["datasetId"]=$commonFields["projectActivityId"];
+			$commonFields["datasetName"]="vinterrutterna";
+			$commonFields["type"]="Bird surveys - vinterrutterna";
+			$commonFields["name"]="vinterrutterna";
+			$commonFields["projectId"]="d9253588-6fe3-4a2a-a7cd-25fc283134f3";
+
+			$commonFields["locationID"]="eccb9fcb-a12e-4fa6-95a3-ef7d329646e3"; /* create an array of sites */
+			$commonFields["locationName"]="Night route test 02DSV"; /* create an array of sites */
+			$commonFields["decimalLatitude"]=55.56793; /* create an array of sites */
+			$commonFields["decimalLongitude"]=13.61763; /* create an array of sites */
+
+
+			break;
+	}
+
+	echo "****CONVERT SFT ".$protocol." to MongoDB JSON****\n";
+
+	$db_connection = pg_connect("host=".$DB["host"]." dbname=".$DB["database"]." user=".$DB["username"]." password=".$DB["password"])  or die("CONNECT:" . consoleMessage("error", pg_result_error()));
+
+
+	$rEvents = pg_query($db_connection, $qEvents);
+	if (!$rEvents) die("QUERY:" . consoleMessage("error", pg_last_error()));
+
+
+	$arr_json_activity='[';
+	$arr_json_output='[';
+	$arr_json_record='[';
+	$nbLines=0;
+	while ($rtEvents = pg_fetch_array($rEvents)) {
+
+
+		switch($protocol) {
+			case "std":
+				$qRecords="
+					select EL.arthela AS names, EL.latin as scientificname, p1, p2, p3, p4, p5, p6, p7, p8, l1, l2, l3, l4, l5, l6, l7, l8, TS.art, TS.datum
+					from totalstandard TS, eurolist EL
+					where EL.art=TS.art 
+					and TS.karta='".$rtEvents["karta"]."'  
+					AND EL.art<>'000'
+					AND TS.datum='".$rtEvents["datum"]."'
+					order by datum
+				";
+				$nbPts=8;
+				break;
+			case "natt":
+				$qRecords="
+					select EL.arthela AS names, EL.latin as scientificname, p01, p02, p03, p04, p05, p06, p07, p08, p09, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, TN.art, TN.datum
+					from totalnatt TN, eurolist EL
+					where EL.art=TN.art 
+					and TN.kartatx='".$rtEvents["karta"]."'  
+					AND EL.art<>'000'
+					AND TN.datum='".$rtEvents["datum"]."'
+					order by datum
+				";
+				$nbPts=20;
+				break;
+		}
+
+		
+		//echo $qRecords;
+		$rRecords = pg_query($db_connection, $qRecords);
+		if (!$rRecords) die("QUERY:" . consoleMessage("error", pg_last_error()));
+
+		$nbLines++;
+		if ($nbLines%100==0) echo number_format($nbLines, 0, ".", " ")." ĺines\n";
+
+		$activityId=generate_uniqId_format("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx");
+		$eventID=$activityId;
+		$outputId=generate_uniqId_format("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx");
+
+		//echo "outputId: $outputId\n";
+
+		// date now
+		$micro_date = microtime();
+		$date_array = explode(" ",$micro_date);
+		$date_now_tz = date("Y-m-d",$date_array[1])."T".date("H:i:s",$date_array[1]).".".number_format($date_array[0]*1000, 0)."Z";
+		//echo "Date: $date_now_tz\n";
+
+		// survey date
+		$date_survey=date("Y-m-d", strtotime($rtEvents["datum"]))."T00:00:00Z";
+		//echo "date survey".$date_survey."\n";
+
+		// find the start time and finsh time
+		$start_time=2359;
+		$finish_time=0;
+		$arr_time=array();
+
+		for ($i=1; $i<=$nbPts; $i++) {
+			switch($protocol) {
+				case "std":
+					$ind="p".$i;
+					break;
+				case "natt":
+					$ind="p".str_pad($i, 2, '0', STR_PAD_LEFT);
+					break;
+			}
+
+			// add 24 hours to the night tmes, to help comparing
+			if ($rtEvents[$ind]<1200)
+				$rtEvents[$ind]+=2400;
+
+			//echo $rtEvents[$ind]."\n";
+
+			if ($rtEvents[$ind]<$start_time)
+				$start_time=$rtEvents[$ind];
+
+			if ($rtEvents[$ind]>$finish_time)
+				$finish_time=$rtEvents[$ind];
+
+			if ($rtEvents[$ind]>2400) $rtEvents[$ind]-=2400;
+
+			$arr_time[$ind]=convertTime($rtEvents[$ind]);
+		}
+
+		if ($start_time>2400) $start_time-=2400;
+		if ($finish_time>2400) $finish_time-=2400;
+
+		$start_time_brut=$start_time;
+
+		$start_time=convertTime($start_time);
+		$finish_time=convertTime($finish_time);
+
+		//echo "start_time: $start_time\n";
+		//echo "finish_time: $finish_time\n";
+
+		$eventDate=date("Y-m-d", strtotime($rtEvents["datum"]))."T".substr($start_time_brut, 0, 2).":".substr($start_time_brut, 2, 4).":00Z";
+		//echo "eventDate: $eventDate\n";
+
+
+		$recorder_name=$rtEvents["fornamn"].' '.$rtEvents["efternamn"];
+
+
+		$data_field="";
+		while ($rtRecords = pg_fetch_array($rRecords)) {
+			
+			$data_field.='{';
+
+			$IC=0;
+
+
+
+			switch($protocol) {
+				case "std":
+					for ($i=1; $i<=$nbPts; $i++) {
+						$ind="p".$i;
+						if (!is_numeric($rtRecords[$ind])) $rtRecords[$ind]=0;
+						$IC+=$rtRecords[$ind];
+
+						$data_field.='"P'.str_pad($i, 2, '0', STR_PAD_LEFT).'": "'.$rtRecords[$ind].'",';
+					}
+					for ($i=1; $i<=$nbPts; $i++) {
+						$ind="l".$i;
+						if (!is_numeric($rtRecords[$ind])) $rtRecords[$ind]=0;
+						$IC+=$rtRecords[$ind];
+
+						$data_field.='"L'.str_pad($i, 2, '0', STR_PAD_LEFT).'": "'.$rtRecords[$ind].'",';
+					}
+					break;
+				case "natt":
+					for ($i=1; $i<=$nbPts; $i++) {
+						$ind="p".str_pad($i, 2, '0', STR_PAD_LEFT);
+						if (!is_numeric($rtRecords[$ind])) $rtRecords[$ind]=0;
+						$IC+=$rtRecords[$ind];
+
+						$data_field.='"P'.str_pad($i, 2, '0', STR_PAD_LEFT).'": "'.$rtRecords[$ind].'",';
+					}
+					break;
+			}
+
+			
+
+			$outputSpeciesId=generate_uniqId_format("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx");
+
+			$data_field.='"species" : {
+							"listId" : "error-unmatched",
+							"commonName" : "",
+							"outputSpeciesId" : "'.$outputSpeciesId.'",
+							"scientificName" : "'.$rtRecords["scientificname"].'",
+							"name" : "'.$rtRecords["names"].'",
+							"guid" : ""
+						},';
+			$data_field.='"individualCount" : '.$IC.'
+							},';
+
+			$occurenceID=generate_uniqId_format("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx");
+
+
+			$arr_json_record.='{
+				"dateCreated" : ISODate("'.$date_now_tz.'"),
+				"lastUpdated" : ISODate("'.$date_now_tz.'"),
+				"occurrenceID" : "'.$occurenceID.'",
+				"status" : "active",
+				"recordedBy" : "'.$recorder_name.'",
+				"rightsHolder" : "'.$commonFields["rightsHolder"].'",
+				"institutionID" : "'.$commonFields["institutionID"].'",
+				"basisOfRecord" : "'.$commonFields["basisOfRecord"].'",
+				"datasetID" : "'.$commonFields["projectActivityId"].'",
+				"datasetName" : "'.$commonFields["datasetName"].'",
+				"eventID" : "'.$eventID.'",
+				"name" : "'.$rtRecords["names"].'",
+				"scientificName" : "'.$rtRecords["scientificname"].'",
+				"multimedia" : [ ],
+				"activityId" : "'.$activityId.'",
+				"decimalLatitude" : '.$commonFields["decimalLatitude"].',
+				"decimalLongitude" : '.$commonFields["decimalLongitude"].',
+				"eventDate" : "'.$eventDate.'",
+				"individualCount" : '.$IC.',
+				"outputId" : "'.$outputId.'",
+				"outputSpeciesId" : "'.$outputSpeciesId.'",
+				"projectActivityId" : "'.$commonFields["projectActivityId"].'",
+				"projectId" : "'.$commonFields["projectId"].'",
+				"userId" : "'.$commonFields["userId"].'"
+			},';
+
+
+		}
+		// replace last comma by 
+		$data_field[strlen($data_field)-1]=' ';
+		//echo "data_field: ".$data_field."\n";
+
+
+
+		$arr_json_activity.='{
+			"activityId" : "'.$activityId.'",
+			"assessment" : false,
+			"dateCreated" : ISODate("'.$date_now_tz.'"),
+			"lastUpdated" : ISODate("'.$date_now_tz.'"),
+			"progress" : "planned",
+			"projectActivityId" : "'.$commonFields["projectActivityId"].'",
+			"projectId" : "'.$commonFields["projectId"].'",
+			"projectStage" : "",
+			"siteId" : "",
+			"status" : "active",
+			"type" : "'.$commonFields["type"].'",
+			"userId" : "'.$commonFields["userId"].'",
+			"mainTheme" : ""
+		},';
+		//			"helper1" : "Jean Michel Helper",
+		//			"helper2" : "Raoul HElper",
+		$arr_json_output.='{
+			"activityId" : "'.$activityId.'",
+			"dateCreated" : ISODate("'.$date_now_tz.'"),
+			"lastUpdated" : ISODate("'.$date_now_tz.'"),
+			"outputId" : "'.$outputId.'",
+			"status" : "active",
+			"outputNotCompleted" : false,
+			"data" : {
+				"surveyFinishTime" : "'.$finish_time.'",
+				"locationAccuracy" : 50,
+				"surveyDate" : "'.$date_survey.'",
+				"locationHiddenLatitude" : '.$commonFields["decimalLatitude"].',
+				"locationLatitude" : '.$commonFields["decimalLatitude"].',
+				"locationSource" : "Google maps",
+				"recordedBy" : "'.$recorder_name.'",
+				"helper1": "",
+				"helper2": "",
+				"surveyStartTime" : "'.$start_time.'",
+				"locationCentroidLongitude" : null,
+				"observations" : [
+					'.$data_field.'
+				],
+				"locationLongitude" : '.$commonFields["decimalLongitude"].',
+				"locationHiddenLongitude" : '.$commonFields["decimalLongitude"].',
+				"locationCentroidLatitude" : null,
+				"transectName" : "'.$commonFields["locationName"].'"
+			},
+			"selectFromSitesOnly" : true,
+			"_callbacks" : {
+				"sitechanged" : [
+					null
+				]
+			},
+			"mapElementId" : "locationMap",
+			"checkMapInfo" : {
+				"validation" : true
+			},
+			"name" : "'.$commonFields["name"].'"
+		},';
+
+
+
+	};
+
+	// replace last comma by 
+	$arr_json_output[strlen($arr_json_output)-1]=' ';
+	$arr_json_output.=']';
+	$arr_json_activity[strlen($arr_json_activity)-1]=' ';
+	$arr_json_activity.=']';
+	$arr_json_record[strlen($arr_json_record)-1]=' ';
+	$arr_json_record.=']';
+
+	//echo $arr_json_output;
+	//echo "\n";
+
+	for ($i=1;$i<=3;$i++) {
+		switch ($i) {
+			case 1:
+				$typeO="activity";
+				$json=$arr_json_activity;
+				break;
+			case 2:
+				$typeO="output";
+				$json=$arr_json_output;
+				break;
+			case 3:
+				$typeO="record";
+				$json=$arr_json_record;
+				break;
+		}
+		$filename_json='json_'.$protocol.'_'.$typeO.'s_SFT_'.date("Y-m-d-His").'.json';
+		$path='json/'.$protocol."/".$filename_json;
+		echo 'mongoimport --db ecodata --collection '.$typeO.' --jsonArray --file '.$path."\n";
+		//$json = json_encode($arr_rt, JSON_UNESCAPED_SLASHES); 
+		if ($fp = fopen($path, 'w')) {
+			fwrite($fp, $json);
+			fclose($fp);
+		}
+		else echo consoleMessage("error", "can't create file ".$path);
+
+		//echo 'PATH: '.$path."\n\n";
+
+	}
+
+	echo "scp json/".$protocol."/json_* radar@canmove-dev.ekol.lu.se:/home/radar/convert-SFT-SEBMS-to-MongoDB/json/".$protocol."/";
+	/*
+	send files
+	scp json/std/json_* radar@canmove-dev.ekol.lu.se:/home/radar/convert-SFT-SEBMS-to-MongoDB/json/std/
+
+	mongoimport --db ecodata --collection activity --jsonArray --file json/std/json_std_activitys_SFT_2020-04-15-155129.json
+	mongoimport --db ecodata --collection output --jsonArray --file json/std/json_std_outputs_SFT_2020-04-15-155129.json
+	mongoimport --db ecodata --collection record --jsonArray --file json/std/json_std_records_SFT_2020-04-15-155129.json
+	
+	db.activity.remove({"activityId":"12c2ccf4-0851-8f12-a5da-c68a2638d47b"})
+	db.output.remove({"outputId":"08da4473-eabd-d61d-5bc2-0154437c4364"})
+	db.record.remove({"outputId":"08da4473-eabd-d61d-5bc2-0154437c4364"})
+
+	mongoimport --db ecodata --collection activity --jsonArray --file json/std/activity.json
+	mongoimport --db ecodata --collection output --jsonArray --file json/std/output.json
+	mongoimport --db ecodata --collection record --jsonArray --file json/std/record.json
+
+
+	clean mongo
+	db.activity.find({"userId":"5"}).count();
+	db.activity.remove({"userId":"5"})
+
+	db.record.find({"userId":"5"}).count();
+	db.record.remove({"userId":"5"})
+
+	db.activity.find({"dateCreated":{"$gt": new ISODate("2020-04-16T15:16:15.184Z")}}).count()
+	db.record.find({"dateCreated":{"$gt": new ISODate("2020-04-16T15:16:15.184Z")}}).count()
+	db.output.find({"dateCreated":{"$gt": new ISODate("2020-04-16T15:16:15.184Z")}}).count()
+	
+	db.activity.remove({"dateCreated":{"$gt": new ISODate("2020-04-16T15:16:15.184Z")}})
+	db.record.remove({"dateCreated":{"$gt": new ISODate("2020-04-16T15:16:15.184Z")}})
+	db.output.remove({"dateCreated":{"$gt": new ISODate("2020-04-16T15:16:15.184Z")}})
+
+	db.output.find({"dateCreated":{"$gt": new ISODate("2020-04-15T15:16:15.184Z")}}).count()
+
+
+	db.output.remove({"dateCreated":{"$gt": new ISODate("2020-04-03T08:16:15.184Z")}})
+	*/
+
+
+
+
+
+
+
+
+	/*
+	/*
+
+
+		foreach ($structure as $key => $data) {
+
+			//mandatory fields OR if not mandatory => non-empty 
+			if ($data[1] || (!$data[1] && trim($rtEvents[$key])!="")) {
+				$line_json.='"'.$key.'"'.': ';
+				if ($data[0]!="number") $line_json.='"';
+				if ($data[0]=="number" && $rtEvents[$key]=="") $line_json.=0;
+				elseif ($data[0]=="date" && $rtEvents[$key]!="") {
+					$line_json.=date("Y-m-d H:i:s", strtotime($rtEvents[$key]));
+				}
+				else $line_json.=$rtEvents[$key];
+
+				if ($data[0]!="number") $line_json.='"';
+				$line_json.=',';
+			}
+		}
+
+		// replace last comma by }
+		$line_json[strlen($line_json)-1]='}';
+		$arr_json_record.=' '.$line_json.',';
+
+	};
+	*/
+
+	echo consoleMessage("info", "Script ends");
+
+
+}
+
+
+?>
