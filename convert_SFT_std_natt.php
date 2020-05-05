@@ -20,6 +20,61 @@ else {
 
 
 	$commonFields=array();
+
+	switch ($protocol) {
+		case "std":
+
+			$commonFields["projectId"]="dab767a5-929e-4733-b8eb-c9113194201f";
+			break;
+		case "natt":
+
+			$commonFields["projectId"]="d9253588-6fe3-4a2a-a7cd-25fc283134f3";
+			break;
+	}
+
+
+
+
+	$array_sites=array();
+	$array_sites_req=array();
+
+
+	/**************************** connection to mongoDB   ***/
+	$mng = new MongoDB\Driver\Manager(); // Driver Object created
+
+	if ($mng) echo consoleMessage("info", "Connection to mongoDb ok");
+
+	$filter = ['projects' => $commonFields["projectId"]];
+	//$filter = [];
+	$options = [];
+	$query = new MongoDB\Driver\Query($filter, $options); 
+
+	//db.site.find({"projects":"dab767a5-929e-4733-b8eb-c9113194201f"}, {"projects":1, "name":1}).pretty()
+	// 
+	$rows = $mng->executeQuery("ecodata.site", $query);
+	//echo count($rows)." row(s)\n";
+
+
+	foreach ($rows as $row){
+	    //echo "ROW: $row->siteId - $row->name\n";
+		$array_sites[$row->name]=array();
+
+		$array_sites[$row->name]["locationID"]=$row->siteId;
+		$array_sites[$row->name]["decimalLatitude"]=$row->extent->geometry->decimalLatitude;
+		$array_sites[$row->name]["decimalLongitude"]=$row->extent->geometry->decimalLongitude;
+//	    print_r($row->projects);
+
+
+		$array_sites_req[]="'".$row->name."'";
+	}
+	$req_sites="(".implode(",", $array_sites_req).")";
+	//print_r($array_sites);
+
+//echo $req_sites;
+
+	/**************************** connection to mongoDB   ***/
+
+
 	//$commonFields["occurenceID"]="????";
 	$commonFields["status"]="active";
 	$commonFields["recordedBy"]="Mathieu Blanchet";
@@ -43,11 +98,11 @@ else {
 			select P.efternamn, P.fornamn, TS.datum , p1, p2, p3, p4, p5, p6, p7, p8, l1, l2, l3, l4, l5, l6, l7, l8, TS.karta AS karta
 			from totalstandard TS
 			left join personer P on P.persnr = TS.persnr 
-			where TS.karta='07D7C'  
+			where TS.karta IN ".$req_sites."
 			AND TS.art='000'
 			order by datum
 			";
-
+//where TS.karta='07D7C'  
 			$commonFields["projectActivityId"]="ee9f5f91-0e0d-47ed-8229-9a9fc0016240";
 			//$commonFields["projectActivityId"]="c9336d88-9436-48b0-9613-c0d77d7ac342";
 			$commonFields["datasetId"]=$commonFields["projectActivityId"];
@@ -56,13 +111,12 @@ else {
 			$commonFields["type"]="Bird Surveys - standardrutterna";
 			$commonFields["name"]="standardrutterna";
 
-			$commonFields["projectId"]="dab767a5-929e-4733-b8eb-c9113194201f";
-
-			$commonFields["locationID"]="507cb6c5-d439-4020-b7f7-b87d767541fa"; /* create an array of sites */
-			$commonFields["locationName"]="STD_02C7H"; /* create an array of sites */
-			$commonFields["decimalLatitude"]=55.78454; /* create an array of sites */
-			$commonFields["decimalLongitude"]=13.2069; /* create an array of sites */
-
+			/*
+			$commonFields["locationID"]="507cb6c5-d439-4020-b7f7-b87d767541fa"; // create an array of sites 
+			$commonFields["locationName"]="STD_02C7H"; // create an array of sites 
+			$commonFields["decimalLatitude"]=55.78454; // create an array of sites 
+			$commonFields["decimalLongitude"]=13.2069; // create an array of sites 
+			*/
 
 			break;
 		case "natt":
@@ -81,7 +135,6 @@ else {
 			$commonFields["datasetName"]="vinterrutterna";
 			$commonFields["type"]="Bird surveys - vinterrutterna";
 			$commonFields["name"]="vinterrutterna";
-			$commonFields["projectId"]="d9253588-6fe3-4a2a-a7cd-25fc283134f3";
 
 			$commonFields["locationID"]="eccb9fcb-a12e-4fa6-95a3-ef7d329646e3"; /* create an array of sites */
 			$commonFields["locationName"]="Night route test 02DSV"; /* create an array of sites */
@@ -92,11 +145,14 @@ else {
 			break;
 	}
 
+
+
+
 	echo "****CONVERT SFT ".$protocol." to MongoDB JSON****\n";
 
 	$db_connection = pg_connect("host=".$DB["host"]." dbname=".$DB["database"]." user=".$DB["username"]." password=".$DB["password"])  or die("CONNECT:" . consoleMessage("error", pg_result_error()));
 
-
+	//echo consoleMessage("info", $qEvents);
 	$rEvents = pg_query($db_connection, $qEvents);
 	if (!$rEvents) die("QUERY:" . consoleMessage("error", pg_last_error()));
 
@@ -106,6 +162,11 @@ else {
 	$arr_json_record='[';
 	$nbLines=0;
 	while ($rtEvents = pg_fetch_array($rEvents)) {
+
+		$commonFields["locationID"]=$array_sites[$rtEvents["karta"]]["locationID"];
+		$commonFields["locationName"]=$rtEvents["karta"]; 
+		$commonFields["decimalLatitude"]=$array_sites[$rtEvents["karta"]]["decimalLatitude"]; // create an array of sites 
+		$commonFields["decimalLongitude"]=$array_sites[$rtEvents["karta"]]["decimalLongitude"]; 
 
 
 		switch($protocol) {
@@ -400,7 +461,7 @@ else {
 
 	}
 
-	echo "scp json/".$protocol."/json_* radar@canmove-dev.ekol.lu.se:/home/radar/convert-SFT-SEBMS-to-MongoDB/json/".$protocol."/";
+	echo "scp json/".$protocol."/json_* radar@canmove-dev.ekol.lu.se:/home/radar/convert-SFT-SEBMS-to-MongoDB/json/".$protocol."/\n";
 	/*
 	send files
 	scp json/std/json_* radar@canmove-dev.ekol.lu.se:/home/radar/convert-SFT-SEBMS-to-MongoDB/json/std/

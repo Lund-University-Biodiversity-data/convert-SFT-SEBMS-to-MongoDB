@@ -6,6 +6,10 @@ convert-SFT-SEBMS-database-to-MongoDB
 **Requirements**
  - PHP 7 or greater
  - PSQL 
+ - MongoDB
+```
+sudo apt-get install php-mongodb
+```
 
 **Install**
  - rename config.template.php in config.php
