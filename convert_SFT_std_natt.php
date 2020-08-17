@@ -35,7 +35,7 @@ else {
 
 
 
-	$array_observers=array();
+	$array_persons=array();
 	$array_sites=array();
 	$array_sites_req=array();
 
@@ -161,7 +161,7 @@ else {
 	$arr_json_activity='[';
 	$arr_json_output='[';
 	$arr_json_record='[';
-	$arr_json_observer='[';
+	$arr_json_person='[';
 	$nbLines=0;
 	while ($rtEvents = pg_fetch_array($rEvents)) {
 
@@ -274,25 +274,25 @@ else {
 
 		$recorder_name=$rtEvents["fornamn"].' '.$rtEvents["efternamn"];
 
-		if (!isset($array_observers[$rtEvents["persnr"]])) {
+		if (!isset($array_persons[$rtEvents["persnr"]])) {
 
-			$array_observers[$rtEvents["persnr"]]=generate_uniqId_format("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx");
+			$array_persons[$rtEvents["persnr"]]=generate_uniqId_format("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx");
 
-			$qObserver= "
+			$qPerson= "
 					select *
 					from personer 
 					where persnr='".$rtEvents["persnr"]."'  
 				";
-			$rObserver = pg_query($db_connection, $qObserver);
-			$rtObserver = pg_fetch_array($rObserver);
+			$rPerson = pg_query($db_connection, $qPerson);
+			$rtPerson = pg_fetch_array($rPerson);
 
-			$arr_json_observer.='{
-				"personId" : "'.$array_observers[$rtEvents["persnr"]].'",
-				"firstName" : "'.$rtObserver["fornamn"].'",
-				"lastName" : "'.$rtObserver["efternamn"].'",
-				"gender" : "'.$rtObserver["sx"].'",
-				"email" : "'.$rtObserver["epost"].'",
-				"town" : "'.$rtObserver["ort"].'"
+			$arr_json_person.='{
+				"personId" : "'.$array_persons[$rtEvents["persnr"]].'",
+				"firstName" : "'.$rtPerson["fornamn"].'",
+				"lastName" : "'.$rtPerson["efternamn"].'",
+				"gender" : "'.$rtPerson["sx"].'",
+				"email" : "'.$rtPerson["epost"].'",
+				"town" : "'.$rtPerson["ort"].'"
 			},';
 		}
 
@@ -376,8 +376,7 @@ else {
 				"outputSpeciesId" : "'.$outputSpeciesId.'",
 				"projectActivityId" : "'.$commonFields["projectActivityId"].'",
 				"projectId" : "'.$commonFields["projectId"].'",
-				"userId" : "'.$commonFields["userId"].'",
-				"observerId" : "'.$array_observers[$rtEvents["persnr"]].'"
+				"userId" : "'.$commonFields["userId"].'"
 			},';
 
 
@@ -442,7 +441,8 @@ else {
 			"checkMapInfo" : {
 				"validation" : true
 			},
-			"name" : "'.$commonFields["name"].'"
+			"name" : "'.$commonFields["name"].'",
+			"personId" : "'.$array_persons[$rtEvents["persnr"]].'"
 		},';
 
 
@@ -456,8 +456,8 @@ else {
 	$arr_json_activity.=']';
 	$arr_json_record[strlen($arr_json_record)-1]=' ';
 	$arr_json_record.=']';
-	$arr_json_observer[strlen($arr_json_observer)-1]=' ';
-	$arr_json_observer.=']';
+	$arr_json_person[strlen($arr_json_person)-1]=' ';
+	$arr_json_person.=']';
 
 	//echo $arr_json_output;
 	//echo "\n";
@@ -477,8 +477,8 @@ else {
 				$json=$arr_json_record;
 				break;
 			case 4:
-				$typeO="observer";
-				$json=$arr_json_observer;
+				$typeO="person";
+				$json=$arr_json_person;
 				break;
 		}
 		$filename_json='json_'.$protocol.'_'.$typeO.'s_SFT_'.date("Y-m-d-His").'.json';
