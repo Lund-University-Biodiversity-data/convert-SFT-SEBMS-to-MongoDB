@@ -35,6 +35,7 @@ else {
 
 
 
+	$array_observers=array();
 	$array_sites=array();
 	$array_sites_req=array();
 
@@ -95,7 +96,7 @@ else {
 	switch($protocol) {
 		case "std":
 			$qEvents="
-			select P.efternamn, P.fornamn, TS.datum , p1, p2, p3, p4, p5, p6, p7, p8, l1, l2, l3, l4, l5, l6, l7, l8, TS.karta AS karta
+			select P.efternamn, P.fornamn, P.persnr, TS.datum , p1, p2, p3, p4, p5, p6, p7, p8, l1, l2, l3, l4, l5, l6, l7, l8, TS.karta AS karta
 			from totalstandard TS
 			left join personer P on P.persnr = TS.persnr 
 			where TS.karta IN ".$req_sites."
@@ -122,7 +123,7 @@ else {
 		case "natt":
 			// LPAD(cast(LEAST(p01, p02, p03, p04, p05, p06, p07, p08, p09, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20) as text), 4, '0')
 			$qEvents="
-			select P.efternamn, P.fornamn, TN.datum , p01, p02, p03, p04, p05, p06, p07, p08, p09, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, TN.kartatx AS karta
+			select P.efternamn, P.fornamn, P.persnr, TN.datum , p01, p02, p03, p04, p05, p06, p07, p08, p09, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, TN.kartatx AS karta
 			from totalnatt TN
 			left join personer P on P.persnr = TN.persnr 
 			where TN.kartatx='02DSV'  
@@ -160,6 +161,7 @@ else {
 	$arr_json_activity='[';
 	$arr_json_output='[';
 	$arr_json_record='[';
+	$arr_json_observer='[';
 	$nbLines=0;
 	while ($rtEvents = pg_fetch_array($rEvents)) {
 
@@ -167,6 +169,7 @@ else {
 		$commonFields["locationName"]=$rtEvents["karta"]; 
 		$commonFields["decimalLatitude"]=$array_sites[$rtEvents["karta"]]["decimalLatitude"]; // create an array of sites 
 		$commonFields["decimalLongitude"]=$array_sites[$rtEvents["karta"]]["decimalLongitude"]; 
+
 
 
 		switch($protocol) {
@@ -267,7 +270,31 @@ else {
 		//echo "eventDate: $eventDate\n";
 
 
+		// check observers
+
 		$recorder_name=$rtEvents["fornamn"].' '.$rtEvents["efternamn"];
+
+		if (!isset($array_observers[$rtEvents["persnr"]])) {
+
+			$array_observers[$rtEvents["persnr"]]=generate_uniqId_format("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx");
+
+			$qObserver= "
+					select *
+					from personer 
+					where persnr='".$rtEvents["persnr"]."'  
+				";
+			$rObserver = pg_query($db_connection, $qObserver);
+			$rtObserver = pg_fetch_array($rObserver);
+
+			$arr_json_observer.='{
+				"personId" : "'.$array_observers[$rtEvents["persnr"]].'",
+				"firstName" : "'.$rtObserver["fornamn"].'",
+				"lastName" : "'.$rtObserver["efternamn"].'",
+				"gender" : "'.$rtObserver["sx"].'",
+				"email" : "'.$rtObserver["epost"].'",
+				"town" : "'.$rtObserver["ort"].'"
+			},';
+		}
 
 
 		$data_field="";
@@ -349,7 +376,8 @@ else {
 				"outputSpeciesId" : "'.$outputSpeciesId.'",
 				"projectActivityId" : "'.$commonFields["projectActivityId"].'",
 				"projectId" : "'.$commonFields["projectId"].'",
-				"userId" : "'.$commonFields["userId"].'"
+				"userId" : "'.$commonFields["userId"].'",
+				"observerId" : "'.$array_observers[$rtEvents["persnr"]].'"
 			},';
 
 
@@ -428,11 +456,13 @@ else {
 	$arr_json_activity.=']';
 	$arr_json_record[strlen($arr_json_record)-1]=' ';
 	$arr_json_record.=']';
+	$arr_json_observer[strlen($arr_json_observer)-1]=' ';
+	$arr_json_observer.=']';
 
 	//echo $arr_json_output;
 	//echo "\n";
 
-	for ($i=1;$i<=3;$i++) {
+	for ($i=1;$i<=4;$i++) {
 		switch ($i) {
 			case 1:
 				$typeO="activity";
@@ -445,6 +475,10 @@ else {
 			case 3:
 				$typeO="record";
 				$json=$arr_json_record;
+				break;
+			case 4:
+				$typeO="observer";
+				$json=$arr_json_observer;
 				break;
 		}
 		$filename_json='json_'.$protocol.'_'.$typeO.'s_SFT_'.date("Y-m-d-His").'.json';

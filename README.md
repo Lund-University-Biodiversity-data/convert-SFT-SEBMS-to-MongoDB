@@ -17,5 +17,5 @@ sudo apt-get install php-mongodb
  
  **Execute ing the script**
 ```
-php convert_SFT_natt.php
+php convert_SFT_std_natt.php
 ```
