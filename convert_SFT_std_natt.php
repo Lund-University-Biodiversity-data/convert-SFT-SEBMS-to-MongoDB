@@ -17,28 +17,9 @@ else {
 
 	$protocol=$argv[1];
 
-
-
-	$commonFields=array();
-
-	switch ($protocol) {
-		case "std":
-
-			$commonFields["projectId"]="dab767a5-929e-4733-b8eb-c9113194201f";
-			break;
-		case "natt":
-
-			$commonFields["projectId"]="d9253588-6fe3-4a2a-a7cd-25fc283134f3";
-			break;
-	}
-
-
-
-
 	$array_persons=array();
 	$array_sites=array();
 	$array_sites_req=array();
-
 
 	/**************************** connection to mongoDB   ***/
 	$mng = new MongoDB\Driver\Manager(); // Driver Object created
@@ -61,6 +42,7 @@ else {
 		$array_sites[$row->name]=array();
 
 		$array_sites[$row->name]["locationID"]=$row->siteId;
+		$array_sites[$row->name]["locationName"]=$row->name;
 		$array_sites[$row->name]["decimalLatitude"]=$row->extent->geometry->decimalLatitude;
 		$array_sites[$row->name]["decimalLongitude"]=$row->extent->geometry->decimalLongitude;
 //	    print_r($row->projects);
@@ -77,21 +59,14 @@ else {
 
 
 	//$commonFields["occurenceID"]="????";
-	$commonFields["status"]="active";
-	$commonFields["recordedBy"]="Mathieu Blanchet";
-	$commonFields["rightsHolder"]="Lund University";
-	$commonFields["institutionID"]=$commonFields["rightsHolder"];
-	$commonFields["basisOfRecord"]="HumanObservation";
 
 	//$commonFields["eventTime"]=array("datetime", true, "08:42 AM");
 	//$commonFields["verbatimCoordinates"]="";
-	$commonFields["multimedia"]="[ ]";
 	//$commonFields["activityId"]=?????;
 	//$commonFields["eventID"]=$commonFields["activityId;
 
 
 	//$commonFields["projectActivityId"]=array("string", true, "17ee4c9f-abe7-4926-b2d7-244f008ceaeb");
-	$commonFields["userId"]=5;
 
 	switch($protocol) {
 		case "std":
@@ -104,13 +79,6 @@ else {
 			order by datum
 			";
 //where TS.karta='07D7C'  
-			$commonFields["projectActivityId"]="ee9f5f91-0e0d-47ed-8229-9a9fc0016240";
-			//$commonFields["projectActivityId"]="c9336d88-9436-48b0-9613-c0d77d7ac342";
-			$commonFields["datasetId"]=$commonFields["projectActivityId"];
-			$commonFields["datasetName"]="test stadanrdrutter";
-			//$commonFields["datasetName"]="Second STD survey";
-			$commonFields["type"]="Bird Surveys - standardrutterna";
-			$commonFields["name"]="standardrutterna";
 
 			/*
 			$commonFields["locationID"]="507cb6c5-d439-4020-b7f7-b87d767541fa"; // create an array of sites 
@@ -131,16 +99,11 @@ else {
 			order by datum
 			";
 
-			$commonFields["projectActivityId"]="7a47e9c7-ee3a-4681-939b-b144a1269fd0";
-			$commonFields["datasetId"]=$commonFields["projectActivityId"];
-			$commonFields["datasetName"]="vinterrutterna";
-			$commonFields["type"]="Bird surveys - vinterrutterna";
-			$commonFields["name"]="vinterrutterna";
 
-			$commonFields["locationID"]="eccb9fcb-a12e-4fa6-95a3-ef7d329646e3"; /* create an array of sites */
-			$commonFields["locationName"]="Night route test 02DSV"; /* create an array of sites */
-			$commonFields["decimalLatitude"]=55.56793; /* create an array of sites */
-			$commonFields["decimalLongitude"]=13.61763; /* create an array of sites */
+			$siteInfo["locationID"]="eccb9fcb-a12e-4fa6-95a3-ef7d329646e3"; /* create an array of sites */
+			$siteInfo["locationName"]="Night route test 02DSV"; /* create an array of sites */
+			$siteInfo["decimalLatitude"]=55.56793; /* create an array of sites */
+			$siteInfo["decimalLongitude"]=13.61763; /* create an array of sites */
 
 
 			break;
@@ -165,10 +128,10 @@ else {
 	$nbLines=0;
 	while ($rtEvents = pg_fetch_array($rEvents)) {
 
-		$commonFields["locationID"]=$array_sites[$rtEvents["karta"]]["locationID"];
-		$commonFields["locationName"]=$rtEvents["karta"]; 
-		$commonFields["decimalLatitude"]=$array_sites[$rtEvents["karta"]]["decimalLatitude"]; // create an array of sites 
-		$commonFields["decimalLongitude"]=$array_sites[$rtEvents["karta"]]["decimalLongitude"]; 
+		$siteInfo["locationID"]=$array_sites[$rtEvents["karta"]]["locationID"];
+		$siteInfo["locationName"]=$array_sites[$rtEvents["karta"]]["locationName"]; 
+		$siteInfo["decimalLatitude"]=$array_sites[$rtEvents["karta"]]["decimalLatitude"]; // create an array of sites 
+		$siteInfo["decimalLongitude"]=$array_sites[$rtEvents["karta"]]["decimalLongitude"]; 
 
 
 
@@ -216,7 +179,10 @@ else {
 		// date now
 		$micro_date = microtime();
 		$date_array = explode(" ",$micro_date);
-		$date_now_tz = date("Y-m-d",$date_array[1])."T".date("H:i:s",$date_array[1]).".".number_format($date_array[0]*1000, 0)."Z";
+		$micsec=number_format($date_array[0]*1000, 0, ".", "");
+		$micsec=str_pad($micsec,3,"0", STR_PAD_LEFT);
+		if ($micsec==1000) $micsec=999;
+		$date_now_tz = date("Y-m-d",$date_array[1])."T".date("H:i:s",$date_array[1]).".".$micsec."Z";
 		//echo "Date: $date_now_tz\n";
 
 		// survey date
@@ -287,12 +253,15 @@ else {
 			$rtPerson = pg_fetch_array($rPerson);
 
 			$arr_json_person.='{
+				"dateCreated" : ISODate("'.$date_now_tz.'"),
+				"lastUpdated" : ISODate("'.$date_now_tz.'"),
 				"personId" : "'.$array_persons[$rtEvents["persnr"]].'",
 				"firstName" : "'.$rtPerson["fornamn"].'",
 				"lastName" : "'.$rtPerson["efternamn"].'",
 				"gender" : "'.$rtPerson["sx"].'",
 				"email" : "'.$rtPerson["epost"].'",
-				"town" : "'.$rtPerson["ort"].'"
+				"town" : "'.$rtPerson["ort"].'",
+				"projectId": "'.$commonFields["projectId"].'"
 			},';
 		}
 
@@ -361,20 +330,22 @@ else {
 				"rightsHolder" : "'.$commonFields["rightsHolder"].'",
 				"institutionID" : "'.$commonFields["institutionID"].'",
 				"basisOfRecord" : "'.$commonFields["basisOfRecord"].'",
-				"datasetID" : "'.$commonFields["projectActivityId"].'",
-				"datasetName" : "'.$commonFields["datasetName"].'",
+				"datasetID" : "'.$commonFields[$protocol]["projectActivityId"].'",
+				"datasetName" : "'.$commonFields[$protocol]["datasetName"].'",
+				"locationID" : "'.$siteInfo["locationID"].'",
+				"locationName" : "'.$siteInfo["locationName"].'",
 				"eventID" : "'.$eventID.'",
 				"name" : "'.$rtRecords["names"].'",
 				"scientificName" : "'.$rtRecords["scientificname"].'",
 				"multimedia" : [ ],
 				"activityId" : "'.$activityId.'",
-				"decimalLatitude" : '.$commonFields["decimalLatitude"].',
-				"decimalLongitude" : '.$commonFields["decimalLongitude"].',
+				"decimalLatitude" : '.$siteInfo["decimalLatitude"].',
+				"decimalLongitude" : '.$siteInfo["decimalLongitude"].',
 				"eventDate" : "'.$eventDate.'",
 				"individualCount" : '.$IC.',
 				"outputId" : "'.$outputId.'",
 				"outputSpeciesId" : "'.$outputSpeciesId.'",
-				"projectActivityId" : "'.$commonFields["projectActivityId"].'",
+				"projectActivityId" : "'.$commonFields[$protocol]["projectActivityId"].'",
 				"projectId" : "'.$commonFields["projectId"].'",
 				"userId" : "'.$commonFields["userId"].'"
 			},';
@@ -393,12 +364,12 @@ else {
 			"dateCreated" : ISODate("'.$date_now_tz.'"),
 			"lastUpdated" : ISODate("'.$date_now_tz.'"),
 			"progress" : "planned",
-			"projectActivityId" : "'.$commonFields["projectActivityId"].'",
+			"projectActivityId" : "'.$commonFields[$protocol]["projectActivityId"].'",
 			"projectId" : "'.$commonFields["projectId"].'",
 			"projectStage" : "",
 			"siteId" : "",
 			"status" : "active",
-			"type" : "'.$commonFields["type"].'",
+			"type" : "'.$commonFields[$protocol]["type"].'",
 			"userId" : "'.$commonFields["userId"].'",
 			"mainTheme" : ""
 		},';
@@ -415,8 +386,8 @@ else {
 				"surveyFinishTime" : "'.$finish_time.'",
 				"locationAccuracy" : 50,
 				"surveyDate" : "'.$date_survey.'",
-				"locationHiddenLatitude" : '.$commonFields["decimalLatitude"].',
-				"locationLatitude" : '.$commonFields["decimalLatitude"].',
+				"locationHiddenLatitude" : '.$siteInfo["decimalLatitude"].',
+				"locationLatitude" : '.$siteInfo["decimalLatitude"].',
 				"locationSource" : "Google maps",
 				"recordedBy" : "'.$recorder_name.'",
 				"helper1": "",
@@ -426,10 +397,11 @@ else {
 				"observations" : [
 					'.$data_field.'
 				],
-				"locationLongitude" : '.$commonFields["decimalLongitude"].',
-				"locationHiddenLongitude" : '.$commonFields["decimalLongitude"].',
+				"location" : "'.$siteInfo["locationID"].'",
+				"locationLongitude" : '.$siteInfo["decimalLongitude"].',
+				"locationHiddenLongitude" : '.$siteInfo["decimalLongitude"].',
 				"locationCentroidLatitude" : null,
-				"transectName" : "'.$commonFields["locationName"].'"
+				"transectName" : "'.$siteInfo["locationName"].'"
 			},
 			"selectFromSitesOnly" : true,
 			"_callbacks" : {
@@ -441,7 +413,7 @@ else {
 			"checkMapInfo" : {
 				"validation" : true
 			},
-			"name" : "'.$commonFields["name"].'",
+			"name" : "'.$commonFields[$protocol]["name"].'",
 			"personId" : "'.$array_persons[$rtEvents["persnr"]].'"
 		},';
 
@@ -495,7 +467,7 @@ else {
 
 	}
 
-	echo "scp json/".$protocol."/json_* radar@canmove-dev.ekol.lu.se:/home/radar/convert-SFT-SEBMS-to-MongoDB/json/".$protocol."/\n";
+	echo "scp -i /home/mathieu/.ssh/id_rsa json/".$protocol."/json_* ubuntu@89.45.233.195:/home/ubuntu/dump_json_sft_sebms/".$protocol."/\n";
 	/*
 	send files
 	scp json/std/json_* radar@canmove-dev.ekol.lu.se:/home/radar/convert-SFT-SEBMS-to-MongoDB/json/std/
