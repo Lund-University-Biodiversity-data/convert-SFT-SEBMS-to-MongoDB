@@ -329,6 +329,7 @@ else {
 				"recordedBy" : "'.$recorder_name.'",
 				"rightsHolder" : "'.$commonFields["rightsHolder"].'",
 				"institutionID" : "'.$commonFields["institutionID"].'",
+				"institutionCode" : "'.$commonFields["institutionCode"].'",
 				"basisOfRecord" : "'.$commonFields["basisOfRecord"].'",
 				"datasetID" : "'.$commonFields[$protocol]["projectActivityId"].'",
 				"datasetName" : "'.$commonFields[$protocol]["datasetName"].'",
@@ -367,7 +368,7 @@ else {
 			"projectActivityId" : "'.$commonFields[$protocol]["projectActivityId"].'",
 			"projectId" : "'.$commonFields["projectId"].'",
 			"projectStage" : "",
-			"siteId" : "",
+			"siteId" : "'.$siteInfo["locationID"].'",
 			"status" : "active",
 			"type" : "'.$commonFields[$protocol]["type"].'",
 			"userId" : "'.$commonFields["userId"].'",
@@ -455,6 +456,7 @@ else {
 		}
 		$filename_json='json_'.$protocol.'_'.$typeO.'s_SFT_'.date("Y-m-d-His").'.json';
 		$path='json/'.$protocol."/".$filename_json;
+		echo 'db.'.$typeO.'.remove({"dateCreated" : {$gte: new ISODate("'.date("Y-m-d").'T01:15:31Z")}})'."\n";
 		echo 'mongoimport --db ecodata --collection '.$typeO.' --jsonArray --file '.$path."\n";
 		//$json = json_encode($arr_rt, JSON_UNESCAPED_SLASHES); 
 		if ($fp = fopen($path, 'w')) {
