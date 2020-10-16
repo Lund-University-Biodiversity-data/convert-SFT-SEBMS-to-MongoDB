@@ -21,6 +21,8 @@ else {
 	$array_sites=array();
 	$array_sites_req=array();
 
+	$array_species_guid=array();
+
 	/**************************** connection to mongoDB   ***/
 	$mng = new MongoDB\Driver\Manager(); // Driver Object created
 
@@ -78,6 +80,7 @@ else {
 			AND TS.art='000'
 			order by datum
 			";
+			//$qEvents.=" LIMIT 10";
 //where TS.karta='07D7C'  
 
 			/*
@@ -110,9 +113,23 @@ else {
 	}
 
 
+	// GET the list of species
+
+	$url="https://lists.bioatlas.se/ws/speciesListItems/".$commonFields["listSpeciesId"];
+	$obj = json_decode(file_get_contents($url), true);
+
+	foreach($obj as $sp) {
+		//$array_species_guid[$sp["scientificName"]]=$sp["lsid"];
+		$array_species_guid[$sp["name"]]=$sp["lsid"];
+	}
+
+	//print_r($array_species_guid);
+
+	echo consoleMessage("info", "Species list ".$commonFields["listSpeciesId"]." obtained. ".count($obj)." elements");
 
 
-	echo "****CONVERT SFT ".$protocol." to MongoDB JSON****\n";
+
+	echo "****CONVERT ".$database." ".$protocol." to MongoDB JSON****\n";
 
 	$db_connection = pg_connect("host=".$DB["host"]." dbname=".$DB["database"]." user=".$DB["username"]." password=".$DB["password"])  or die("CONNECT:" . consoleMessage("error", pg_result_error()));
 
@@ -146,6 +163,7 @@ else {
 					AND TS.datum='".$rtEvents["datum"]."'
 					order by datum
 				";
+				//$qRecords.=" LIMIT 20";
 				$nbPts=8;
 				break;
 			case "natt":
@@ -273,8 +291,6 @@ else {
 
 			$IC=0;
 
-
-
 			switch($protocol) {
 				case "std":
 					for ($i=1; $i<=$nbPts; $i++) {
@@ -303,17 +319,25 @@ else {
 					break;
 			}
 
-			
-
+			if (isset($array_species_guid[$rtRecords["scientificname"]]) && $array_species_guid[$rtRecords["scientificname"]]!="-1") {
+				$listId=$commonFields["listSpeciesId"];
+				$guid=$array_species_guid[$rtRecords["scientificname"]];
+			}
+			else {
+				echo consoleMessage("error", "No species guid for -".$rtRecords["scientificname"]."- (".$rtEvents["karta"]."/".$rtEvents["datum"].")");
+				$listId="error-unmatched";
+				$guid="";
+				$array_species_guid[$rtRecords["scientificname"]]="-1";
+			}
 			$outputSpeciesId=generate_uniqId_format("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx");
 
 			$data_field.='"species" : {
-							"listId" : "error-unmatched",
+							"listId" : "'.$listId.'",
 							"commonName" : "",
 							"outputSpeciesId" : "'.$outputSpeciesId.'",
 							"scientificName" : "'.$rtRecords["scientificname"].'",
 							"name" : "'.$rtRecords["names"].'",
-							"guid" : ""
+							"guid" : "'.$guid.'"
 						},';
 			$data_field.='"individualCount" : '.$IC.'
 							},';
@@ -454,7 +478,7 @@ else {
 				$json=$arr_json_person;
 				break;
 		}
-		$filename_json='json_'.$protocol.'_'.$typeO.'s_SFT_'.date("Y-m-d-His").'.json';
+		$filename_json='json_SFT_'.$protocol.'_'.$typeO.'s_'.date("Y-m-d-His").'.json';
 		$path='json/'.$protocol."/".$filename_json;
 		echo 'db.'.$typeO.'.remove({"dateCreated" : {$gte: new ISODate("'.date("Y-m-d").'T01:15:31Z")}})'."\n";
 		echo 'mongoimport --db ecodata --collection '.$typeO.' --jsonArray --file '.$path."\n";
@@ -469,7 +493,7 @@ else {
 
 	}
 
-	echo "scp -i /home/mathieu/.ssh/id_rsa json/".$protocol."/json_* ubuntu@89.45.233.195:/home/ubuntu/dump_json_sft_sebms/".$protocol."/\n";
+	echo "scp json/".$protocol."/json_* ubuntu@89.45.233.195:/home/ubuntu/dump_json_sft_sebms/".$protocol."/\n";
 	/*
 	send files
 	scp json/std/json_* radar@canmove-dev.ekol.lu.se:/home/radar/convert-SFT-SEBMS-to-MongoDB/json/std/
