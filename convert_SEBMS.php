@@ -5,6 +5,10 @@ require "functions.php";
 
 echo consoleMessage("info", "Script starts");
 
+echo consoleMessage("info", "DEBUG example command :");
+echo consoleMessage("info", "php convert_SEBMS.php punktlokal 2 debug");
+
+$debug=false;
 
 // parameters
 // 1- protocol: std (standardrutterna) - natt (nattrutterna)
@@ -23,11 +27,20 @@ else {
 		echo consoleMessage("info", "Number of events limited to ".$limitEvents);
 	}
 
+	if (isset($argv[3]) && $argv[3]=="debug") {
+		$debug=true;
+		echo consoleMessage("info", "DEBUG mode");
+	}
+
+
 	$array_persons=array();
 	$array_sites=array();
 	$array_sites_req=array();
 
 	$array_species_guid=array();
+
+	$speciesNotFound=0;
+	$speciesFound=0;
 
 	/**************************** connection to mongoDB   ***/
 	$mng = new MongoDB\Driver\Manager(); // Driver Object created
@@ -38,7 +51,7 @@ else {
 	//$filter = [];
 	$options = [];
 	$query = new MongoDB\Driver\Query($filter, $options); 
-print_r($filter);
+
 	//db.site.find({"projects":"dab767a5-929e-4733-b8eb-c9113194201f"}, {"projects":1, "name":1}).pretty()
 	// 
 	$rows = $mng->executeQuery("ecodata.site", $query);
@@ -49,7 +62,7 @@ print_r($filter);
 
 //		if ($row->name=="Abborrtjärntorpet") {
 
-		    echo "ROW: $row->siteId - $row->name\n";
+		    //echo "ROW: $row->siteId - $row->name\n";
 			$array_sites[$row->name]=array();
 
 			$array_sites[$row->name]["locationID"]=$row->siteId;
@@ -65,7 +78,7 @@ print_r($filter);
 //		}
 	}
 	$req_sites="(".implode(",", $array_sites_req).")";
-	print_r($array_sites);
+	//print_r($array_sites);
 	echo consoleMessage("info", "Sites list obtained. ".count($array_sites)." element(s)");
 
 //echo $req_sites;
@@ -267,15 +280,6 @@ print_r($filter);
 			switch($protocol) {
 				case "punktlokal":
 					$IC= $rtRecords["obs_count"];
-					/*
-					for ($i=1; $i<=$nbPts; $i++) {
-						$ind="p".str_pad($i, 2, '0', STR_PAD_LEFT);
-						if (!is_numeric($rtRecords[$ind])) $rtRecords[$ind]=0;
-						$IC+=$rtRecords[$ind];
-
-						$data_field.='"P'.str_pad($i, 2, '0', STR_PAD_LEFT).'": "'.$rtRecords[$ind].'",';
-					}
-					*/
 					break;
 				case "slinga":
 
@@ -299,7 +303,7 @@ print_r($filter);
 					$rDetRec = pg_query($db_connection, $qDetRec);
 
 					while ($rowDetRec = pg_fetch_array($rDetRec)) {
-						$data_field.='"S'.str_pad($rowDetRec["seg_sequence"], 2, '0', STR_PAD_LEFT).'": "'.$rowDetRec["obs_count"].'",
+						$data_field.='"S'.$rowDetRec["seg_sequence"].'": "'.$rowDetRec["obs_count"].'",
 						';
 					}
 
@@ -314,10 +318,12 @@ print_r($filter);
 
 			if (isset($array_species_guid[$scientifName]) && $array_species_guid[$scientifName]!="-1") {
 				$listId=$commonFields["listSpeciesId"];
+				$speciesFound++;
 				$guid=$array_species_guid[$scientifName];
 			}
 			else {
-				echo consoleMessage("error", "No species guid for -".$scientifName."- (".$rtEvents["sit_name"]."/".$rtEvents["datum"].")");
+				if ($debug) echo consoleMessage("error", "No species guid for -".$scientifName."- (".$rtEvents["sit_name"]."/".$rtEvents["datum"].")");
+				$speciesNotFound++;
 				$listId="error-unmatched";
 				$guid="";
 				$array_species_guid[$scientifName]="-1";
@@ -411,7 +417,7 @@ print_r($filter);
 				"locationAccuracy" : 50,
 				"temperatureInDegreesCelcius" : "'.$rtEvents["vis_temperature"].'",
 				"percentageOfSunlight" : "'.$rtEvents["vis_sunshine"].'",
-				"windSpeedInKilometresPerHourCategorical" : "'.$rtEvents["vis_windspeed"].'",
+				"windSpeedKmPerHourCategorical" : "'.$rtEvents["vis_windspeed"].'",
 				"windDirectionCategorical" : "'.$rtEvents["vis_winddirection"].'",
 				"surveyDate" : "'.$date_survey.'",
 				"locationHiddenLatitude" : '.$siteInfo["decimalLatitude"].',
@@ -419,7 +425,7 @@ print_r($filter);
 				"recordedBy" : "'.$recorder_name.'",
 				"surveyStartTime" : "'.$start_time.'",
 				"locationCentroidLongitude" : null,
-				"multiSightingTable" : [
+				"observations" : [
 					'.$data_field.'
 				],
 				"location" : "'.$siteInfo["locationID"].'",
@@ -435,6 +441,7 @@ print_r($filter);
 				]
 			},
 			"mapElementId" : "locationMap",
+			"projectId" : "'.$commonFields[$protocol]["projectId"].'",
 			"name" : "'.$commonFields[$protocol]["name"].'"
 		},';
 
@@ -492,6 +499,10 @@ print_r($filter);
 
 	}
 
+	$ratioSpecies = $speciesFound / ($speciesFound+$speciesNotFound);
+	
+	echo consoleMessage("info", "Species ratio found in the species lists : ".number_format($ratioSpecies*100, 2)."%");
+
 	echo "scp dump_json_sft_sebms/".$database."/".$protocol."/json_* ubuntu@89.45.233.195:/home/ubuntu/dump_json_sft_sebms/".$database."/".$protocol."/\n";
 	/*
 	send files
@@ -517,57 +528,23 @@ print_r($filter);
 	db.record.find({"userId":"5"}).count();
 	db.record.remove({"userId":"5"})
 
-	db.activity.find({"dateCreated":{"$gt": new ISODate("2020-04-16T15:16:15.184Z")}}).count()
-	db.record.find({"dateCreated":{"$gt": new ISODate("2020-04-16T15:16:15.184Z")}}).count()
-	db.output.find({"dateCreated":{"$gt": new ISODate("2020-04-16T15:16:15.184Z")}}).count()
-	
-	db.activity.remove({"dateCreated":{"$gt": new ISODate("2020-04-16T15:16:15.184Z")}})
-	db.record.remove({"dateCreated":{"$gt": new ISODate("2020-04-16T15:16:15.184Z")}})
-	db.output.remove({"dateCreated":{"$gt": new ISODate("2020-04-16T15:16:15.184Z")}})
+punktlokal
+db.activity.remove({projectId:"1fb10915-e6c0-451e-b575-b7e715d5d32f"})
+db.record.remove({projectId:"1fb10915-e6c0-451e-b575-b7e715d5d32f"})
+db.output.remove({"dateCreated":{$gt:new ISODate("2020-11-05T16:37:15.184Z"), $lt:new ISODate("2020-11-05T16:38:38.184Z")}})
+db.person.remove({"dateCreated":{$gt:new ISODate("2020-11-05T16:37:15.184Z"), $lt:new ISODate("2020-11-05T16:38:38.184Z")}})
 
-	db.output.find({"dateCreated":{"$gt": new ISODate("2020-04-15T15:16:15.184Z")}}).count()
+slinga
+db.activity.remove({projectId:"30634be4-7aac-4ffb-8e5f-5e100ed2a4ea"})
+db.record.remove({projectId:"30634be4-7aac-4ffb-8e5f-5e100ed2a4ea"})
+db.output.remove({"dateCreated":{$gt:new ISODate("2020-11-06T13:37:15.184Z"), $lt:new ISODate("2020-11-06T13:42:38.184Z")}})
+db.person.remove({"dateCreated":{$gt:new ISODate("2020-11-06T13:37:15.184Z"), $lt:new ISODate("2020-11-06T13:42:38.184Z")}})
 
 
-db.output.remove({"dateCreated":{"$gt": new ISODate("2020-10-16T15:17:15.184Z")}});
-db.activity.remove({"dateCreated":{"$gt": new ISODate("2020-10-16T15:17:15.184Z")}});
-db.record.remove({"dateCreated":{"$gt": new ISODate("2020-10-16T15:17:15.184Z")}});
-db.person.remove({"dateCreated":{"$gt": new ISODate("2020-10-16T15:17:15.184Z")}});
+	mongodump --db ecodata --collection site --out site_dump/
+	mongorestore --db database_name path_to_bson_file
 	*/
 
-
-
-
-
-
-
-
-	/*
-	/*
-
-
-		foreach ($structure as $key => $data) {
-
-			//mandatory fields OR if not mandatory => non-empty 
-			if ($data[1] || (!$data[1] && trim($rtEvents[$key])!="")) {
-				$line_json.='"'.$key.'"'.': ';
-				if ($data[0]!="number") $line_json.='"';
-				if ($data[0]=="number" && $rtEvents[$key]=="") $line_json.=0;
-				elseif ($data[0]=="date" && $rtEvents[$key]!="") {
-					$line_json.=date("Y-m-d H:i:s", strtotime($rtEvents[$key]));
-				}
-				else $line_json.=$rtEvents[$key];
-
-				if ($data[0]!="number") $line_json.='"';
-				$line_json.=',';
-			}
-		}
-
-		// replace last comma by }
-		$line_json[strlen($line_json)-1]='}';
-		$arr_json_record.=' '.$line_json.',';
-
-	};
-	*/
 
 	echo consoleMessage("info", "Script ends");
 

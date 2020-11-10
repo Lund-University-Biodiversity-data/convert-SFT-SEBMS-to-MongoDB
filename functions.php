@@ -21,24 +21,33 @@ function generate_uniqId_format ($format) {
 }
 
 
-// convert a string with HHMM to HH:MM AM/PM
+// convert a string with HHMM to
+// HH:MM AM/PM (IF mode AMPM)
 // examples: 
 // 2342 => 11:42 PM
 // 1114 => 11:14 AM
 // 754 => 07:54 AM
 // 15 => 00:15 AM, 
-function convertTime($time) {
+// ELSE (mode 24H) HH:MM
 
-	if ($time>1200){
-		$time-=1200;
-		$time=str_pad($time, 4, '0', STR_PAD_LEFT);
-		$time=substr($time, 0, 2).":".substr($time, 2, 2)." PM";
+function convertTime($time, $mode="AMPM") {
+
+	if ($mode=="AMPM") {
+		if ($time>1200){
+			$time-=1200;
+			$time=str_pad($time, 4, '0', STR_PAD_LEFT);
+			$time=substr($time, 0, 2).":".substr($time, 2, 2)." PM";
+		}
+		else {
+			$time=str_pad($time, 4, '0', STR_PAD_LEFT);
+			$time=substr($time, 0, 2).":".substr($time, 2, 2)." AM";
+		}
 	}
 	else {
 		$time=str_pad($time, 4, '0', STR_PAD_LEFT);
-		$time=substr($time, 0, 2).":".substr($time, 2, 2)." AM";
+		$time=substr($time, 0, 2).":".substr($time, 2, 2);
 	}
-
+	
 	return $time;
 }
 

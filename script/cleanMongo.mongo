@@ -1,0 +1,2 @@
+db.output.find({"activityId" : {$nin : db.activity.distinct("activityId") }}).count()
+db.output.remove({"activityId" : {$nin : db.activity.distinct("activityId") }})
