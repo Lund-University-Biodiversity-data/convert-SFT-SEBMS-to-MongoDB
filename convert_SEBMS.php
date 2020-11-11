@@ -1,7 +1,7 @@
 <?php
 $database="SEBMS";
-require "config.php";
-require "functions.php";
+require "lib/config.php";
+require "lib/functions.php";
 
 echo consoleMessage("info", "Script starts");
 
@@ -247,28 +247,55 @@ else {
 					and  vv.vip_vis_visitid  = '.$rtEvents["vis_uid"];
 
 		$rPerson = pg_query($db_connection, $qPerson);
-		$rtPerson = pg_fetch_array($rPerson);
 
-		$recorder_name=$rtPerson["per_firstname"].' '.$rtPerson["per_lastname"];
-		$recorder_name="Mathieu Blanchet";
+		$nbPart=0;
+		$arrHelper=array();
+		while ($rtPerson = pg_fetch_array($rPerson)) {
 
-		if (!isset($array_persons[$rtEvents["vip_per_participantid"]])) {
+			if ($nbPart==0) {
+				$recorder_name=$rtPerson["per_firstname"].' '.$rtPerson["per_lastname"];
+			}
+			else {
+				$arrHelper[]=$rtPerson["per_firstname"].' '.$rtPerson["per_lastname"];
+			}
 
-			$array_persons[$rtEvents["vip_per_participantid"]]=generate_uniqId_format("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx");
+			if (!isset($array_persons[$rtEvents["vip_per_participantid"]])) {
 
-			$arr_json_person.='{
-				"dateCreated" : ISODate("'.$date_now_tz.'"),
-				"lastUpdated" : ISODate("'.$date_now_tz.'"),
-				"personId" : "'.$array_persons[$rtEvents["vip_per_participantid"]].'",
-				"firstName" : "'.$rtPerson["per_firstname"].'",
-				"lastName" : "'.$rtPerson["per_lastname"].'",
-				"gender" : "'.$rtPerson["per_gender"].'",
-				"email" : "'.$rtPerson["per_emailaddress"].'",
-				"town" : "'.$rtPerson["per_addressposttown"].'",
-				"projectId": "'.$commonFields[$protocol]["projectId"].'"
-			},';
+				$array_persons[$rtEvents["vip_per_participantid"]]=generate_uniqId_format("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx");
+
+				$arr_json_person.='{
+					"dateCreated" : ISODate("'.$date_now_tz.'"),
+					"lastUpdated" : ISODate("'.$date_now_tz.'"),
+					"personId" : "'.$array_persons[$rtEvents["vip_per_participantid"]].'",
+					"firstName" : "'.$rtPerson["per_firstname"].'",
+					"lastName" : "'.$rtPerson["per_lastname"].'",
+					"gender" : "'.$rtPerson["per_gender"].'",
+					"email" : "'.$rtPerson["per_emailaddress"].'",
+					"town" : "'.$rtPerson["per_addressposttown"].'",
+					"projectId": "'.$commonFields[$protocol]["projectId"].'"
+				},';
+			}
+
+			$nbPart++;
 		}
 
+		/*"
+		helpers" : [
+			{
+				"helper" : "jean pierre"
+			}
+		]
+		*/
+		$helpers= "[{
+			";
+		foreach ($arrHelper as $help) {
+			echo "HELPERS".$outputId;
+			$helpers.= '"helper" : "'.$help.'",';
+
+		}
+		$helpers[strlen($helpers)-1]=' ';
+
+		$helpers.= "}]";
 
 		$data_field="";
 		while ($rtRecords = pg_fetch_array($rRecords)) {
@@ -415,6 +442,7 @@ else {
 			"data" : {
 				"surveyEndTime" : "'.$finish_time.'",
 				"locationAccuracy" : 50,
+				"helpers" : '.$helpers.',
 				"temperatureInDegreesCelcius" : "'.$rtEvents["vis_temperature"].'",
 				"percentageOfSunlight" : "'.$rtEvents["vis_sunshine"].'",
 				"windSpeedKmPerHourCategorical" : "'.$rtEvents["vis_windspeed"].'",

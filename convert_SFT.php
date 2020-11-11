@@ -1,7 +1,7 @@
 <?php
 $database="SFT";
-require "config.php";
-require "functions.php";
+require "lib/config.php";
+require "lib/functions.php";
 
 echo consoleMessage("info", "Script starts");
 
