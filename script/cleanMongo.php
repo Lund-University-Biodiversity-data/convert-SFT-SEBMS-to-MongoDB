@@ -2,7 +2,7 @@
 require "lib/functions.php";
 echo consoleMessage("info", "Script start.");
 
-$arr_protocol=array("clean", "SEBMS-punktlokal", "SEBMS-slinga", "SFT-std", "SFT-natt", "SFT-vinter", "SFT-sommar");
+$arr_protocol=array("clean", "SEBMS-punktlokal", "SEBMS-slinga", "SFT-std", "SFT-natt", "SFT-vinter", "SFT-sommar", "SFT-kust");
 
 if (!isset($argv[1]) || !in_array(trim($argv[1]), $arr_protocol)) {
 	echo consoleMessage("error", "First parameter missing: ".implode("/", $arr_protocol));

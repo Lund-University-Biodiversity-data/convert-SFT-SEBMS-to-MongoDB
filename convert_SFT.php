@@ -11,11 +11,11 @@ echo consoleMessage("info", "php convert_SFT.php std 2 debug");
 $debug=false;
 
 // parameters
-// 1- protocol: std (standardrutterna) - natt (nattrutterna) - vinter (vinterrutterna) - sommar (sommarrutterna)
-$arr_protocol=array("std", "natt", "vinter", "sommar");
+// 1- protocol: std (standardrutterna) - natt (nattrutterna) - vinter (vinterrutterna) - sommar (sommarrutterna) - kust (kustfagelrutterna)
+$arr_protocol=array("std", "natt", "vinter", "sommar", "kust");
 
 if (!isset($argv[1]) || !in_array(trim($argv[1]), $arr_protocol)) {
-	echo consoleMessage("error", "First parameter missing: std / natt / vinter / sommar");
+	echo consoleMessage("error", "First parameter missing: std / natt / vinter / sommar / kust");
 }
 else {
 
@@ -24,6 +24,11 @@ else {
 	$speciesNotFound=0;
 	$speciesFound=0;
 	$observationFieldName="observations";
+
+	if (isset($argv[2]) && is_numeric($argv[2])) {
+		$limitEvents=$argv[2];
+		echo consoleMessage("info", "Number of events limited to ".$limitEvents);
+	}
 
 	if (isset($argv[3]) && $argv[3]=="debug") {
 		$debug=true;
@@ -48,8 +53,6 @@ else {
 	//db.site.find({"projects":"dab767a5-929e-4733-b8eb-c9113194201f"}, {"projects":1, "name":1}).pretty()
 	// 
 	$rows = $mng->executeQuery("ecodata.site", $query);
-	//echo count($rows)." row(s)\n";
-
 
 	foreach ($rows as $row){
 	    
@@ -63,7 +66,6 @@ else {
 	    }
 	    else $indexSite=$row->name;
 
-	    //echo "ROW: $row->siteId - $row->name\n";
 		$array_sites[$indexSite]=array();
 
 		$array_sites[$indexSite]["locationID"]=$row->siteId;
@@ -80,16 +82,6 @@ else {
 
 	/**************************** connection to mongoDB   ***/
 
-
-	//$commonFields["occurenceID"]="????";
-
-	//$commonFields["eventTime"]=array("datetime", true, "08:42 AM");
-	//$commonFields["verbatimCoordinates"]="";
-	//$commonFields["activityId"]=?????;
-	//$commonFields["eventID"]=$commonFields["activityId;
-
-
-	//$commonFields["projectActivityId"]=array("string", true, "17ee4c9f-abe7-4926-b2d7-244f008ceaeb");
 
 	switch($protocol) {
 		case "std":
@@ -128,22 +120,37 @@ else {
 			select P.efternamn, P.fornamn, P.persnr, TN.datum , p01, p02, p03, p04, p05, p06, p07, p08, p09, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, TN.kartatx AS sitename, per
 			from totalnatt TN
 			left join personer P on P.persnr = TN.persnr 
-			where TN.kartatx='02DSV'  
+			where TN.kartatx IN ".$req_sites."  
 			AND TN.art='000'
 			order by datum
 			";
 
+			/*
+			$siteInfo["locationID"]="eccb9fcb-a12e-4fa6-95a3-ef7d329646e3"; 
+			$siteInfo["locationName"]="Night route test 02DSV"; 
+			$siteInfo["decimalLatitude"]=55.56793;
+			$siteInfo["decimalLongitude"]=13.61763; 
+			*/
 
-			$siteInfo["locationID"]="eccb9fcb-a12e-4fa6-95a3-ef7d329646e3"; /* create an array of sites */
-			$siteInfo["locationName"]="Night route test 02DSV"; /* create an array of sites */
-			$siteInfo["decimalLatitude"]=55.56793; /* create an array of sites */
-			$siteInfo["decimalLongitude"]=13.61763; /* create an array of sites */
-
+				break;
+		case "kust":
+			// LPAD(cast(LEAST(p01, p02, p03, p04, p05, p06, p07, p08, p09, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20) as text), 4, '0')
+			$qEvents="
+			select P.efternamn, P.fornamn, P.persnr, T.datum ,T.ruta AS sitename, T.yr, KS.start, KS.stopp
+			from totalkustfagel200 T
+			left join personer P on P.persnr = T.persnr 
+			left join kustfagel200_start_stopp KS on T.ruta=KS.ruta AND T.datum=KS.datum 
+			where T.ruta  IN ".$req_sites."  
+			AND T.art='000'
+			order by datum
+			";
 
 			break;
 	}
 
-
+	if (isset($limitEvents) && $limitEvents>0)
+		$qEvents.=" LIMIT ".$limitEvents;
+	
 	// GET the list of species
 	foreach ($commonFields["listSpeciesId"] as $animals => $listId) {
 		$url="https://lists.bioatlas.se/ws/speciesListItems/".$commonFields["listSpeciesId"][$animals];
@@ -166,7 +173,7 @@ else {
 
 	$db_connection = pg_connect("host=".$DB["host"]." dbname=".$DB["database"]." user=".$DB["username"]." password=".$DB["password"])  or die("CONNECT:" . consoleMessage("error", pg_result_error()));
 
-	if ($debug) echo consoleMessage("info", $qEvents);
+	if ($debug) echo consoleMessage("info", "qEvents : ".$qEvents);
 	$rEvents = pg_query($db_connection, $qEvents);
 	if (!$rEvents) die("QUERY:" . consoleMessage("error", pg_last_error()));
 
@@ -190,7 +197,7 @@ else {
 					from totalstandard TS, eurolist EL
 					where EL.art=TS.art 
 					and TS.karta='".$rtEvents["sitename"]."'  
-					AND EL.art<>'000'
+					AND TS.art<>'000'
 					AND TS.datum='".$rtEvents["datum"]."'
 					order by datum
 				";
@@ -205,7 +212,7 @@ else {
 					AND TN.persnr=PU.persnr
 					AND TN.rnr=PU.rnr
 					and Pu.ruttnamn='".$rtEvents["sitename"]."'  
-					AND EL.art<>'000'
+					AND TN.art<>'000'
 					AND TN.datum='".$rtEvents["datum"]."'
 					order by datum
 				";
@@ -217,15 +224,31 @@ else {
 					from totalnatt TN, eurolist EL
 					where EL.art=TN.art 
 					and TN.kartatx='".$rtEvents["sitename"]."'  
-					AND EL.art<>'000'
+					AND TN.art<>'000'
 					AND TN.datum='".$rtEvents["datum"]."'
 					order by datum
 				";
 				$nbPts=20;
 				break;
+			case "kust":
+				$qRecords="
+					select EL.arthela AS names, EL.latin as scientificname, i100m, ind, openw, T.art, T.datum
+					from totalkustfagel200 T, eurolist EL
+					where EL.art=T.art 
+					and T.ruta='".$rtEvents["sitename"]."'  
+					AND T.art<>'000'
+					AND T.datum='".$rtEvents["datum"]."'
+					order by datum
+				";
+				$nbPts=1;
+				break;
 		}
 
+		if (isset($limitEvents) && $limitEvents>0)
+			$qRecords.=" LIMIT ".$limitEvents;
 		
+		if ($debug) echo consoleMessage("info", "qRecords :". $qRecords);
+
 		//echo $qRecords;
 		$rRecords = pg_query($db_connection, $qRecords);
 		if (!$rRecords) die("QUERY:" . consoleMessage("error", pg_last_error()));
@@ -239,6 +262,11 @@ else {
 
 		//echo "outputId: $outputId\n";
 
+		$eventRemarks="";
+
+		// survey date
+		$date_survey=date("Y-m-d", strtotime($rtEvents["datum"]))."T00:00:00Z";
+
 		// date now
 		$micro_date = microtime();
 		$date_array = explode(" ",$micro_date);
@@ -248,156 +276,227 @@ else {
 		$date_now_tz = date("Y-m-d",$date_array[1])."T".date("H:i:s",$date_array[1]).".".$micsec."Z";
 		//echo "Date: $date_now_tz\n";
 
-		// survey date
-		$date_survey=date("Y-m-d", strtotime($rtEvents["datum"]))."T00:00:00Z";
-		//echo "date survey".$date_survey."\n";
+		$helpers="[{}]";
+		if ($protocol=="kust") {
 
-		// find the start time and finsh time
-		$start_time=2359;
-		$finish_time=0;
-		$arr_time=array();
+			if ($rtEvents["start"]!="") {
+				$start_time=substr($rtEvents["start"], 0, 5);
+				$eventDate=date("Y-m-d", strtotime($rtEvents["datum"]))."T".substr($start_time, 0, 2).":".substr($start_time, 2, 4).":00Z";
+			}
+			else {
+				$start_time="";
+				$eventDate=date("Y-m-d", strtotime($rtEvents["datum"]))."T00:00:00Z";
+			}
+			if ($rtEvents["stopp"]!="") {
+				$finish_time=substr($rtEvents["stopp"], 0, 5);
+			}
+			else $finish_time="";
 
-		$minutesSpentObserving='"minutesSpentObserving" : [
-				{';
-		$timeOfObservation='"timeOfObservation" : [
-				{';
 
-		for ($i=1; $i<=$nbPts; $i++) {
+
+			$qDuckl="
+			select *
+			from kustfagel200_ejderungar KE
+			where KE.ruta = '".$rtEvents["sitename"]."'
+			AND CAST(yr AS text)=LEFT('".$rtEvents["datum"]."',4)
+			AND persnr='".$rtEvents["persnr"]."'
+			";
+			$rDuckl = pg_query($db_connection, $qDuckl);
+			if (!$rDuckl) die("QUERY:" . consoleMessage("error", pg_last_error()));
+
+			$ducklingsCounted='"ducklingsCounted" : "nej"';
+			$ducklingCount='"ducklingCount" : ""';
+			$ducklingSize='"ducklingSize" : ""';
+
+			if (pg_num_rows($rDuckl)!=1) echo consoleMessage("warning", pg_num_rows($rDuckl)." row(s) of kustfagel200_ejderungar for ruta/persnr/yr ".$rtEvents["sitename"]."/".$rtEvents["persnr"]."/".$rtEvents["yr"]);
+			else {
+				$rtDuckl = pg_fetch_array($rDuckl);
+				$ducklingsCounted='"ducklingsCounted" : "'. ($rtDuckl["ungar_inventerade"] =="j" ? "ja" : "nej").'"';
+				$ducklingCount='"ducklingCount" : "'. $rtDuckl["antal"].'"';
+				$ducklingSize='"ducklingSize" : "'. $rtDuckl["storlek"].'"';
+			}			
+
+			$specific_kust=$ducklingsCounted.',
+				'.$ducklingCount.',
+				'.$ducklingSize.',
+				';
+
+			$qHelpers="
+			select *
+			from kustfagel200_medobs KE, personer P
+			where P.persnr=KE.persnr
+			AND KE.ruta = '".$rtEvents["sitename"]."'
+			AND CAST(yr AS text)=LEFT('".$rtEvents["datum"]."',4)
+			AND P.persnr<>'".$rtEvents["persnr"]."'
+			";
+			$rHelpers = pg_query($db_connection, $qHelpers);
+			if (!$rHelpers) die("QUERY:" . consoleMessage("error", pg_last_error()));
+
+			$helpers= "[
+			";
+			while ($rtHelpers = pg_fetch_array($rHelpers)) {
+				$help=$rtHelpers["fornamn"].' '.$rtHelpers["efternamn"];
+				$helpers.= '
+					{"helper" : "'.$help.'"},';
+			}
+			$helpers[strlen($helpers)-1]=' ';
+			$helpers.= "]";
+
+
+		}
+		else {
+
+
+			// find the start time and finsh time
+			$start_time=2359;
+			$finish_time=0;
+			$arr_time=array();
+
+			$minutesSpentObserving='"minutesSpentObserving" : [
+					{';
+			$timeOfObservation='"timeOfObservation" : [
+					{';
+
+			for ($i=1; $i<=$nbPts; $i++) {
+				switch($protocol) {
+					case "std":
+						$ind="p".$i;
+						
+						$timeOfObservation.='
+						"TidP'.str_pad($i, 2, '0', STR_PAD_LEFT).'" : "'.$rtEvents["p".$i].'",';
+						$minutesSpentObserving.='
+						"TidL'.str_pad($i, 2, '0', STR_PAD_LEFT).'" : "'.$rtEvents["l".$i].'",';
+
+						break;
+					case "vinter":
+						$ind="p".str_pad($i, 2, '0', STR_PAD_LEFT);
+						break;
+					case "natt":
+
+						$ind="p".str_pad($i, 2, '0', STR_PAD_LEFT);
+
+						$timeOfObservation.='
+						"TidP'.str_pad($i, 2, '0', STR_PAD_LEFT).'" : "'.$rtEvents[$ind].'",';
+
+						break;
+				}
+
+
+
+				$rtEvents[$ind]=intval($rtEvents[$ind]);
+
+				if ($rtEvents[$ind]<$start_time)
+					$start_time=$rtEvents[$ind];
+
+				// add 24 hours to the night tmes, to help comparing
+				if ($rtEvents[$ind]<1200)
+					$rtEvents[$ind]+=2400;
+
+
+
+				if ($rtEvents[$ind]>$finish_time)
+					$finish_time=$rtEvents[$ind];
+
+				if ($rtEvents[$ind]>2400) $rtEvents[$ind]-=2400;
+
+				$arr_time[$ind]=convertTime($rtEvents[$ind]);
+			}
+
+			if ($start_time>2400) $start_time-=2400;
+			if ($finish_time>2400) $finish_time-=2400;
+
+			$start_time_brut=$start_time;
+
+			$start_time=convertTime($start_time, "24H");
+			$finish_time=convertTime($finish_time, "24H");
+
+			//$eventTime=date("H:i", strtotime($rtEvents["datum"]));
+
+			$eventDate=date("Y-m-d", strtotime($rtEvents["datum"]))."T".substr($start_time_brut, 0, 2).":".substr($start_time_brut, 2, 4).":00Z";
+			//echo "eventDate: $eventDate\n";
+
+			$minutesSpentObserving[strlen($minutesSpentObserving)-1]=' ';
+			$minutesSpentObserving.='}],';
+			$timeOfObservation[strlen($timeOfObservation)-1]=' ';
+			$timeOfObservation.='}],';
+
+
 			switch($protocol) {
 				case "std":
-					$ind="p".$i;
-					
-					$timeOfObservation.='
-					"TidP'.str_pad($i, 2, '0', STR_PAD_LEFT).'" : "'.$rtEvents["p".$i].'",';
-					$minutesSpentObserving.='
-					"TidL'.str_pad($i, 2, '0', STR_PAD_LEFT).'" : "'.$rtEvents["l".$i].'",';
 
-					break;
-				case "vinter":
-					$ind="p".str_pad($i, 2, '0', STR_PAD_LEFT);
-					break;
+				$qEvents999="
+				select *
+				from totalstandard TS
+				where TS.karta = '".$rtEvents["sitename"]."'
+				AND TS.art='999'
+				AND datum='".$rtEvents["datum"]."'
+				";
+				$rEvents999 = pg_query($db_connection, $qEvents999);
+				if (!$rEvents999) die("QUERY:" . consoleMessage("error", pg_last_error()));
+				$rtEvents999 = pg_fetch_array($rEvents999);
+				if (pg_num_rows($rEvents999)!=1) die("QUERY:" . consoleMessage("error", pg_num_rows($rEvents999)." row of Event999 for karta ".$rtEvents["sitename"]));
+				
+				$distanceCovered='"distanceCovered" : [
+						{
+							';
+				for ($i=1; $i<=$nbPts; $i++) {
+					$distanceCovered.='
+					"distanceOnL'.str_pad($i, 2, '0', STR_PAD_LEFT).'" : "'.$rtEvents999["l".$i].'",';
+				}
+
+				$distanceCovered[strlen($distanceCovered)-1]=' ';
+				$distanceCovered.='}],';
+
+				if ($rtEvents["gps"]=="X") $isGpsUsed="ja";
+				else $isGpsUsed="nej";
+
+				$eventRemarks=str_replace('"', "|", $rtEvents["txt"]);
+
+				break;
+
 				case "natt":
 
-					$ind="p".str_pad($i, 2, '0', STR_PAD_LEFT);
+				$qEvents998="
+				select *
+				from totalnatt TN
+				where TN.kartatx = '".$rtEvents["sitename"]."'
+				AND TN.art='998'
+				AND datum='".$rtEvents["datum"]."'
+				";
+				$rEvents998 = pg_query($db_connection, $qEvents998);
+				if (!$rEvents998) die("QUERY:" . consoleMessage("error", pg_last_error()));
+				$rtEvents998 = pg_fetch_array($rEvents998);
+				if (pg_num_rows($rEvents998)!=1) die("QUERY:" . consoleMessage("error", pg_num_rows($rEvents998)." row of Event998 for kartatx ".$rtEvents["sitename"]));
+				
+				$cloudStart='"cloudsStart" : "'. $rtEvents998["p01"].'"';
+				$tempStart='"temperatureStart" : "'. $rtEvents998["p02"].'"';
+				$windStart='"windStart" : "'. $rtEvents998["p03"].'"';
+				$precipStart='"precipitationStart" : "'. $rtEvents998["p04"].'"';
 
-					$timeOfObservation.='
-					"TidP'.str_pad($i, 2, '0', STR_PAD_LEFT).'" : "'.$rtEvents[$ind].'",';
+				$per=$rtEvents["per"];
 
-					break;
+				$cloudEnd='"cloudsEnd" : "'. $rtEvents998["p05"].'"';
+				$tempEnd='"temperatureEnd" : "'. $rtEvents998["p06"].'"';
+				$windEnd='"windEnd" : "'. $rtEvents998["p07"].'"';
+				$precipEnd='"precipitationEnd" : "'. $rtEvents998["p08"].'"';
+
+
+				$specific_natt=$cloudStart.',
+					'.$tempStart.',
+					'.$windStart.',
+					'.$precipStart.',
+					'.$cloudEnd.',
+					'.$tempEnd.',
+					'.$windEnd.',
+					'.$precipEnd.',
+					"period" : "'.$per.'",';
+
+				break;
+
+
 			}
 
 
-
-			$rtEvents[$ind]=intval($rtEvents[$ind]);
-
-			if ($rtEvents[$ind]<$start_time)
-				$start_time=$rtEvents[$ind];
-
-			// add 24 hours to the night tmes, to help comparing
-			if ($rtEvents[$ind]<1200)
-				$rtEvents[$ind]+=2400;
-
-
-
-			if ($rtEvents[$ind]>$finish_time)
-				$finish_time=$rtEvents[$ind];
-
-			if ($rtEvents[$ind]>2400) $rtEvents[$ind]-=2400;
-
-			$arr_time[$ind]=convertTime($rtEvents[$ind]);
-		}
-
-		if ($start_time>2400) $start_time-=2400;
-		if ($finish_time>2400) $finish_time-=2400;
-
-		$start_time_brut=$start_time;
-
-		$start_time=convertTime($start_time, "24H");
-		$finish_time=convertTime($finish_time, "24H");
-
-		//$eventTime=date("H:i", strtotime($rtEvents["datum"]));
-
-		$eventDate=date("Y-m-d", strtotime($rtEvents["datum"]))."T".substr($start_time_brut, 0, 2).":".substr($start_time_brut, 2, 4).":00Z";
-		//echo "eventDate: $eventDate\n";
-
-		$minutesSpentObserving[strlen($minutesSpentObserving)-1]=' ';
-		$minutesSpentObserving.='}],';
-		$timeOfObservation[strlen($timeOfObservation)-1]=' ';
-		$timeOfObservation.='}],';
-
-		$eventRemarks="";
-
-		switch($protocol) {
-			case "std":
-
-			$qEvents999="
-			select *
-			from totalstandard TS
-			where TS.karta = '".$rtEvents["sitename"]."'
-			AND TS.art='999'
-			AND datum='".$rtEvents["datum"]."'
-			";
-			$rEvents999 = pg_query($db_connection, $qEvents999);
-			if (!$rEvents999) die("QUERY:" . consoleMessage("error", pg_last_error()));
-			$rtEvents999 = pg_fetch_array($rEvents999);
-			if (pg_num_rows($rEvents999)!=1) die("QUERY:" . consoleMessage("error", pg_num_rows($rEvents999)." row of Event999 for karta ".$rtEvents["sitename"]));
-			
-			$distanceCovered='"distanceCovered" : [
-					{
-						';
-			for ($i=1; $i<=$nbPts; $i++) {
-				$distanceCovered.='
-				"distanceOnL'.str_pad($i, 2, '0', STR_PAD_LEFT).'" : "'.$rtEvents999["l".$i].'",';
-			}
-
-			$distanceCovered[strlen($distanceCovered)-1]=' ';
-			$distanceCovered.='}],';
-
-			if ($rtEvents["gps"]=="X") $isGpsUsed="ja";
-			else $isGpsUsed="nej";
-
-			$eventRemarks=str_replace('"', "|", $rtEvents["txt"]);
-
-			break;
-
-			case "natt":
-
-			$qEvents998="
-			select *
-			from totalnatt TN
-			where TN.kartatx = '".$rtEvents["sitename"]."'
-			AND TN.art='998'
-			AND datum='".$rtEvents["datum"]."'
-			";
-			$rEvents998 = pg_query($db_connection, $qEvents998);
-			if (!$rEvents998) die("QUERY:" . consoleMessage("error", pg_last_error()));
-			$rtEvents998 = pg_fetch_array($rEvents998);
-			if (pg_num_rows($rEvents998)!=1) die("QUERY:" . consoleMessage("error", pg_num_rows($rEvents998)." row of Event998 for kartatx ".$rtEvents["sitename"]));
-			
-			$cloudStart='"cloudsStart" : "'. $rtEvents998["p01"].'"';
-			$tempStart='"temperatureStart" : "'. $rtEvents998["p02"].'"';
-			$windStart='"windStart" : "'. $rtEvents998["p03"].'"';
-			$precipStart='"precipitationStart" : "'. $rtEvents998["p04"].'"';
-
-			$per=$rtEvents["per"];
-
-			$cloudEnd='"cloudsEnd" : "'. $rtEvents998["p05"].'"';
-			$tempEnd='"temperatureEnd" : "'. $rtEvents998["p06"].'"';
-			$windEnd='"windEnd" : "'. $rtEvents998["p07"].'"';
-			$precipEnd='"precipitationEnd" : "'. $rtEvents998["p08"].'"';
-
-
-			$specific_natt=$cloudStart.',
-				'.$tempStart.',
-				'.$windStart.',
-				'.$precipStart.',
-				'.$cloudEnd.',
-				'.$tempEnd.',
-				'.$windEnd.',
-				'.$precipEnd.',
-				"period" : "'.$per.'",';
-
-			break;
 
 		}
 
@@ -479,6 +578,19 @@ else {
 					$animalsDataField=$animals;
 
 				break;
+
+				case "kust":
+					if ($rtRecords["art"]=="714") {
+						$animals="mammals";
+						$speciesFieldName="speciesMammals";
+					}
+					else {
+						$animals="birds";
+						$speciesFieldName="species";
+					}
+					$animalsDataField=$animals;
+
+				break;
 			}
 
 
@@ -530,6 +642,15 @@ else {
 					}
 
 					break;
+
+				case "kust":
+					$data_field[$animalsDataField].='"island" : "'.($rtRecords["i100m"]!="" ? $rtRecords["i100m"] : 0).'",';
+					$data_field[$animalsDataField].='"water" : "'.($rtRecords["openw"]!="" ? $rtRecords["openw"] : 0).'",';
+					$IC=$rtRecords["ind"];
+
+					break;
+
+
 			}
 
 			
@@ -628,22 +749,16 @@ else {
 			"userId" : "'.$commonFields["userId"].'",
 			"mainTheme" : ""
 		},';
-		/*"
-		helpers" : [
-			{
-				"helper" : "jean pierre"
-			}
-		]
-		*/
 
 		//			"transectName" : "'.$siteInfo["locationName"].'"
 
-		$specific_fields=$timeOfObservation;
+		$specific_fields="";
 
 		switch ($protocol) {
 
 			case "std":
 				$specific_fields.='
+				'.$timeOfObservation.'
 				'.$distanceCovered.'
 				'.$minutesSpentObserving.'
 				"isGpsUsed" : "'.$isGpsUsed.'",
@@ -655,6 +770,7 @@ else {
 
 			case "natt":
 			$specific_fields.=$specific_natt.
+				$timeOfObservation.
 				'
 				"mammalsCounted" : "ja",
 				"mammalObservationsOnRoad" : [
@@ -667,6 +783,12 @@ else {
 				"amphibianObservations" : [
 					'.$data_field["amphibians"].'
 				],';
+
+			break;
+
+			case "kust":
+				$specific_fields.=$specific_kust;
+
 
 			break;
 		}
@@ -688,9 +810,7 @@ else {
 				"locationLatitude" : '.$siteInfo["decimalLatitude"].',
 				"locationSource" : "Google maps",
 				"recordedBy" : "'.$recorder_name.'",
-				"helpers" : [
-					{}
-				],
+				"helpers" : '.$helpers.',
 				"surveyStartTime" : "'.$start_time.'",
 				"locationCentroidLongitude" : null,
 				"observations" : [
@@ -774,79 +894,7 @@ else {
 	echo consoleMessage("info", "Species ratio found in the species lists : ".number_format($ratioSpecies*100, 2)."%");
 
 
-	echo "scp dump_json_sft_sebms/".$database."/".$protocol."/json_* ubuntu@89.45.233.195:/home/ubuntu/dump_json_sft_sebms/".$database."/".$protocol."/\n";
-	/*
-	send files
-	scp json/std/json_* radar@canmove-dev.ekol.lu.se:/home/radar/convert-SFT-SEBMS-to-MongoDB/json/std/
-
-	mongoimport --db ecodata --collection activity --jsonArray --file json/std/json_std_activitys_SFT_2020-04-15-155129.json
-	mongoimport --db ecodata --collection output --jsonArray --file json/std/json_std_outputs_SFT_2020-04-15-155129.json
-	mongoimport --db ecodata --collection record --jsonArray --file json/std/json_std_records_SFT_2020-04-15-155129.json
-	
-	db.activity.remove({"activityId":"12c2ccf4-0851-8f12-a5da-c68a2638d47b"})
-	db.output.remove({"outputId":"08da4473-eabd-d61d-5bc2-0154437c4364"})
-	db.record.remove({"outputId":"08da4473-eabd-d61d-5bc2-0154437c4364"})
-
-	mongoimport --db ecodata --collection activity --jsonArray --file json/std/activity.json
-	mongoimport --db ecodata --collection output --jsonArray --file json/std/output.json
-	mongoimport --db ecodata --collection record --jsonArray --file json/std/record.json
-
-
-	clean mongo
-	db.activity.find({"userId":"5"}).count();
-	db.activity.remove({"userId":"5"})
-
-	db.record.find({"userId":"5"}).count();
-	db.record.remove({"userId":"5"})
-
-	db.activity.find({"dateCreated":{"$gt": new ISODate("2020-04-16T15:16:15.184Z")}}).count()
-	db.record.find({"dateCreated":{"$gt": new ISODate("2020-04-16T15:16:15.184Z")}}).count()
-	db.output.find({"dateCreated":{"$gt": new ISODate("2020-04-16T15:16:15.184Z")}}).count()
-	
-	db.activity.remove({"dateCreated":{"$gt": new ISODate("2020-04-16T15:16:15.184Z")}})
-	db.record.remove({"dateCreated":{"$gt": new ISODate("2020-04-16T15:16:15.184Z")}})
-	db.output.remove({"dateCreated":{"$gt": new ISODate("2020-04-16T15:16:15.184Z")}})
-
-	db.output.find({"dateCreated":{"$gt": new ISODate("2020-04-15T15:16:15.184Z")}}).count()
-
-
-	db.output.remove({"dateCreated":{"$gt": new ISODate("2020-04-03T08:16:15.184Z")}})
-	*/
-
-
-
-
-
-
-
-
-	/*
-	/*
-
-
-		foreach ($structure as $key => $data) {
-
-			//mandatory fields OR if not mandatory => non-empty 
-			if ($data[1] || (!$data[1] && trim($rtEvents[$key])!="")) {
-				$line_json.='"'.$key.'"'.': ';
-				if ($data[0]!="number") $line_json.='"';
-				if ($data[0]=="number" && $rtEvents[$key]=="") $line_json.=0;
-				elseif ($data[0]=="date" && $rtEvents[$key]!="") {
-					$line_json.=date("Y-m-d H:i:s", strtotime($rtEvents[$key]));
-				}
-				else $line_json.=$rtEvents[$key];
-
-				if ($data[0]!="number") $line_json.='"';
-				$line_json.=',';
-			}
-		}
-
-		// replace last comma by }
-		$line_json[strlen($line_json)-1]='}';
-		$arr_json_record.=' '.$line_json.',';
-
-	};
-	*/
+	echo "scp dump_json_sft_sebms/".$database."/".$protocol."/json_* ubuntu@89.45.233.195:/home/ubuntu/convert-SFT-SEBMS-to-MongoDB/dump_json_sft_sebms/".$database."/".$protocol."/\n";
 
 	echo consoleMessage("info", "Script ends");
 

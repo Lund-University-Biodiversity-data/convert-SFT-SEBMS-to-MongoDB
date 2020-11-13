@@ -290,7 +290,7 @@ else {
 			";
 		foreach ($arrHelper as $help) {
 			echo "HELPERS".$outputId;
-			$helpers.= '"helper" : "'.$help.'",';
+			$helpers.= '{"helper" : "'.$help.'"},';
 
 		}
 		$helpers[strlen($helpers)-1]=' ';
