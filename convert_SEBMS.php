@@ -289,7 +289,6 @@ else {
 		$helpers= "[{
 			";
 		foreach ($arrHelper as $help) {
-			echo "HELPERS".$outputId;
 			$helpers.= '{"helper" : "'.$help.'"},';
 
 		}
@@ -470,7 +469,9 @@ else {
 			},
 			"mapElementId" : "locationMap",
 			"projectId" : "'.$commonFields[$protocol]["projectId"].'",
-			"name" : "'.$commonFields[$protocol]["name"].'"
+			"name" : "'.$commonFields[$protocol]["name"].'",
+			"personId" : "'.$array_persons[$rtEvents["vip_per_participantid"]].'"
+
 		},';
 
 /* 
@@ -531,7 +532,7 @@ else {
 	
 	echo consoleMessage("info", "Species ratio found in the species lists : ".number_format($ratioSpecies*100, 2)."%");
 
-	echo "scp dump_json_sft_sebms/".$database."/".$protocol."/json_* ubuntu@89.45.233.195:/home/ubuntu/dump_json_sft_sebms/".$database."/".$protocol."/\n";
+	echo "scp dump_json_sft_sebms/".$database."/".$protocol."/json_* ubuntu@89.45.233.195:/home/ubuntu/convert-SFT-SEBMS-to-MongoDB/dump_json_sft_sebms/".$database."/".$protocol."/\n";
 	/*
 	send files
 	scp json/std/json_* radar@canmove-dev.ekol.lu.se:/home/radar/convert-SFT-SEBMS-to-MongoDB/json/std/

@@ -132,7 +132,7 @@ else {
 			$siteInfo["decimalLongitude"]=13.61763; 
 			*/
 
-				break;
+			break;
 		case "kust":
 			// LPAD(cast(LEAST(p01, p02, p03, p04, p05, p06, p07, p08, p09, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20) as text), 4, '0')
 			$qEvents="
@@ -342,7 +342,7 @@ else {
 			$helpers[strlen($helpers)-1]=' ';
 			$helpers.= "]";
 
-
+			$arrKustMammals=array();
 		}
 		else {
 
@@ -582,7 +582,15 @@ else {
 				case "kust":
 					if ($rtRecords["art"]=="714") {
 						$animals="mammals";
-						$speciesFieldName="speciesMammals";
+						$arrKustMammals[]="mink";
+					}
+					elseif ($rtRecords["art"]=="719") {
+						$animals="mammals";
+						$arrKustMammals[]="grävling";
+					}
+					elseif ($rtRecords["art"]=="709") {
+						$animals="mammals";
+						$arrKustMammals[]="rödräv";
 					}
 					else {
 						$animals="birds";
@@ -644,12 +652,14 @@ else {
 					break;
 
 				case "kust":
-					$data_field[$animalsDataField].='"island" : "'.($rtRecords["i100m"]!="" ? $rtRecords["i100m"] : 0).'",';
-					$data_field[$animalsDataField].='"water" : "'.($rtRecords["openw"]!="" ? $rtRecords["openw"] : 0).'",';
-					$IC=$rtRecords["ind"];
+
+					if ($animalsDataField=="birds") {
+						$data_field[$animalsDataField].='"island" : "'.($rtRecords["i100m"]!="" ? $rtRecords["i100m"] : 0).'",';
+						$data_field[$animalsDataField].='"water" : "'.($rtRecords["openw"]!="" ? $rtRecords["openw"] : 0).'",';
+						$IC=$rtRecords["ind"];
+					}
 
 					break;
-
 
 			}
 
@@ -762,6 +772,9 @@ else {
 				'.$distanceCovered.'
 				'.$minutesSpentObserving.'
 				"isGpsUsed" : "'.$isGpsUsed.'",
+				"mammalObservations" : [
+					'.$data_field["mammals"].'
+				],
 				'
 				;
 
@@ -772,6 +785,9 @@ else {
 			$specific_fields.=$specific_natt.
 				$timeOfObservation.
 				'
+				"mammalObservations" : [
+					'.$data_field["mammals"].'
+				],
 				"mammalsCounted" : "ja",
 				"mammalObservationsOnRoad" : [
 					'.$data_field["mammalsOnRoad"].'
@@ -787,7 +803,10 @@ else {
 			break;
 
 			case "kust":
-				$specific_fields.=$specific_kust;
+				$specific_fields.=$specific_kust.
+					'"mammalsObservations" : [
+					'.(count($arrKustMammals)>0 ? implode(",", $arrKustMammals) : '"nej"').'
+				],';
 
 
 			break;
@@ -815,9 +834,6 @@ else {
 				"locationCentroidLongitude" : null,
 				"observations" : [
 					'.$data_field["birds"].'
-				],
-				"mammalObservations" : [
-					'.$data_field["mammals"].'
 				],
 				"location" : "'.$siteInfo["locationID"].'",
 				"locationLongitude" : '.$siteInfo["decimalLongitude"].',
@@ -912,6 +928,9 @@ db.record.remove({projectId:"89383d0f-9735-4fe7-8eb4-8b2e9e9b7b5c"})
 db.output.remove({"dateCreated":{$gt:new ISODate("2020-11-05T16:37:15.184Z"), $lt:new ISODate("2020-11-05T16:38:38.184Z")}})
 db.person.remove({"dateCreated":{$gt:new ISODate("2020-11-05T16:37:15.184Z"), $lt:new ISODate("2020-11-05T16:38:38.184Z")}})
 
+db.site.aggregate([
+    {"$group" : {_id:"$projects", count:{$sum:1}}}
+])
 */
 }
 
