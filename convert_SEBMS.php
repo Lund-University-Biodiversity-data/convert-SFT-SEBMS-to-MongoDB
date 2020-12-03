@@ -1,5 +1,7 @@
 <?php
 $database="SEBMS";
+$dataOrigin="scriptPostgres";
+
 require "lib/config.php";
 require "lib/functions.php";
 
@@ -39,6 +41,7 @@ else {
 
 	$array_species_guid=array();
 
+	$arrSpeciesNotFound=array();
 	$speciesNotFound=0;
 	$speciesFound=0;
 
@@ -77,6 +80,9 @@ else {
 
 //		}
 	}
+
+	//unset($array_sites_req);
+	//$array_sites_req[]="'Linjevägen pkt 2 1/2 vändpl'";
 	$req_sites="(".implode(",", $array_sites_req).")";
 	//print_r($array_sites);
 	echo consoleMessage("info", "Sites list obtained. ".count($array_sites)." element(s)");
@@ -136,7 +142,7 @@ else {
 
 	$db_connection = pg_connect("host=".$DB["host"]." dbname=".$DB["database"]." user=".$DB["username"]." password=".$DB["password"])  or die("CONNECT:" . consoleMessage("error", pg_result_error()));
 
-	//echo consoleMessage("info", $qEvents);
+	if ($debug) echo consoleMessage("info", $qEvents);
 	$rEvents = pg_query($db_connection, $qEvents);
 	if (!$rEvents) die("QUERY:" . consoleMessage("error", pg_last_error()));
 
@@ -206,7 +212,7 @@ else {
 		}
 
 		
-		//echo $qRecords;
+		//if ($debug && $rtEvents["vis_uid"]==620) echo $qRecords;
 		$rRecords = pg_query($db_connection, $qRecords);
 		if (!$rRecords) die("QUERY:" . consoleMessage("error", pg_last_error()));
 
@@ -235,13 +241,13 @@ else {
 		$start_time=date("H:i", strtotime($rtEvents["datum"]));
 		$finish_time=date("H:i", strtotime($rtEvents["vis_endtime"]));
 
-		$eventDate=$rtEvents["datum"];
+		$eventDate=$date_survey;
 		$eventTime=date("H:i", strtotime($rtEvents["vis_endtime"]));
 
 		// check observers
 
 		$qPerson='
-					select per_uid, per_firstname, per_lastname, per_emailaddress, per_addressposttown, per_gender
+					select per_uid, per_firstname, per_lastname, per_emailaddress, per_addressposttown, per_gender, per_phonehome, per_phonemobile, per_addressname, per_addressstreet, per_addresspostcode, per_birthyear
 					from per_person pp, vip_visitparticipant vv 
 					where vv.vip_per_participantid =pp.per_uid 
 					and  vv.vip_vis_visitid  = '.$rtEvents["vis_uid"];
@@ -271,8 +277,15 @@ else {
 					"lastName" : "'.$rtPerson["per_lastname"].'",
 					"gender" : "'.$rtPerson["per_gender"].'",
 					"email" : "'.$rtPerson["per_emailaddress"].'",
+					"birthDate" : "'.$rtPerson["per_birthyear"].'",
+					"phoneNum" : "'.$rtPerson["per_phonehome"].'",
+					"mobileNum" : "'.$rtPerson["per_phonemobile"].'",
+					"address1" : "'.$rtPerson["per_addressname"].'",
+					"address2" : "'.$rtPerson["per_addressstreet"].'",
+					"postCode" : "'.$rtPerson["per_addresspostcode"].'",
 					"town" : "'.$rtPerson["per_addressposttown"].'",
-					"projectId": "'.$commonFields[$protocol]["projectId"].'"
+					"projects": [ "'.$commonFields[$protocol]["projectId"].'" ],
+					"internalPersonId" : "'.$rtEvents["vip_per_participantid"].'"
 				},';
 			}
 
@@ -353,6 +366,11 @@ else {
 				$listId="error-unmatched";
 				$guid="";
 				$array_species_guid[$scientifName]="-1";
+
+				if (isset($arrSpeciesNotFound[$rtRecords["scientificname"]]) && $arrSpeciesNotFound[$rtRecords["scientificname"]]>0)
+					$arrSpeciesNotFound[$rtRecords["scientificname"]]++;
+				else $arrSpeciesNotFound[$rtRecords["scientificname"]]=1;
+
 			}
 
 			$outputSpeciesId=generate_uniqId_format("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx");
@@ -427,6 +445,7 @@ else {
 			"status" : "active",
 			"type" : "'.$commonFields[$protocol]["type"].'",
 			"userId" : "'.$commonFields["userId"].'",
+			"personId" : "'.$array_persons[$rtEvents["vip_per_participantid"]].'",
 			"mainTheme" : ""
 		},';
 		//			"helper1" : "Jean Michel Helper",
@@ -470,7 +489,7 @@ else {
 			"mapElementId" : "locationMap",
 			"projectId" : "'.$commonFields[$protocol]["projectId"].'",
 			"name" : "'.$commonFields[$protocol]["name"].'",
-			"personId" : "'.$array_persons[$rtEvents["vip_per_participantid"]].'"
+			"dataOrigin" : "'.$dataOrigin.'"
 
 		},';
 
@@ -513,7 +532,7 @@ else {
 				$json=$arr_json_person;
 				break;
 		}
-		$filename_json='json_SEBMS_'.$protocol.'_'.$typeO.'s_'.date("Y-m-d-His").'.json';
+		$filename_json='postgres_json_SEBMS_'.$protocol.'_'.$typeO.'s_'.date("Y-m-d-His").'.json';
 		$path='dump_json_sft_sebms/'.$database."/".$protocol."/".$filename_json;
 //		echo 'db.'.$typeO.'.remove({"dateCreated" : {$gte: new ISODate("'.date("Y-m-d").'T01:15:31Z")}})'."\n";
 		echo 'mongoimport --db ecodata --collection '.$typeO.' --jsonArray --file '.$path."\n";
@@ -529,10 +548,14 @@ else {
 	}
 
 	$ratioSpecies = $speciesFound / ($speciesFound+$speciesNotFound);
-	
-	echo consoleMessage("info", "Species ratio found in the species lists : ".number_format($ratioSpecies*100, 2)."%");
 
-	echo "scp dump_json_sft_sebms/".$database."/".$protocol."/json_* ubuntu@89.45.233.195:/home/ubuntu/convert-SFT-SEBMS-to-MongoDB/dump_json_sft_sebms/".$database."/".$protocol."/\n";
+	echo consoleMessage("info", "Species ratio found in the species lists : ".$speciesFound." / ".($speciesFound+$speciesNotFound)." = ".number_format($ratioSpecies*100, 2)."%");
+
+	if ($ratioSpecies!=1) {
+		var_dump($arrSpeciesNotFound);
+	}
+
+	echo "scp dump_json_sft_sebms/".$database."/".$protocol."/postgres_json_* ubuntu@89.45.233.195:/home/ubuntu/convert-SFT-SEBMS-to-MongoDB/dump_json_sft_sebms/".$database."/".$protocol."/\n";
 	/*
 	send files
 	scp json/std/json_* radar@canmove-dev.ekol.lu.se:/home/radar/convert-SFT-SEBMS-to-MongoDB/json/std/
