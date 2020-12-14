@@ -38,65 +38,14 @@ else {
 		echo consoleMessage("info", "DEBUG mode");
 	}
 	$array_persons=array();
-	$array_sites=array();
-	$array_sites_req=array();
 
+	$array_sites=getArraySitesFromMongo($protocol, $commonFields[$protocol]["projectId"]);
 
-	/**************************** connection to mongoDB   ***/
-	$mng = new MongoDB\Driver\Manager(); // Driver Object created
-
-	if ($mng) echo consoleMessage("info", "Connection to mongoDb ok");
-
-	$filter = ['projects' => $commonFields[$protocol]["projectId"]];
-	//$filter = [];
-	$options = [];
-	$query = new MongoDB\Driver\Query($filter, $options); 
-
-	//db.site.find({"projects":"dab767a5-929e-4733-b8eb-c9113194201f"}, {"projects":1, "name":1}).pretty()
-	// 
-	$rows = $mng->executeQuery("ecodata.site", $query);
-
-	foreach ($rows as $row){
-	    
-	    if ($protocol=="natt") {
-	    	if (isset($row->KartaTx))
-	    		$indexSite=$row->KartaTx;
-	    	else {
-	    		echo consoleMessage("info", "No KartaTx for site ".$row->name);
-	    		$indexSite=$row->name;
-	    	} 
-	    }
-	    elseif ($protocol=="kust") {
-	    	if (isset($row->name))
-	    		$indexSite=$row->name;
-	    	else {
-	    		echo consoleMessage("info", "No name for site ".$row->name);
-	    		$indexSite=$row->name;
-	    	} 
-	    }
-	    else {
-	    	if (isset($row->gridCode))
-	    		$indexSite=$row->gridCode;
-	    	else {
-	    		echo consoleMessage("error", "No gridCode for site ".$row->name);
-	    		$indexSite=$row->name;
-	    	} 
-
-		}	
-		$array_sites[$indexSite]=array();
-
-		$array_sites[$indexSite]["locationID"]=$row->siteId;
-		$array_sites[$indexSite]["locationName"]=$indexSite;
-		$array_sites[$indexSite]["decimalLatitude"]=$row->extent->geometry->decimalLatitude;
-		$array_sites[$indexSite]["decimalLongitude"]=$row->extent->geometry->decimalLongitude;
-//	    print_r($row->projects);
-
-
+	foreach($array_sites as $indexSite => $data) {
 		$array_sites_req[]="'".$indexSite."'";
 	}
+	
 	$req_sites="(".implode(",", $array_sites_req).")";
-	if ($debug) print_r($array_sites);
-
 
 	echo consoleMessage("info", count($array_sites)." site(s) for the project ".$commonFields[$protocol]["projectId"]);
 	/**************************** connection to mongoDB   ***/
@@ -863,7 +812,7 @@ else {
 
 			case "kust":
 				$specific_fields.=$specific_kust.
-					'"mammalsObservations" : [
+					'"mammalObservations" : [
 					'.(count($arrKustMammals)>0 ? implode(",", $arrKustMammals) : '"nej"').'
 				],';
 

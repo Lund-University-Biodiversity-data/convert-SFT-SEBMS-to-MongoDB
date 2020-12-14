@@ -28,3 +28,8 @@ php script/cleanMongo.php SEBMS-slinga
 ```
 Options : "SEBMS-punktlokal", "SEBMS-slinga", "SFT-std", "SFT-natt", "SFT-vinter", "SFT-sommar"
 You can as well use "clean" in case you only want to clean the database
+
+
+** transform excel forms to json **
+sudo apt-get install php-mbstring
+composer require phpoffice/phpspreadsheet
