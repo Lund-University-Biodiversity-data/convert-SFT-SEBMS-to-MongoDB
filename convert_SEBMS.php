@@ -299,7 +299,7 @@ else {
 			}
 		]
 		*/
-		$helpers= "[{
+		$helpers= "[
 			";
 		foreach ($arrHelper as $help) {
 			$helpers.= '{"helper" : "'.$help.'"},';
@@ -307,7 +307,7 @@ else {
 		}
 		$helpers[strlen($helpers)-1]=' ';
 
-		$helpers.= "}]";
+		$helpers.= "]";
 
 		$data_field="";
 		while ($rtRecords = pg_fetch_array($rRecords)) {

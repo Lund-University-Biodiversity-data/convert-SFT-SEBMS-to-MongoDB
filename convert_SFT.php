@@ -40,11 +40,16 @@ else {
 	$array_persons=array();
 
 	$array_sites=getArraySitesFromMongo($protocol, $commonFields[$protocol]["projectId"]);
+	$array_sites_req=array();
+
+    $mng = new MongoDB\Driver\Manager(); // Driver Object created
+    if ($mng) echo consoleMessage("info", "Connection to mongoDb ok");
+
 
 	foreach($array_sites as $indexSite => $data) {
 		$array_sites_req[]="'".$indexSite."'";
 	}
-	
+
 	$req_sites="(".implode(",", $array_sites_req).")";
 
 	echo consoleMessage("info", count($array_sites)." site(s) for the project ".$commonFields[$protocol]["projectId"]);
@@ -130,7 +135,7 @@ else {
 			$array_species_guid[$animals][$sp["name"]]=$sp["lsid"];
 		}
 
-		echo consoleMessage("info", "Species list ".$commonFields["listSpeciesId"]." obtained. ".count($obj)." elements");
+		echo consoleMessage("info", "Species list ".$commonFields["listSpeciesId"][$animals]." obtained. ".count($obj)." elements");
 
 	}
 
@@ -160,6 +165,16 @@ else {
 		$siteInfo["locationName"]=$array_sites[$rtEvents["sitename"]]["locationName"]; 
 		$siteInfo["decimalLatitude"]=$array_sites[$rtEvents["sitename"]]["decimalLatitude"]; // create an array of sites 
 		$siteInfo["decimalLongitude"]=$array_sites[$rtEvents["sitename"]]["decimalLongitude"]; 
+
+
+/*
+// A VIRER ABSOLUEMNT A LA FIN DU TEST
+$siteInfo["locationID"]="d1ba4c70-abdb-42d9-aa69-af12b42b81a4";
+$siteInfo["locationName"]="27K7H, RAATUKKAV."; 
+$siteInfo["decimalLatitude"]=21.229625768756662; // create an array of sites 
+$siteInfo["decimalLongitude"]=66.93673750351373; 
+*/
+
 
 		switch($protocol) {
 			case "std":
@@ -380,6 +395,23 @@ else {
 			$start_time_brut=$start_time;
 
 			$start_time=convertTime($start_time, "24H");
+
+			// add 5 minutes 
+			$finish_time_5min=str_pad($finish_time, 4, '0', STR_PAD_LEFT);
+			$hours=intval(substr($finish_time_5min, 0, 2));
+			$minutes=intval(substr($finish_time_5min, 2, 2));
+			if ($minutes>=55) {
+				$minutes=str_pad(($minutes+5)-60, 2, '0', STR_PAD_LEFT);
+
+				if ($hours==23) $hours=0;
+				else $hours++;
+			}
+			else {
+				$minutes+=5;
+			}
+			$finish_time=intval($hours.$minutes);
+
+
 			$finish_time=convertTime($finish_time, "24H");
 
 			//$eventTime=date("H:i", strtotime($rtEvents["datum"]));
@@ -468,10 +500,7 @@ else {
 
 				break;
 
-
 			}
-
-
 
 		}
 
@@ -484,10 +513,10 @@ else {
 			$filter = ['internalPersonId' => $rtEvents["persnr"]];
 			//$filter = [];
 			$options = [];
-			$query = new MongoDB\Driver\Query($filter, $options); 
 
 			//db.site.find({"projects":"dab767a5-929e-4733-b8eb-c9113194201f"}, {"projects":1, "name":1}).pretty()
 			// 
+			$query = new MongoDB\Driver\Query($filter, $options); 
 			$rows = $mng->executeQuery("ecodata.person", $query);
 
 			$docPerson = iterator_to_array($rows);
@@ -751,6 +780,7 @@ else {
 		if (strlen($data_field["mammalsOnRoad"])>0) $data_field["mammalsOnRoad"][strlen($data_field["mammalsOnRoad"])-1]=' ';
 		//echo "data_field: ".$data_field[$animals]."\n";
 
+
 		$arr_json_activity.='{
 			"activityId" : "'.$activityId.'",
 			"assessment" : false,
@@ -767,6 +797,9 @@ else {
 			"personId" : "'.$array_persons[$rtEvents["persnr"]].'",
 			"mainTheme" : ""
 		},';
+
+
+
 
 		//			"transectName" : "'.$siteInfo["locationName"].'"
 

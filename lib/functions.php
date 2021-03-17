@@ -59,13 +59,15 @@ function consoleMessage($type, $message) {
 
 function getArraySitesFromMongo ($protocol, $projectId) {
 
+    $array_sites=array();
+    
     /**************************** connection to mongoDB   ***/
     $mng = new MongoDB\Driver\Manager(); // Driver Object created
 
     if ($mng) echo consoleMessage("info", "Connection to mongoDb ok");
 
-    $filter = ['projects' => $projectId];
     //$filter = [];
+    $filter = ['projects' => $projectId];
     $options = [];
     $query = new MongoDB\Driver\Query($filter, $options); 
 
