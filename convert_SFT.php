@@ -21,6 +21,8 @@ if (!isset($argv[1]) || !in_array(trim($argv[1]), $arr_protocol)) {
 }
 else {
 
+	$projectsId = '[ "'.$commonFields["std"]["projectId"].'", "'.$commonFields["natt"]["projectId"].'", "'.$commonFields["vinter"]["projectId"].'", "'.$commonFields["kust"]["projectId"].'" ]';
+	
 	$protocol=$argv[1];
 
 	$arrSpeciesNotFound=array();
@@ -541,6 +543,7 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 				$explBD=explode("-", $rtEvents["persnr"]);
 				$birthDate="19".substr($explBD[0], 0, 2)."-".substr($explBD[0], 2, 2)."-".substr($explBD[0], 4, 2);
 
+
 				$arr_json_person.='{
 					"dateCreated" : ISODate("'.$date_now_tz.'"),
 					"lastUpdated" : ISODate("'.$date_now_tz.'"),
@@ -556,7 +559,7 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 					"address2" : "'.$rtPerson["adress2"].'",
 					"postCode" : "'.$rtPerson["postnr"].'",
 					"town" : "'.$rtPerson["ort"].'",
-					"projects": [ "'.$commonFields[$protocol]["projectId"].'" ],
+					"projects": '.$projectsId.',
 					"internalPersonId" : "'.$rtEvents["persnr"].'"
 				},';
 
@@ -795,6 +798,7 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 			"type" : "'.$commonFields[$protocol]["type"].'",
 			"userId" : "'.$userId.'",
 			"personId" : "'.$array_persons[$rtEvents["persnr"]].'",
+			"verificationStatus" : "approved",
 			"mainTheme" : ""
 		},';
 

@@ -125,7 +125,7 @@ else {
         
     }
 
-    $filter = ['projectId' => $commonFields[$protocol]["projectId"], "status" => "active"];
+    $filter = ['projectId' => $commonFields[$protocol]["projectId"], "status" => "active", "verificationStatus" => "approved"];
     //$filter = [];
     $options = [];
 /*    $options = [

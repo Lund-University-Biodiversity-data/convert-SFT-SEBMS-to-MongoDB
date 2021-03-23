@@ -22,6 +22,8 @@ if (!isset($argv[1]) || !in_array(trim($argv[1]), $arr_protocol)) {
 }
 else {
 
+	$projectsId = '[ "'.$commonFields["punktlokal"]["projectId"].'", "'.$commonFields["slinga"]["projectId"].'" ]';
+
 	$protocol=$argv[1];
 
 	if (isset($argv[2]) && is_numeric($argv[2])) {
@@ -284,7 +286,7 @@ else {
 					"address2" : "'.$rtPerson["per_addressstreet"].'",
 					"postCode" : "'.$rtPerson["per_addresspostcode"].'",
 					"town" : "'.$rtPerson["per_addressposttown"].'",
-					"projects": [ "'.$commonFields[$protocol]["projectId"].'" ],
+					"projects": '.$projectsId.',
 					"internalPersonId" : "'.$rtEvents["vip_per_participantid"].'"
 				},';
 			}
@@ -446,6 +448,7 @@ else {
 			"type" : "'.$commonFields[$protocol]["type"].'",
 			"userId" : "'.$commonFields["userId"].'",
 			"personId" : "'.$array_persons[$rtEvents["vip_per_participantid"]].'",
+			"verificationStatus" : "not applicable",
 			"mainTheme" : ""
 		},';
 		//			"helper1" : "Jean Michel Helper",

@@ -33,3 +33,8 @@ You can as well use "clean" in case you only want to clean the database
 ** transform excel forms to json **
 sudo apt-get install php-mbstring
 composer require phpoffice/phpspreadsheet
+
+
+extracting only a sample 
+mongoexport --collection=site --db=ecodata --out=sites_sample_std.json --query "{'projects':'89383d0f-9735-4fe7-8eb4-8b2e9e9b7b5c'}" --limit 20
+mongoimport --db ecodata --collection site --file sites_sample_std.json

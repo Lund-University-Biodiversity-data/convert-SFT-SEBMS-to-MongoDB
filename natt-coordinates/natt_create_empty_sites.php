@@ -31,7 +31,12 @@ while ($rtSites = pg_fetch_array($rSites)) {
 	$array_psql_sites[]=$rtSites["kartatx"];
 }
 
+echo consoleMessage("info", count($array_psql_sites)." site(s) found in psql"); 
+
 $array_mongo_sites=getArraySitesFromMongo ("natt", $commonFields["natt"]["projectId"]);
+
+echo consoleMessage("info", count($array_mongo_sites)." site(s) found in mongoDB"); 
+
 
 $arrMiss=array();
 foreach ($array_psql_sites as $sqlSite) {
