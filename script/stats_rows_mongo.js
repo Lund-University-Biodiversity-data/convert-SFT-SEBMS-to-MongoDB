@@ -15,7 +15,7 @@ db.site.aggregate([
       "as": "prID"
     }},
     {"$group" : {
-    	_id:"$projectId", count:{$sum:1},
+    	_id:"$projects", count:{$sum:1},
         "projectname" : {"$first":"$prID.name"},
     }},
     {"$project": {
