@@ -20,14 +20,24 @@ sudo apt-get install php-mongodb
 php convert_SFT_std_natt.php
 ```
 
+
+** check the number of rows per collections **
+```
+mongo ecodata < script/stats_rows_mongo.js
+```
+
+
 ** Clean the mongo database **
  - clean all the activities and records associated to a project
  - remove the output without any activityId linked to it
 ```
 php script/cleanMongo.php SEBMS-slinga 
+php script/cleanMongo.php clean 
 ```
 Options : "SEBMS-punktlokal", "SEBMS-slinga", "SFT-std", "SFT-natt", "SFT-vinter", "SFT-sommar"
 You can as well use "clean" in case you only want to clean the database
+
+
 
 
 ** transform excel forms to json **
