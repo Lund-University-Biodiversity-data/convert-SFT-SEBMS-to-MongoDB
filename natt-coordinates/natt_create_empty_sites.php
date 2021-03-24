@@ -121,9 +121,9 @@ if (count($arrMiss)>0) {
 		"'.$commonFields["natt"]["projectId"].'"
 	],
 	"transectParts" : [],
-	"name" : "'.$kartatx.' - no detail",
+	"name" : "'.$kartatx.' #0 - centroid",
 	"area" : "0",
-	"commonName" : "'.$kartatx.' - no detail",
+	"commonName" : "'.$kartatx.' #0 - centroid",
 	"yearStarted" : 0,
 	"type" : ""
 }

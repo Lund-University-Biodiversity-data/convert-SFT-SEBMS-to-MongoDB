@@ -2,6 +2,27 @@
 print("\nPROJECT : total");
 db.project.count();
 
+print("\nPROJECTACTIVITY : total");
+db.projectActivity.count();
+
+print("\nPROJECTACTIVITY : Project ID + count + project name")
+db.projectActivity.aggregate([
+	{"$lookup": {
+      "from": "project",
+      "localField": "projectId",
+      "foreignField": "projectId",
+      "as": "prID"
+    }},
+    {"$group" : {
+    	_id:"$projectId", count:{$sum:1},
+        "projectname" : {"$first":"$prID.name"},
+    }},
+    {"$project": {
+        "projectID" : 1,
+        "projectname" : 1,
+        "count" : 1
+    }},
+]);
 
 print("\nSITE : total");
 db.site.count();
