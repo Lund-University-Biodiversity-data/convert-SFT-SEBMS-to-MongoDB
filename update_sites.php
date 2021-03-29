@@ -51,7 +51,7 @@ else {
 	    //$filter = [];
 	    $filter = ['projects' => $commonFields[$protocol]["projectId"], "karta" => ['$in' => $arr104]];
 	    print_r($filter);
-	    $options =  ['$set' => ['Fjall104' => true]];
+	    $options =  ['$set' => ['adminProperties.Fjall104' => true]];
 	    $updateOptions = ['multi' => true];
 	    $bulk->update($filter, $options, $updateOptions); 
 	    $result = $mng->executeBulkWrite('ecodata.site', $bulk);
@@ -62,12 +62,17 @@ print_r($result);
 	    //$filter = [];
 	    $filter = ['projects' => $commonFields[$protocol]["projectId"], "karta" => ['$in' => $arr142]];
 	    print_r($filter);
-	    $options =  ['$set' => ['Fjall142' => true]];
+	    $options =  ['$set' => ['adminProperties.Fjall142' => true]];
 	    $updateOptions = ['multi' => true];
 	    $bulk->update($filter, $options, $updateOptions); 
 	    $result = $mng->executeBulkWrite('ecodata.site', $bulk);
 
 print_r($result);
+
+		break;
+
+
+		case "natt":
 
 		break;
 	}

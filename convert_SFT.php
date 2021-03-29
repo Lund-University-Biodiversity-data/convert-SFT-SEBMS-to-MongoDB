@@ -336,7 +336,7 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 
 
 			// find the start time and finsh time
-			$start_time=2359;
+			$start_time=2359+2400;
 			$finish_time=0;
 			$arr_time=array();
 
@@ -372,14 +372,12 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 				if ($rtEvents[$ind]!="") {
 					$rtEvents[$ind]=intval($rtEvents[$ind]);
 
-					if ($rtEvents[$ind]<$start_time)
-						$start_time=$rtEvents[$ind];
-
 					// add 24 hours to the night tmes, to help comparing
 					if ($rtEvents[$ind]<1200)
 						$rtEvents[$ind]+=2400;
 
-
+					if ($rtEvents[$ind]<$start_time)
+						$start_time=$rtEvents[$ind];
 
 					if ($rtEvents[$ind]>$finish_time)
 						$finish_time=$rtEvents[$ind];
