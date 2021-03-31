@@ -12,8 +12,7 @@ $commonFields["basisOfRecord"]="HumanObservation";
 $commonFields["multimedia"]="[ ]";
 $commonFields["licence"]="https://creativecommons.org/publicdomain/zero/1.0/";
 
-global $mongo;
-$mongo["url"]="mongodb://localhost";
+$mongoConnection["url"]="mongodb://localhost";
 
 switch ($database) {
 	case "SFT":

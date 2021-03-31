@@ -59,10 +59,12 @@ function consoleMessage($type, $message) {
 
 function getArraySitesFromMongo ($protocol, $projectId) {
 
+    global $mongoConnection;
+    
     $array_sites=array();
     
     /**************************** connection to mongoDB   ***/
-    $mng = new MongoDB\Driver\Manager($mongo["url"]); // Driver Object created
+    $mng = new MongoDB\Driver\Manager($mongoConnection["url"]); // Driver Object created
 
     if ($mng) echo consoleMessage("info", "Connection to mongoDb ok");
 
