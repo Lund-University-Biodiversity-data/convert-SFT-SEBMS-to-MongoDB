@@ -107,7 +107,7 @@ else {
 //print_r($array_sites_mongo);
 
 	/**************************** connection to mongoDB   ***/
-    $mng = new MongoDB\Driver\Manager(); // Driver Object created
+    $mng = new MongoDB\Driver\Manager($mongoConnection["url"]); // Driver Object created
 
     if ($mng) echo consoleMessage("info", "Connection to mongoDb ok");
     
