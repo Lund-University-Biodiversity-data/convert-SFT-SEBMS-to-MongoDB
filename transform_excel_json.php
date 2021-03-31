@@ -881,7 +881,7 @@ else {
 			var_dump($arrSpeciesNotFound);
 		}
 
-		echo "scp dump_json_sft_sebms/".$database."/".$protocol."/excel_json_* ubuntu@89.45.233.195:/home/ubuntu/convert-SFT-SEBMS-to-MongoDB/dump_json_sft_sebms/".$database."/".$protocol."/\n";
+		echo "scp dump_json_sft_sebms/".$database."/".$protocol."/excel_json_* ubuntu@89.45.234.73:/home/ubuntu/convert-SFT-SEBMS-to-MongoDB/dump_json_sft_sebms/".$database."/".$protocol."/\n";
 
 		if (!$debug) {
 			// move files to OK folder

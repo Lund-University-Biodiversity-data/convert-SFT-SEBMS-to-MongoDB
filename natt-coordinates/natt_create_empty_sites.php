@@ -148,7 +148,7 @@ if (count($arrMiss)>0) {
 			fwrite($fp, $json);
 			fclose($fp);
 
-			echo "scp ".$path_json_result." ubuntu@89.45.233.195:/home/ubuntu/\n";
+			echo "scp ".$path_json_result." ubuntu@89.45.234.73:/home/ubuntu/\n";
 			echo 'mongoimport --db ecodata --collection site --jsonArray --file '.$path_json_result."\n";
 		}
 		else echo consoleMessage("error", "can't create file ".$path);

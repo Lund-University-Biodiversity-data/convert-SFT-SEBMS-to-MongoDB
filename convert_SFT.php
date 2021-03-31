@@ -147,7 +147,7 @@ else {
 
 	$db_connection = pg_connect("host=".$DB["host"]." dbname=".$DB["database"]." user=".$DB["username"]." password=".$DB["password"])  or die("CONNECT:" . consoleMessage("error", pg_result_error()));
 
-	if ($debug) echo consoleMessage("info", "qEvents : ".$qEvents);
+	//if ($debug) echo consoleMessage("info", "qEvents : ".$qEvents);
 	$rEvents = pg_query($db_connection, $qEvents);
 	if (!$rEvents) die("QUERY:" . consoleMessage("error", pg_last_error()));
 
@@ -235,7 +235,7 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 		if (isset($limitEvents) && $limitEvents>0)
 			$qRecords.=" LIMIT ".$limitEvents;
 		
-		if ($debug) echo consoleMessage("info", "qRecords :". $qRecords);
+		//if ($debug) echo consoleMessage("info", "qRecords :". $qRecords);
 
 		//echo $qRecords;
 		$rRecords = pg_query($db_connection, $qRecords);
@@ -693,6 +693,7 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 						$data_field[$animalsDataField].='"island" : "'.($rtRecords["i100m"]!="" ? $rtRecords["i100m"] : 0).'",';
 						$data_field[$animalsDataField].='"water" : "'.($rtRecords["openw"]!="" ? $rtRecords["openw"] : 0).'",';
 						$IC=$rtRecords["ind"];
+
 					}
 
 					break;
@@ -732,6 +733,7 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 						';
 			$data_field[$animalsDataField].='"individualCount" : '.$IC.'
 							},';
+
 
 			$occurenceID=generate_uniqId_format("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx");
 
@@ -799,8 +801,6 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 			"verificationStatus" : "approved",
 			"mainTheme" : ""
 		},';
-
-
 
 
 		//			"transectName" : "'.$siteInfo["locationName"].'"
@@ -953,10 +953,11 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 	echo consoleMessage("info", "Species ratio found in the species lists : ".$speciesFound." / ".($speciesFound+$speciesNotFound)." = ".number_format($ratioSpecies*100, 2)."%");
 
 	if ($ratioSpecies!=1) {
+		echo consoleMessage("info", "Species not found :");
 		var_dump($arrSpeciesNotFound);
 	}
 
-	echo "scp dump_json_sft_sebms/".$database."/".$protocol."/postgres_json_* ubuntu@89.45.233.195:/home/ubuntu/convert-SFT-SEBMS-to-MongoDB/dump_json_sft_sebms/".$database."/".$protocol."/\n";
+	echo "scp dump_json_sft_sebms/".$database."/".$protocol."/postgres_json_* ubuntu@89.45.234.73:/home/ubuntu/convert-SFT-SEBMS-to-MongoDB/dump_json_sft_sebms/".$database."/".$protocol."/\n";
 
 	echo consoleMessage("info", "Script ends");
 

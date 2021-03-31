@@ -84,6 +84,8 @@ else {
 
 			break;
 		case "kust":
+
+            $headers=array("persnr", "ruta", "datum", "yr", "art", "i100m", "openw", "ind", "temp");
 			$nbPts=1;
 			break;
 	}
@@ -226,14 +228,14 @@ else {
                     $line["kartatx"]=$array_sites_mongo[$output->data->location];
                     $line["period"]=$output->data->period;
                     break;
+                case "kust":
+                    $line["ruta"]=$array_sites_mongo[$output->data->location];
+                    break;
             }
 
             //$line["datum"]=substr($arrOutputFromRecord[$output->outputId]["eventDate"], 0, 10);
             $line["datum"]=$eventDate;
             $line["yr"]=$year;
-
-
-
 
             switch ($protocol) {
                 case "std":
@@ -289,6 +291,16 @@ else {
                     }
 
                     $line["pk"]="";
+                    $line["ind"]="";
+
+                    break;
+
+                case "kust":
+                    // first the header with art='000'
+                    $line["art"]="000";
+
+                    $line["i100m"]="";
+                    $line["openw"]="";
                     $line["ind"]="";
 
                     break;
@@ -378,10 +390,39 @@ else {
                         else $tabData=array();
                         break;
                     case "mammals":
-                        if (property_exists($output->data, "mammalObservations")) {
+                        if ($protocol!="kust") {
+                            if (property_exists($output->data, "mammalObservations")) {
                             $tabData=$output->data->mammalObservations;
+                            }
+                            else $tabData=array();
                         }
-                        else $tabData=array();
+                        else {
+                            $tabData=array();
+                                
+                            if (isset($output->data->mammalObservations[0]) && $output->data->mammalObservations[0]!="nej") {
+                                $tabMammals=$output->data->mammalObservations;
+
+                                $line["art"]="";
+                                $line["i100m"]="";
+                                $line["openw"]="";
+                                $line["ind"]=1;
+
+                                foreach ($tabMammals as $mam) {
+                                    switch ($mam) {
+                                        case "mink":
+                                            $line["art"]="714";break;
+                                        case "grävling":
+                                            $line["art"]="719";break;
+                                        case "rödräv":
+                                            $line["art"]="709";break;
+                                    }
+                                    fputcsv($fp, $line);
+                                }
+
+
+                            }
+                        }
+                        
                         break;
                     case "mammalsOnRoad":
                         if (property_exists($output->data, "mammalObservationsOnRoad")) {
@@ -525,6 +566,20 @@ else {
                                 if ($line["p".str_pad($iP, 2, '0', STR_PAD_LEFT)]!="" && $line["p".str_pad($iP, 2, '0', STR_PAD_LEFT)]>0) $line["pk"]++;
                                 $line["ind"]+=$line["p".str_pad($iP, 2, '0', STR_PAD_LEFT)];
                             }  
+
+                            break;
+
+                        case "kust":   
+
+                            $line["i100m"]="";
+                            $line["openw"]="";
+                            $line["ind"]="";
+                            
+                            if (isset($obs->island[0])) $line["i100m"]=$obs->island[0];
+                            if (isset($obs->water[0])) $line["openw"]=$obs->water[0];
+                            if (isset($obs->individualCount)) $line["ind"]=$obs->individualCount;
+                            
+                            
 
                             break;
                     }
