@@ -1,13 +1,16 @@
 <?php
 $database="SFT";
 $dataOrigin="scriptExcel";
-require "lib/config.php";
-require "lib/functions.php";
+
+define ("SCRIPT_PATH", "/home/mathieu/Documents/repos/convert-SFT-SEBMS-to-MongoDB/");
+
+require SCRIPT_PATH."lib/config.php";
+require SCRIPT_PATH."lib/functions.php";
 
 //require_once "lib/PHPExcel/Classes/PHPExcel.php";
 
 
-require 'vendor/autoload.php';
+require SCRIPT_PATH.'vendor/autoload.php';
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 //use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
@@ -114,7 +117,6 @@ else {
     $query = new MongoDB\Driver\Query($filter, $options); 
 
     $rowsPerson = $mng->executeQuery("ecodata.person", $query);
-
     $rowsToArrayPerson=$rowsPerson->toArray();
     echo consoleMessage("info", count($rowsToArrayPerson)." row(s) in person");
     $arrPerson=array();
@@ -185,7 +187,7 @@ else {
     }
 
     $filename=date("Ymd-His")."_extract_".$database."_".$protocol.".csv";
-    $path_extract="extract/".$database."/".$protocol."/".$filename;
+    $path_extract=PATH_DOWNLOAD."extract/".$database."/".$protocol."/".$filename;
 
 
     if ($fp = fopen($path_extract, 'w')) {
@@ -198,7 +200,7 @@ else {
             $line=array();
 
             if (!isset($arrOutputFromRecord[$output->outputId])) {
-                echo consoleMessage("warn", "OUTPUT ID ".$output->outputId." does not exist in records array => no records");
+                if ($debug) echo consoleMessage("warn", "OUTPUT ID ".$output->outputId." does not exist in records array => no records");
             }
             
             $eventDate=$output->data->surveyDate;
