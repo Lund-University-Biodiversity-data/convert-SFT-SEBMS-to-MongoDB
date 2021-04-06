@@ -192,7 +192,7 @@ else {
 
     if ($fp = fopen($path_extract, 'w')) {
 
-        fputcsv($fp, $headers);
+        fputcsv($fp, $headers, ";");
 
         $nbR=0;
         foreach ($rowsToArrayOutput as $output) {
@@ -311,7 +311,7 @@ else {
             $line["outputIdMongo"]=$output->outputId;
             $line["activityIdMongo"]=$output->activityId;
 
-            fputcsv($fp, $line);
+            fputcsv($fp, $line, ";");
 
 
             switch ($protocol) {
@@ -342,7 +342,7 @@ else {
                     $line["locationIdMongo"]=$output->data->location;
                     $line["outputIdMongo"]=$output->outputId;
 
-                    fputcsv($fp, $line);
+                    fputcsv($fp, $line, ";");
                     break;
 
                 case "natt":
@@ -372,7 +372,7 @@ else {
                     $line["locationIdMongo"]=$output->data->location;
                     $line["outputIdMongo"]=$output->outputId;
 
-                    fputcsv($fp, $line);
+                    fputcsv($fp, $line, ";");
 
                     break;
 
@@ -418,7 +418,7 @@ else {
                                         case "rödräv":
                                             $line["art"]="709";break;
                                     }
-                                    fputcsv($fp, $line);
+                                    fputcsv($fp, $line, ";");
                                 }
 
 
@@ -589,7 +589,7 @@ else {
                     $line["locationIdMongo"]=$output->data->location;
                     $line["outputIdMongo"]=$output->outputId;
 
-                    fputcsv($fp, $line);
+                    fputcsv($fp, $line, ";");
                 }
             }
             
