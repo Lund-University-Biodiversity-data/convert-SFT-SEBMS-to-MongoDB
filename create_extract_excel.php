@@ -47,8 +47,15 @@ else {
     $array_species_art=array();
     // GET the list of species
     foreach ($commonFields["listSpeciesId"] as $animals => $listId) {
-        $url="https://lists.bioatlas.se/ws/speciesListItems/".$commonFields["listSpeciesId"][$animals]."?includeKVP=true";
+
+
+        $url="https://lists.biodiversitydata.se/ws/speciesListItems/".$commonFields["listSpeciesId"][$animals]."?includeKVP=true";
         $obj = json_decode(file_get_contents($url), true);
+
+        // for the punktrutter, we gather owls and birds
+        if ($protocol=="vinter" && $animals=="owls") {
+            $animals="birds";
+        } 
 
         foreach($obj as $sp) {
 
@@ -76,6 +83,10 @@ else {
 			break;
 		case "vinter":
 			$nbPts=20;
+
+            $headers=array("persnr", "rnr", "datum", "yr", "art", "per", "p01", "p02", "p03", "p04", "p05", "p06", "p07", "p08", "p09", "p10", "p11", "p12", "p13", "p14", "p15", "p16", "p17", "p18", "p19", "p20", "pk", "ind", "locationIdMongo", "outputIdMongo", "activityIdMongo");
+
+
 			break;
 		case "natt":
 			$nbPts=20;
@@ -125,7 +136,7 @@ else {
         if (property_exists($row, "internalPersonId")) {
             $arrPerson[$row->personId]=$row->internalPersonId;
         }
-        else  echo consoleMessage("error", "No internalPersonId for ".$row->firstName.$row->lastName);
+        else  echo consoleMessage("error", "No internalPersonId for ".$row->firstName." ".$row->lastName);
         
     }
 
@@ -233,6 +244,14 @@ else {
                 case "kust":
                     $line["ruta"]=$array_sites_mongo[$output->data->location];
                     break;
+                case "vinter":
+
+                    $explodeSite=explode("-", $array_sites_mongo[$output->data->location]);
+                    if (count($explodeSite)!=3)
+                        echo consoleMessage("error", "ERROR - number f elements in internalSiteId ".count($explodeSite)." - ".$array_sites_mongo[$output->data->location]);
+                    $line["persnr"]=$explodeSite[0]."-".$explodeSite[1];
+                    $line["rnr"]=$explodeSite[2];
+                    break;
             }
 
             //$line["datum"]=substr($arrOutputFromRecord[$output->outputId]["eventDate"], 0, 10);
@@ -306,6 +325,35 @@ else {
                     $line["ind"]="";
 
                     break;
+
+                case "vinter":
+                    // first the header with art='000'
+                    $line["art"]="000";
+                    $line["period"]=$output->data->period;
+
+                    $transport="";
+                    $snow="";
+                    if (property_exists($output->data, "transport")) {
+                        $transport=$output->data->transport;
+                    }
+                    if (property_exists($output->data, "snow")) {
+                        $snow=$output->data->snow;
+                    }
+                    
+
+                    $line["p01"]=$transport;
+                    $line["p02"]=$snow;
+                    $line["p03"]=$output->data->surveyStartTime;
+                    $line["p04"]=$output->data->surveyFinishTime;
+
+                    for ($iP=5;$iP<=$nbPts;$iP++) {
+                        $line["p".str_pad($iP, 2, '0', STR_PAD_LEFT)]="";
+                    }
+
+                    $line["pk"]="";
+                    $line["ind"]="";
+
+                    break;
             }
             $line["locationIdMongo"]=$output->data->location;
             $line["outputIdMongo"]=$output->outputId;
@@ -375,6 +423,7 @@ else {
                     fputcsv($fp, $line, ";");
 
                     break;
+
 
             }
 
@@ -580,14 +629,47 @@ else {
                             if (isset($obs->island[0])) $line["i100m"]=$obs->island[0];
                             if (isset($obs->water[0])) $line["openw"]=$obs->water[0];
                             if (isset($obs->individualCount)) $line["ind"]=$obs->individualCount;
+
+                            break;
+
+                        case "vinter":
                             
-                            
+                            for ($iP=1;$iP<=$nbPts;$iP++) {
+                                $line["p".str_pad($iP, 2, '0', STR_PAD_LEFT)]="";
+                            }  
+                            if (isset($obs->P01)) $line["p01"]=$obs->P01;
+                            if (isset($obs->P02)) $line["p02"]=$obs->P02;
+                            if (isset($obs->P03)) $line["p03"]=$obs->P03;
+                            if (isset($obs->P04)) $line["p04"]=$obs->P04;
+                            if (isset($obs->P05)) $line["p05"]=$obs->P05;
+                            if (isset($obs->P06)) $line["p06"]=$obs->P06;
+                            if (isset($obs->P07)) $line["p07"]=$obs->P07;
+                            if (isset($obs->P08)) $line["p08"]=$obs->P08;
+                            if (isset($obs->P09)) $line["p09"]=$obs->P09;
+                            if (isset($obs->P10)) $line["p10"]=$obs->P10;
+                            if (isset($obs->P11)) $line["p11"]=$obs->P11;
+                            if (isset($obs->P12)) $line["p12"]=$obs->P12;
+                            if (isset($obs->P13)) $line["p13"]=$obs->P13;
+                            if (isset($obs->P14)) $line["p14"]=$obs->P14;
+                            if (isset($obs->P15)) $line["p15"]=$obs->P15;
+                            if (isset($obs->P16)) $line["p16"]=$obs->P16;
+                            if (isset($obs->P17)) $line["p17"]=$obs->P17;
+                            if (isset($obs->P18)) $line["p18"]=$obs->P18;
+                            if (isset($obs->P19)) $line["p19"]=$obs->P19;
+                            if (isset($obs->P20)) $line["p20"]=$obs->P20;
+
+                            $line["pk"]=0;
+                            $line["ind"]=0;
+
+                            if (isset($obs->pk)) $line["pk"]=$obs->pk;
+                            if (isset($obs->individualCount)) $line["ind"]=$obs->individualCount;
 
                             break;
                     }
 
                     $line["locationIdMongo"]=$output->data->location;
                     $line["outputIdMongo"]=$output->outputId;
+                    $line["activityIdMongo"]=$output->activityId;
 
                     fputcsv($fp, $line, ";");
                 }

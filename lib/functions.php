@@ -95,6 +95,14 @@ function getArraySitesFromMongo ($protocol, $projectId) {
                 $indexSite=$row->name;
             } 
         }
+        elseif ($protocol=="punkt" || $protocol=="vinter" || $protocol=="sommar") {
+            if (isset($row->adminProperties->internalSiteId))
+                $indexSite=$row->adminProperties->internalSiteId;
+            else {
+                echo consoleMessage("info", "No internalSiteId for site ".$row->name);
+                $indexSite=$row->name;
+            } 
+        }
         else {
             if (isset($row->karta))
                 $indexSite=$row->karta;

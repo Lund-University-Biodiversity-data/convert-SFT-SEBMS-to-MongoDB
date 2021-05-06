@@ -74,10 +74,10 @@ else {
 			break;
 		case "vinter":
 			$qEvents="
-			select P.efternamn, P.fornamn, P.persnr, T.datum , p01, p02, p03, p04, p05, p06, p07, p08, p09, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, Pu.ruttnamn AS sitename
+			select P.efternamn, P.fornamn, P.persnr, T.datum , T.per, p01, p02, p03, p04, p05, p06, p07, p08, p09, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, CONCAT(T.persnr, '-', T.rnr) AS sitename
 			from punktrutter Pu, totalvinter_pkt T
 			left join personer P on P.persnr = T.persnr 
-			where Pu.ruttnamn IN ".$req_sites."
+			where CONCAT(T.persnr, '-', T.rnr) IN ".$req_sites."
 			and Pu.persnr = T.persnr 
 			and Pu.rnr=T.rnr
 			AND T.art='000'
@@ -129,7 +129,7 @@ else {
 	$array_species_guid=array();
 	// GET the list of species
 	foreach ($commonFields["listSpeciesId"] as $animals => $listId) {
-		$url="https://lists.bioatlas.se/ws/speciesListItems/".$commonFields["listSpeciesId"][$animals];
+		$url="https://lists.biodiversitydata.se/ws/speciesListItems/".$commonFields["listSpeciesId"][$animals];
 		$obj = json_decode(file_get_contents($url), true);
 
 		foreach($obj as $sp) {
@@ -147,7 +147,7 @@ else {
 
 	$db_connection = pg_connect("host=".$DB["host"]." dbname=".$DB["database"]." user=".$DB["username"]." password=".$DB["password"])  or die("CONNECT:" . consoleMessage("error", pg_result_error()));
 
-	//if ($debug) echo consoleMessage("info", "qEvents : ".$qEvents);
+	if ($debug) echo consoleMessage("info", "qEvents : ".$qEvents);
 	$rEvents = pg_query($db_connection, $qEvents);
 	if (!$rEvents) die("QUERY:" . consoleMessage("error", pg_last_error()));
 
@@ -194,12 +194,12 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 				break;
 			case "vinter":
 				$qRecords="
-					select EL.arthela AS names, EL.latin as scientificname, p01, p02, p03, p04, p05, p06, p07, p08, p09, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, TN.art, TN.datum
+					select EL.arthela AS names, EL.latin as scientificname, p01, p02, p03, p04, p05, p06, p07, p08, p09, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, pk, ind, TN.art, TN.datum
 					from punktrutter Pu, totalvinter_pkt TN, eurolist EL
 					where EL.art=TN.art 
 					AND TN.persnr=PU.persnr
 					AND TN.rnr=PU.rnr
-					and Pu.ruttnamn='".$rtEvents["sitename"]."'  
+					and CONCAT(TN.persnr, '-', TN.rnr)='".$rtEvents["sitename"]."'  
 					AND TN.art<>'000'
 					AND TN.datum='".$rtEvents["datum"]."'
 					order by datum
@@ -332,6 +332,25 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 
 			$arrKustMammals=array();
 		}
+		elseif ($protocol=="vinter") {
+			$start_time="";
+			$finish_time="";
+
+			if (isset($rtEvents["p03"])) {
+				$start_time=convertTime($rtEvents["p03"], "24H");
+			}
+			if (isset($rtEvents["p04"])) {
+				echo $outputId." => ".$rtEvents["p04"]."\n";
+				$finish_time=convertTime($rtEvents["p04"], "24H");
+				echo $finish_time."\n";
+			}
+
+			$per=$rtEvents["per"];
+			$specific_vinter='"period" : "'.$per.'",';
+
+			$eventDate=date("Y-m-d", strtotime($rtEvents["datum"]))."T".$start_time.":00Z";
+
+		}
 		else {
 
 
@@ -400,6 +419,7 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 			$finish_time_5min=str_pad($finish_time, 4, '0', STR_PAD_LEFT);
 			$hours=intval(substr($finish_time_5min, 0, 2));
 			$minutes=intval(substr($finish_time_5min, 2, 2));
+
 			if ($minutes>=55) {
 				$minutes=str_pad(($minutes+5)-60, 2, '0', STR_PAD_LEFT);
 
@@ -409,8 +429,8 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 			else {
 				$minutes+=5;
 			}
+			$minutes=str_pad($minutes, 2, '0', STR_PAD_LEFT);
 			$finish_time=intval($hours.$minutes);
-
 
 			$finish_time=convertTime($finish_time, "24H");
 
@@ -499,6 +519,7 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 					"period" : "'.$per.'",';
 
 				break;
+
 
 			}
 
@@ -615,6 +636,15 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 
 				break;
 
+				case "sommar":
+				case "vinter":
+					
+					$animals="birds";
+					$speciesFieldName="species";
+					$animalsDataField=$animals;
+
+				break;
+
 				case "kust":
 					if ($rtRecords["art"]=="714") {
 						$animals="mammals";
@@ -668,13 +698,17 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 
 					break;
 				case "vinter":
+					// we use the field ind for the total, becausse historical rows do not have any details in p01->p20, only data in ind.
+					$IC=$rtRecords["ind"];
+
 					for ($i=1; $i<=$nbPts; $i++) {
 						$ind="p".str_pad($i, 2, '0', STR_PAD_LEFT);
 						if (!is_numeric($rtRecords[$ind])) $rtRecords[$ind]=0;
-						$IC+=$rtRecords[$ind];
+						//$IC+=$rtRecords[$ind];
 
 						$data_field[$animalsDataField].='"P'.str_pad($i, 2, '0', STR_PAD_LEFT).'": "'.$rtRecords[$ind].'",';
 					}
+					$data_field[$animalsDataField].='"pk": "'.$rtRecords["pk"].'", ';
 					break;
 				case "natt":
 					for ($i=1; $i<=$nbPts; $i++) {
@@ -697,6 +731,8 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 					}
 
 					break;
+
+
 
 			}
 
@@ -853,6 +889,11 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 
 
 			break;
+
+			case "vinter":
+				$specific_fields.=$specific_vinter;
+				break;
+
 		}
 
 		$arr_json_output.='{

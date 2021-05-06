@@ -128,7 +128,7 @@ else {
 
 	// GET the list of species
 
-	$url="https://lists.bioatlas.se/ws/speciesListItems/".$commonFields["listSpeciesId"];
+	$url="https://lists.biodiversitydata.se/ws/speciesListItems/".$commonFields["listSpeciesId"];
 	$obj = json_decode(file_get_contents($url), true);
 
 	foreach($obj as $sp) {
