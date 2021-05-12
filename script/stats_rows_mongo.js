@@ -68,6 +68,28 @@ db.activity.aggregate([
     }},
 ]);
 
+print("\nPROJECTACTIVITY : total");
+db.activity.count();
+
+print("\nPROJECTACTIVITY : Project ID + count + project name")
+db.activity.aggregate([
+  {"$lookup": {
+      "from": "projectActivity",
+      "localField": "projectActivityId",
+      "foreignField": "projectActivityId",
+      "as": "prID"
+    }},
+    {"$group" : {
+      _id:"$projectActivityId", count:{$sum:1},
+        "projectactivityname" : {"$first":"$prID.name"},
+    }},
+    {"$project": {
+        "projectID" : 1,
+        "projectactivityname" : 1,
+        "count" : 1
+    }},
+]);
+
 print("\nOUTPUT : total");
 db.output.count();
 
@@ -80,21 +102,22 @@ db.output.aggregate([
       "as": "actID"
     }},
     {"$project" : {
-        "projectId" : "$actID.projectId",
+        "projectActivityId" : "$actID.projectActivityId",
     }},
     {"$lookup": {
-      "from": "project",
-      "localField": "projectId",
-      "foreignField": "projectId",
+      "from": "projectActivity",
+      "localField": "projectActivityId",
+      "foreignField": "projectActivityId",
       "as": "prID"
     }},
     {"$group" : {
-    	_id:"$projectId", count:{$sum:1},
-        "projectname" : {"$first":"$prID.name"},
+    	_id:"$projectActivityId", 
+      count:{$sum:1},
+      "projectactivityname" : {"$first":"$prID.name"},
     }},
     {"$project": {
-        "projectID" : 1,
-        "projectname" : 1,
+        "projectActivityId" : 1,
+        "projectactivityname" : 1,
         "count" : 1
     }},
 ]);
@@ -104,21 +127,22 @@ db.output.aggregate([
 print("\nRECORD : total");
 db.record.count();
 
-print("\nRECORD : Project ID + count + project name")
+print("\nRECORD : ProjectActivity ID + count + projectActivity name")
 db.record.aggregate([
 	{"$lookup": {
-      "from": "project",
-      "localField": "projectId",
-      "foreignField": "projectId",
+      "from": "projectActivity",
+      "localField": "projectActivityId",
+      "foreignField": "projectActivityId",
       "as": "prID"
     }},
     {"$group" : {
-    	_id:"$projectId", count:{$sum:1},
-        "projectname" : {"$first":"$prID.name"},
+    	_id:"$projectActivityId", 
+      count:{$sum:1},
+      "projectactivityname" : {"$first":"$prID.name"},
     }},
     {"$project": {
-        "projectID" : 1,
-        "projectname" : 1,
+        "projectActivityID" : 1,
+        "projectactivityname" : 1,
         "count" : 1
     }},
 ]);

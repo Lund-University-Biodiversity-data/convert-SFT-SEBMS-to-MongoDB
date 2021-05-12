@@ -21,7 +21,7 @@ if (!isset($argv[1]) || !in_array(trim($argv[1]), $arr_protocol)) {
 }
 else {
 
-	$projectsId = '[ "'.$commonFields["std"]["projectId"].'", "'.$commonFields["natt"]["projectId"].'", "'.$commonFields["vinter"]["projectId"].'", "'.$commonFields["kust"]["projectId"].'" ]';
+	$projectsId = '[ "'.$commonFields["std"]["projectId"].'", "'.$commonFields["natt"]["projectId"].'", "'.$commonFields["vinter"]["projectId"].'", "'.$commonFields["sommar"]["projectId"].'", "'.$commonFields["kust"]["projectId"].'" ]';
 	
 	$protocol=$argv[1];
 
@@ -72,9 +72,10 @@ else {
 //where TS.karta='07D7C'  
 
 			break;
+
 		case "vinter":
 			$qEvents="
-			select P.efternamn, P.fornamn, P.persnr, T.datum , T.per, p01, p02, p03, p04, p05, p06, p07, p08, p09, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, CONCAT(T.persnr, '-', T.rnr) AS sitename
+			select P.efternamn, P.fornamn, P.persnr, T.datum, T.per, p01, p02, p03, p04, p05, p06, p07, p08, p09, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, CONCAT(T.persnr, '-', T.rnr) AS sitename
 			from punktrutter Pu, totalvinter_pkt T
 			left join personer P on P.persnr = T.persnr 
 			where CONCAT(T.persnr, '-', T.rnr) IN ".$req_sites."
@@ -82,12 +83,22 @@ else {
 			and Pu.rnr=T.rnr
 			AND T.art='000'
 			order by datum
-
 			";
-			//$qEvents.=" LIMIT 10";
-//where TS.karta='07D7C'  
-
 			break;
+
+		case "sommar":
+			$qEvents="
+			select P.efternamn, P.fornamn, P.persnr, T.datum, p01, p02, p03, p04, p05, p06, p07, p08, p09, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, CONCAT(T.persnr, '-', T.rnr) AS sitename
+			from punktrutter Pu, totalsommar_pkt T
+			left join personer P on P.persnr = T.persnr 
+			where CONCAT(T.persnr, '-', T.rnr) IN ".$req_sites."
+			and Pu.persnr = T.persnr 
+			and Pu.rnr=T.rnr
+			AND T.art='000'
+			order by datum
+			";
+			break;
+
 		case "natt":
 			// LPAD(cast(LEAST(p01, p02, p03, p04, p05, p06, p07, p08, p09, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20) as text), 4, '0')
 			$qEvents="
@@ -196,6 +207,20 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 				$qRecords="
 					select EL.arthela AS names, EL.latin as scientificname, p01, p02, p03, p04, p05, p06, p07, p08, p09, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, pk, ind, TN.art, TN.datum
 					from punktrutter Pu, totalvinter_pkt TN, eurolist EL
+					where EL.art=TN.art 
+					AND TN.persnr=PU.persnr
+					AND TN.rnr=PU.rnr
+					and CONCAT(TN.persnr, '-', TN.rnr)='".$rtEvents["sitename"]."'  
+					AND TN.art<>'000'
+					AND TN.datum='".$rtEvents["datum"]."'
+					order by datum
+				";
+				$nbPts=20;
+				break;
+			case "sommar":
+				$qRecords="
+					select EL.arthela AS names, EL.latin as scientificname, p01, p02, p03, p04, p05, p06, p07, p08, p09, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, pk, ind, TN.art, TN.datum
+					from punktrutter Pu, totalsommar_pkt TN, eurolist EL
 					where EL.art=TN.art 
 					AND TN.persnr=PU.persnr
 					AND TN.rnr=PU.rnr
@@ -332,23 +357,41 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 
 			$arrKustMammals=array();
 		}
-		elseif ($protocol=="vinter") {
+		elseif ($protocol=="vinter" || $protocol=="sommar") {
 			$start_time="";
 			$finish_time="";
+			$transport="";
+			$snow="";
 
+			if (isset($rtEvents["p01"]) && is_numeric($rtEvents["p01"]) && $rtEvents["p01"]<=4) {
+				$transport=$rtEvents["p01"];
+			}
+			if (isset($rtEvents["p02"]) && is_numeric($rtEvents["p02"]) && $rtEvents["p02"]<=3) {
+				$snow=$rtEvents["p02"];
+			}
 			if (isset($rtEvents["p03"])) {
 				$start_time=convertTime($rtEvents["p03"], "24H");
 			}
 			if (isset($rtEvents["p04"])) {
-				echo $outputId." => ".$rtEvents["p04"]."\n";
 				$finish_time=convertTime($rtEvents["p04"], "24H");
-				echo $finish_time."\n";
 			}
 
-			$per=$rtEvents["per"];
-			$specific_vinter='"period" : "'.$per.'",';
+			$specific_punkt="";
 
-			$eventDate=date("Y-m-d", strtotime($rtEvents["datum"]))."T".$start_time.":00Z";
+			if ($protocol=="vinter") {
+				$per=$rtEvents["per"];
+				$specific_punkt.='"period" : "'.$per.'", 
+					"snow" : "'.$snow.'",';
+			} 
+			
+			$specific_punkt.='"transport" : "'.$transport.'",';
+
+			if ($start_time=="") {
+				$eventDate=date("Y-m-d", strtotime($rtEvents["datum"]))."T00:00:00Z";
+			}
+			else {
+				$eventDate=date("Y-m-d", strtotime($rtEvents["datum"]))."T".$start_time.":00Z";
+			}
 
 		}
 		else {
@@ -376,6 +419,7 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 
 						break;
 					case "vinter":
+					case "sommar":
 						$ind="p".str_pad($i, 2, '0', STR_PAD_LEFT);
 						break;
 					case "natt":
@@ -698,8 +742,10 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 
 					break;
 				case "vinter":
+				case "sommar":
 					// we use the field ind for the total, becausse historical rows do not have any details in p01->p20, only data in ind.
 					$IC=$rtRecords["ind"];
+					if (is_null($rtRecords["ind"])) echo consoleMessage("error", "ind value is NULL at date ".$date_survey);
 
 					for ($i=1; $i<=$nbPts; $i++) {
 						$ind="p".str_pad($i, 2, '0', STR_PAD_LEFT);
@@ -745,7 +791,10 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 				$guid=$array_species_guid[$animals][$rtRecords["scientificname"]];
 			}
 			else {
-				if ($debug) echo consoleMessage("error", "No species guid for -".$rtRecords["scientificname"]."- art#".$rtRecords["art"]." (".$rtEvents["sitename"]."/".$rtEvents["datum"].") in list of ".$animals);
+				if ($debug) {
+					echo consoleMessage("error", "No species guid for -".$rtRecords["scientificname"]."- art#".$rtRecords["art"]." (".$rtEvents["sitename"]."/".$rtEvents["datum"].") in list of ".$animals);
+					exit();
+				}
 				$speciesNotFound++;
 				$listId="error-unmatched";
 				$guid="";
@@ -890,8 +939,9 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 
 			break;
 
+			case "sommar":
 			case "vinter":
-				$specific_fields.=$specific_vinter;
+				$specific_fields.=$specific_punkt;
 				break;
 
 		}

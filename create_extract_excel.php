@@ -115,7 +115,7 @@ else {
 
     echo consoleMessage("info", count($array_sites)." site(s) for the project ".$commonFields[$protocol]["projectId"]);
 
-//print_r($array_sites_mongo);
+    //if ($debug) print_r($array_sites_mongo);
 
 	/**************************** connection to mongoDB   ***/
     $mng = new MongoDB\Driver\Manager($mongoConnection["url"]); // Driver Object created
@@ -251,6 +251,12 @@ else {
                         echo consoleMessage("error", "ERROR - number f elements in internalSiteId ".count($explodeSite)." - ".$array_sites_mongo[$output->data->location]);
                     $line["persnr"]=$explodeSite[0]."-".$explodeSite[1];
                     $line["rnr"]=$explodeSite[2];
+
+                    // specific for the year in punkturutter
+                    // year -1 if before june
+                    if (substr($eventDate, 5, 2)<6) $year=substr($eventDate, 0, 4)-1;
+                    else $year=substr($eventDate, 0, 4);
+                    
                     break;
             }
 
@@ -355,9 +361,9 @@ else {
 
                     break;
             }
-            $line["locationIdMongo"]=$output->data->location;
-            $line["outputIdMongo"]=$output->outputId;
-            $line["activityIdMongo"]=$output->activityId;
+            //$line["locationIdMongo"]=$output->data->location;
+            //$line["outputIdMongo"]=$output->outputId;
+            //$line["activityIdMongo"]=$output->activityId;
 
             fputcsv($fp, $line, ";");
 
@@ -387,8 +393,8 @@ else {
                     $line["pkind"]="";
                     $line["lind"]="";
 
-                    $line["locationIdMongo"]=$output->data->location;
-                    $line["outputIdMongo"]=$output->outputId;
+                    //$line["locationIdMongo"]=$output->data->location;
+                    //$line["outputIdMongo"]=$output->outputId;
 
                     fputcsv($fp, $line, ";");
                     break;
@@ -417,8 +423,8 @@ else {
                     $line["pk"]="";
                     $line["ind"]="";
 
-                    $line["locationIdMongo"]=$output->data->location;
-                    $line["outputIdMongo"]=$output->outputId;
+                    //$line["locationIdMongo"]=$output->data->location;
+                    //$line["outputIdMongo"]=$output->outputId;
 
                     fputcsv($fp, $line, ";");
 
@@ -667,9 +673,9 @@ else {
                             break;
                     }
 
-                    $line["locationIdMongo"]=$output->data->location;
-                    $line["outputIdMongo"]=$output->outputId;
-                    $line["activityIdMongo"]=$output->activityId;
+                    //$line["locationIdMongo"]=$output->data->location;
+                    //$line["outputIdMongo"]=$output->outputId;
+                    //$line["activityIdMongo"]=$output->activityId;
 
                     fputcsv($fp, $line, ";");
                 }
