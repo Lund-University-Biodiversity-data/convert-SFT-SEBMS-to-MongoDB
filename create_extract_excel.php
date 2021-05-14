@@ -147,7 +147,7 @@ else {
         
     }
 
-    $filter = ['projectId' => $commonFields[$protocol]["projectId"], "status" => "active", "verificationStatus" => "approved"];
+    $filter = ['projectActivityId' => $commonFields[$protocol]["projectActivityId"], "status" => "active", "verificationStatus" => "approved"];
     //$filter = [];
     $options = [];
 /*    $options = [
@@ -189,12 +189,12 @@ else {
     }
 
 
-    $filter = ['projectId' => $commonFields[$protocol]["projectId"], "status" => "active"];
+    $filter = ['projectActivityId' => $commonFields[$protocol]["projectActivityId"], "status" => "active"];
     $options = [];
     $query = new MongoDB\Driver\Query($filter, $options); 
-    $rowsOutput = $mng->executeQuery("ecodata.record", $query);
+    $rowsRecord = $mng->executeQuery("ecodata.record", $query);
 
-    $rowsToArrayRecord=$rowsOutput->toArray();
+    $rowsToArrayRecord=$rowsRecord->toArray();
     echo consoleMessage("info", count($rowsToArrayRecord)." row(s) in records");
     $arrRecord=array();
     $arrOutputFromRecord=array();
