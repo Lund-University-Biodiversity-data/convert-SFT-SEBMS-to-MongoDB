@@ -53,7 +53,7 @@ else {
         $obj = json_decode(file_get_contents($url), true);
 
         // for the punktrutter, we gather owls and birds
-        if ($protocol=="vinter" && $animals=="owls") {
+        if (($protocol=="vinter" || $protocol=="sommar") && $animals=="owls") {
             $animals="birds";
         } 
 
@@ -88,6 +88,13 @@ else {
 
 
 			break;
+        case "sommar":
+            $nbPts=20;
+
+            $headers=array("persnr", "rnr", "datum", "yr", "art", "p01", "p02", "p03", "p04", "p05", "p06", "p07", "p08", "p09", "p10", "p11", "p12", "p13", "p14", "p15", "p16", "p17", "p18", "p19", "p20", "pk", "ind", "locationIdMongo", "outputIdMongo", "activityIdMongo");
+
+
+            break;
 		case "natt":
 			$nbPts=20;
 
@@ -244,6 +251,7 @@ else {
                 case "kust":
                     $line["ruta"]=$array_sites_mongo[$output->data->location];
                     break;
+                case "sommar":
                 case "vinter":
 
                     $explodeSite=explode("-", $array_sites_mongo[$output->data->location]);
@@ -332,10 +340,13 @@ else {
 
                     break;
 
+                case "sommar":
                 case "vinter":
                     // first the header with art='000'
                     $line["art"]="000";
-                    $line["period"]=$output->data->period;
+
+                    if ($protocol=="vinter")
+                        $line["period"]=$output->data->period;
 
                     $transport="";
                     $snow="";
@@ -638,6 +649,7 @@ else {
 
                             break;
 
+                        case "sommar":
                         case "vinter":
                             
                             for ($iP=1;$iP<=$nbPts;$iP++) {
