@@ -57,6 +57,48 @@ function consoleMessage($type, $message) {
 	return $msg;
 }
 
+function getArrayPersonsFromMongo ($projectId = null) {
+
+    global $mongoConnection;
+    
+    $array_persons=array();
+    
+    /**************************** connection to mongoDB   ***/
+    $mng = new MongoDB\Driver\Manager($mongoConnection["url"]); // Driver Object created
+
+    if ($mng) echo consoleMessage("info", "Connection to mongoDb ok");
+
+    $filter = [];
+    if (!is_null($projectId)) {
+        $filter = ['projects' => $projectId];
+    }
+    $options = [];
+    $query = new MongoDB\Driver\Query($filter, $options); 
+
+    //db.site.find({"projects":"dab767a5-929e-4733-b8eb-c9113194201f"}, {"projects":1, "name":1}).pretty()
+    // 
+    $rows = $mng->executeQuery("ecodata.person", $query);
+
+    foreach ($rows as $row){
+        
+        if (!isset($row->internalPersonId)) {
+            echo consoleMessage("error", "No internalPersonId for ".$row->firstName." ".$row->lastName." id: ".$row->personId);
+
+        }
+        else {
+            $array_persons[$row->internalPersonId]["personId"]=$row->personId;
+            if (isset($row->ownedSites)) {
+                $array_persons[$row->internalPersonId]["ownedSites"]=$row->ownedSites;
+            }
+            else $array_persons[$row->internalPersonId]["ownedSites"]="";
+
+        }
+    }
+
+    return $array_persons;
+}
+
+
 function getArraySitesFromMongo ($protocol, $projectId) {
 
     global $mongoConnection;
