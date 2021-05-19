@@ -38,9 +38,15 @@ Options : "SEBMS-punktlokal", "SEBMS-slinga", "SFT-std", "SFT-natt", "SFT-vinter
 You can as well use "clean" in case you only want to clean the database
 
 
+** Update the sites owners **
+php script/updateOwnedSites.php 
+
+** access mongo database **
+sudo apt-get install php-mongodb php-dom php-gd php-zip
 
 
 ** transform excel forms to json **
+sudo apt install composer
 sudo apt-get install php-mbstring
 composer require phpoffice/phpspreadsheet
 

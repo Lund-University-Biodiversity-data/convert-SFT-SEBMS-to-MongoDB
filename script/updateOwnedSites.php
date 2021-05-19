@@ -2,7 +2,8 @@
 $database="SFT";
 require "lib/config.php";
 require "lib/functions.php";
-echo consoleMessage("info", "Script start.");
+echo consoleMessage("info", "Script starts.");
+echo consoleMessage("info", "php script/updateOwnedSites.php");
 
 $mng = new MongoDB\Driver\Manager($mongoConnection["url"]); // Driver Object created
 
@@ -30,7 +31,6 @@ foreach ($listProjects as $projectId) {
 		if (!isset($arr_persons[$persnr]["personId"])) {
 			echo consoleMessage("error", "No person in MongoDB with persnr ".$persnr);
 
-			exit();
 		}
 		else {
 			//echo "SET ".$arr_persons[$persnr]["personId"]." owner of ".$dataSite["locationID"]."\n";
