@@ -23,8 +23,8 @@ else {
 		if ($myfile = fopen($filename, "w")) {
 			echo consoleMessage("info", "Script file created : ".$filename);
 
-			fwrite($myfile, 'db.activity.remove({projectId:"'.$commonFields[$protocol]["projectId"].'"});'."\n");
-			fwrite($myfile, 'db.record.remove({projectId:"'.$commonFields[$protocol]["projectId"].'"});'."\n");
+			fwrite($myfile, 'db.activity.remove({projectActivityId:"'.$commonFields[$protocol]["projectActivityId"].'"});'."\n");
+			fwrite($myfile, 'db.record.remove({projectActivityId:"'.$commonFields[$protocol]["projectActivityId"].'"});'."\n");
 			fclose($myfile);
 
 			echo consoleMessage("info", "Stats script execution : ".$filename);
