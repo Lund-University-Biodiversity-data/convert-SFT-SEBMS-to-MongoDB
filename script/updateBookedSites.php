@@ -88,7 +88,9 @@ else {
 	if (!$rBooking) die("QUERY:" . consoleMessage("error", pg_last_error()));
 	while ($rtBooking = pg_fetch_array($rBooking)) {
 
-		$filter = ['firstName' => $rtBooking["fornamn"], 'lastName' => $rtBooking["efternamn"]];
+		// case insensitive call
+		// db.person.find({firstName:{$regex:/^MARTIN$/i}}, {firstName:1}).pretty()
+		$filter = ['firstName' => array('$regex' => new MongoDB\BSON\Regex( '^'.$rtBooking["fornamn"].'$', 'i' )), 'lastName' => array('$regex' => new MongoDB\BSON\Regex( '^'.$rtBooking["efternamn"].'$', 'i' ))];
 	    $options = [];
 	    $query = new MongoDB\Driver\Query($filter, $options); 
 	    $rows = $mng->executeQuery("ecodata.person", $query);
@@ -127,11 +129,11 @@ else {
 				"internalPersonId" : "TO-BE-CREATED"
 			},';
 
-	    	echo consoleMessage("error", "No person found in mongo with ".$rtBooking["fornamn"]." ".$rtBooking["efternamn"]." ".$rtBooking["epost"]);
+	    	echo consoleMessage("error", "No person found in mongo with name ".$rtBooking["fornamn"]." ".$rtBooking["efternamn"]);
 	    }
 	    elseif (count($person)>1) {
 	    	//try another round with email
-	    	$filter = ['firstName' => $rtBooking["fornamn"], 'lastName' => $rtBooking["efternamn"], 'email' => $rtBooking["epost"]];
+	    	$filter = ['firstName' => array('$regex' => new MongoDB\BSON\Regex( '^'.$rtBooking["fornamn"].'$', 'i' )), 'lastName' => array('$regex' => new MongoDB\BSON\Regex( '^'.$rtBooking["efternamn"].'$', 'i' )), 'email' => $rtBooking["epost"]];
 		    $options = [];
 		    $query = new MongoDB\Driver\Query($filter, $options); 
 		    $rows = $mng->executeQuery("ecodata.person", $query);
