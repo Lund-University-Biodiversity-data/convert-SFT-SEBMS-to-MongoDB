@@ -67,6 +67,7 @@ else {
 	//echo "Date: $date_now_tz\n";
 
 	$nbPersonsToCreate=0;
+	$nbPersonsDoublons=0;
 	$arr_json_person='[';
 	$nbSitesBooked=0;
 	$nbSitesNotCreated=0;
@@ -87,13 +88,16 @@ else {
 	if (!$rBooking) die("QUERY:" . consoleMessage("error", pg_last_error()));
 	while ($rtBooking = pg_fetch_array($rBooking)) {
 
-		$filter = ['firstName' => $rtBooking["fornamn"], 'lastName' => $rtBooking["efternamn"], 'email' => $rtBooking["epost"]];
+		$filter = ['firstName' => $rtBooking["fornamn"], 'lastName' => $rtBooking["efternamn"]];
 	    $options = [];
 	    $query = new MongoDB\Driver\Query($filter, $options); 
 	    $rows = $mng->executeQuery("ecodata.person", $query);
 
 	    $person=$rows->toArray();
+	    $okPerson=true;
+
 	    if (count($person)==0) {
+	    	$okPerson=false;
 	    	$nbPersonsToCreate++;
 
 	    	$personId=generate_uniqId_format("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx");
@@ -125,7 +129,23 @@ else {
 
 	    	echo consoleMessage("error", "No person found in mongo with ".$rtBooking["fornamn"]." ".$rtBooking["efternamn"]." ".$rtBooking["epost"]);
 	    }
-	    else {
+	    elseif (count($person)>1) {
+	    	//try another round with email
+	    	$filter = ['firstName' => $rtBooking["fornamn"], 'lastName' => $rtBooking["efternamn"], 'email' => $rtBooking["epost"]];
+		    $options = [];
+		    $query = new MongoDB\Driver\Query($filter, $options); 
+		    $rows = $mng->executeQuery("ecodata.person", $query);
+
+		    $person2=$rows->toArray();
+
+		    if (count($person)!=1) {
+		    	$okPerson=false;
+		    	echo consoleMessage("error", count($person)." person(s) found in mongo with ".$rtBooking["fornamn"]." ".$rtBooking["efternamn"]);
+		    	$nbPersonsDoublons++;
+		    }
+	    }
+
+	    if ($okPerson) {
 	    	
 	    	if (isset($array_mongo_sites[$rtBooking[$fieldKarta]])) {
 	    		// update the site
@@ -153,6 +173,7 @@ else {
 				else echo consoleMessage("error", $result->getModifiedCount()." site(s) updated to add bookedBy ".$person[0]->internalPersonId."-".$person[0]->personId);
 	    	}
 	    	else {
+	    		echo consoleMessage("error", "Unknown site with ".$fieldKarta." => ".$rtBooking[$fieldKarta]);
 	    		$nbSitesNotCreated++;
 	    	}
 	    	
@@ -162,9 +183,10 @@ else {
 
 
 	echo consoleMessage("info", $nbPersonsToCreate." person(s) to be created with the json file");
+	echo consoleMessage("info", $nbPersonsDoublons." person(s) as doublons, impossible to link the site");
 	echo consoleMessage("info", $nbSitesBooked." site(s) booked");
 	echo consoleMessage("info", $nbSitesNotCreated." site(s) not created");
-	echo consoleMessage("info", $nbSitesToEdit." site(s) supposed to be edited VERSUS booked+sitenotcreated+personnotcreated (".($nbPersonsToCreate+$nbSitesBooked+$nbSitesNotCreated).")");
+	echo consoleMessage("info", $nbSitesToEdit." site(s) supposed to be edited VERSUS booked+sitenotcreated+personnotcreated+doublons (".($nbPersonsToCreate+$nbSitesBooked+$nbSitesNotCreated+$nbPersonsDoublons).")");
 
 	echo consoleMessage("info", "Script ends.");
 }
