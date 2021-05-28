@@ -71,6 +71,7 @@ else {
 	$arr_json_person='[';
 	$nbSitesBooked=0;
 	$nbSitesNotCreated=0;
+	$arrSitesNotCreated=array();
 
 	// get SQL bookings
 	$fieldKarta="karta";
@@ -177,6 +178,7 @@ else {
 	    	else {
 	    		echo consoleMessage("error", "Unknown site with ".$fieldKarta." => ".$rtBooking[$fieldKarta]);
 	    		$nbSitesNotCreated++;
+	    		$arrSitesNotCreated[]=$rtBooking[$fieldKarta];
 	    	}
 	    	
 	    }
@@ -187,7 +189,7 @@ else {
 	echo consoleMessage("info", $nbPersonsToCreate." person(s) to be created with the json file");
 	echo consoleMessage("info", $nbPersonsDoublons." person(s) as doublons, impossible to link the site");
 	echo consoleMessage("info", $nbSitesBooked." site(s) booked");
-	echo consoleMessage("info", $nbSitesNotCreated." site(s) not created");
+	echo consoleMessage("info", $nbSitesNotCreated.' site(s) not created : "'.implode('", "', $arrSitesNotCreated).'"');
 	echo consoleMessage("info", $nbSitesToEdit." site(s) supposed to be edited VERSUS booked+sitenotcreated+personnotcreated+doublons (".($nbPersonsToCreate+$nbSitesBooked+$nbSitesNotCreated+$nbPersonsDoublons).")");
 
 	echo consoleMessage("info", "Script ends.");
