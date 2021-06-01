@@ -1,7 +1,7 @@
 <?php
 $database="SFT";
-require "lib/config.php";
-require "lib/functions.php";
+require dirname(__FILE__)."/../lib/config.php";
+require dirname(__FILE__)."/../lib/functions.php";
 echo consoleMessage("info", "Script starts.");
 echo consoleMessage("info", "php script/updateBookedSites.php std");
 
