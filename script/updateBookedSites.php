@@ -141,9 +141,9 @@ else {
 
 		    $person2=$rows->toArray();
 
-		    if (count($person)!=1) {
+		    if (count($person2)!=1) {
 		    	$okPerson=false;
-		    	echo consoleMessage("error", count($person)." person(s) found in mongo with ".$rtBooking["fornamn"]." ".$rtBooking["efternamn"]);
+		    	echo consoleMessage("error", count($person2)." person(s) found in mongo with ".$rtBooking["fornamn"]." ".$rtBooking["efternamn"]);
 		    	$nbPersonsDoublons++;
 		    }
 	    }
