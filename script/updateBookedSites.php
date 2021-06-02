@@ -15,6 +15,10 @@ else {
 	$protocol=$argv[1];
 	$projectId = $commonFields[$protocol]["projectId"];
 
+	// default personId in case the person is missing in the database
+	// Mathieu Blanchet's id
+	$defaultPersonId = "35af2711-e759-4da9-b0f4-bdd615790289";
+
 	// get all the sites
 	$array_mongo_sites=getArraySitesFromMongo ($protocol, $projectId);
 	echo consoleMessage("info", count($array_mongo_sites)." sites in project.");
@@ -131,6 +135,11 @@ else {
 			},';
 
 	    	echo consoleMessage("error", "No person found in mongo with name ".$rtBooking["fornamn"]." ".$rtBooking["efternamn"]);
+
+	    	$okPerson=true;
+	    	$personIdFinal=$defaultPersonId;
+		    $internalPersonIdFinal="850419-9";
+
 	    }
 	    elseif (count($person)>1) {
 	    	//try another round with email
@@ -146,6 +155,14 @@ else {
 		    	echo consoleMessage("error", count($person2)." person(s) found in mongo with ".$rtBooking["fornamn"]." ".$rtBooking["efternamn"]);
 		    	$nbPersonsDoublons++;
 		    }
+		    else {
+		    	$personIdFinal=$person2[0]->personId;
+		    	$internalPersonIdFinal=$person2[0]->internalPersonId;
+		    }
+	    }
+	    else {
+	    	$personIdFinal=$person[0]->personId;
+	    	$internalPersonIdFinal=$person[0]->internalPersonId;
 	    }
 
 	    if ($okPerson) {
@@ -155,25 +172,25 @@ else {
 		    	$bulk = new MongoDB\Driver\BulkWrite;
 			    //$filter = [];
 			    $filter = ['siteId' => $array_mongo_sites[$rtBooking[$fieldKarta]]["locationID"]];
-			    $options =  ['$set' => ['bookedBy' => $person[0]->personId]];
+			    $options =  ['$set' => ['bookedBy' => $personIdFinal]];
 			    $updateOptions = ['multi' => false];
 			    $bulk->update($filter, $options, $updateOptions); 
 			    $result = $mng->executeBulkWrite('ecodata.site', $bulk);
 
 				if ($result->getModifiedCount()!=1) 
-					echo consoleMessage("error", $result->getModifiedCount()." site(s) updated to add bookedBy ".$person[0]->internalPersonId."-".$person[0]->personId);
+					echo consoleMessage("error", $result->getModifiedCount()." site(s) updated to add bookedBy ".$internalPersonIdFinal."-".$personIdFinal);
 
 				// update the person
 				$bulk = new MongoDB\Driver\BulkWrite;
 			    //$filter = [];
-			    $filter = ['personId' => $person[0]->personId];
+			    $filter = ['personId' => $personIdFinal];
 			    $options =  ['$push' => ['bookedSites' => $array_mongo_sites[$rtBooking[$fieldKarta]]["locationID"] ] ];
 			    $updateOptions = ['multi' => false];
 			    $bulk->update($filter, $options, $updateOptions); 
 			    $result = $mng->executeBulkWrite('ecodata.person', $bulk);
 
 				if ($result->getModifiedCount()==1) $nbSitesBooked++;
-				else echo consoleMessage("error", $result->getModifiedCount()." site(s) updated to add bookedBy ".$person[0]->internalPersonId."-".$person[0]->personId);
+				else echo consoleMessage("error", $result->getModifiedCount()." site(s) updated to add bookedBy ".$internalPersonIdFinal."-".$personIdFinal);
 	    	}
 	    	else {
 	    		echo consoleMessage("error", "Unknown site with ".$fieldKarta." => ".$rtBooking[$fieldKarta]);
@@ -186,11 +203,11 @@ else {
 	}
 
 
-	echo consoleMessage("info", $nbPersonsToCreate." person(s) to be created with the json file");
+	echo consoleMessage("info", $nbPersonsToCreate." person(s) to be created with the json file => linked to Mathieu instead");
 	echo consoleMessage("info", $nbPersonsDoublons." person(s) as doublons, impossible to link the site");
-	echo consoleMessage("info", $nbSitesBooked." site(s) booked");
+	echo consoleMessage("info", $nbSitesBooked." site(s) booked (including ".$nbPersonsToCreate." linked to Mathieu)");
 	echo consoleMessage("info", $nbSitesNotCreated.' site(s) not created : "'.implode('", "', $arrSitesNotCreated).'"');
-	echo consoleMessage("info", $nbSitesToEdit." site(s) supposed to be edited VERSUS booked+sitenotcreated+personnotcreated+doublons (".($nbPersonsToCreate+$nbSitesBooked+$nbSitesNotCreated+$nbPersonsDoublons).")");
+	echo consoleMessage("info", $nbSitesToEdit." site(s) supposed to be edited VERSUS booked+sitenotcreated+doublons (".($nbSitesBooked+$nbSitesNotCreated+$nbPersonsDoublons).")");
 
 	echo consoleMessage("info", "Script ends.");
 }
