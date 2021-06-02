@@ -71,7 +71,7 @@ else {
 	//echo "Date: $date_now_tz\n";
 
 	$nbPersonsToCreate=0;
-	$nbPersonsDoublons=0;
+	$nbUnknownPerson=0;
 	$arr_json_person='[';
 	$nbSitesBooked=0;
 	$nbSitesNotCreated=0;
@@ -93,18 +93,30 @@ else {
 	if (!$rBooking) die("QUERY:" . consoleMessage("error", pg_last_error()));
 	while ($rtBooking = pg_fetch_array($rBooking)) {
 
-		// case insensitive call
-		// db.person.find({firstName:{$regex:/^MARTIN$/i}}, {firstName:1}).pretty()
-		$filter = ['firstName' => array('$regex' => new MongoDB\BSON\Regex( '^'.$rtBooking["fornamn"].'$', 'i' )), 'lastName' => array('$regex' => new MongoDB\BSON\Regex( '^'.$rtBooking["efternamn"].'$', 'i' ))];
-	    $options = [];
-	    $query = new MongoDB\Driver\Query($filter, $options); 
-	    $rows = $mng->executeQuery("ecodata.person", $query);
-
-	    $person=$rows->toArray();
 	    $okPerson=true;
 
-	    if (count($person)==0) {
-	    	$okPerson=false;
+	    if (trim($rtBooking["persnr"])!="") {
+
+	    	$filter = ['internalPersonId' => $rtBooking["persnr"]];
+		    $options = [];
+		    $query = new MongoDB\Driver\Query($filter, $options); 
+		    $rows = $mng->executeQuery("ecodata.person", $query);
+
+		    $person=$rows->toArray();
+
+		    if (count($person)!=1) {
+		    	echo consoleMessage("error", "Unknown person in MongoDb with persnr  ".$rtBooking["persnr"]);
+		    	$nbUnknownPerson++;
+		    	$okPerson=false;
+		    }
+		    else {
+		    	$personIdFinal=$person[0]->personId;
+		    	$internalPersonIdFinal=$person[0]->internalPersonId;
+		    }
+
+	    }
+	    else {
+			$okPerson=false;
 	    	$nbPersonsToCreate++;
 
 	    	$personId=generate_uniqId_format("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx");
@@ -139,31 +151,7 @@ else {
 	    	$okPerson=true;
 	    	$personIdFinal=$defaultPersonId;
 		    $internalPersonIdFinal="850419-9";
-
-	    }
-	    elseif (count($person)>1) {
-	    	//try another round with email
-	    	$filter = ['firstName' => array('$regex' => new MongoDB\BSON\Regex( '^'.$rtBooking["fornamn"].'$', 'i' )), 'lastName' => array('$regex' => new MongoDB\BSON\Regex( '^'.$rtBooking["efternamn"].'$', 'i' )), 'email' => $rtBooking["epost"]];
-		    $options = [];
-		    $query = new MongoDB\Driver\Query($filter, $options); 
-		    $rows = $mng->executeQuery("ecodata.person", $query);
-
-		    $person2=$rows->toArray();
-
-		    if (count($person2)!=1) {
-		    	$okPerson=false;
-		    	echo consoleMessage("error", count($person2)." person(s) found in mongo with ".$rtBooking["fornamn"]." ".$rtBooking["efternamn"]);
-		    	$nbPersonsDoublons++;
-		    }
-		    else {
-		    	$personIdFinal=$person2[0]->personId;
-		    	$internalPersonIdFinal=$person2[0]->internalPersonId;
-		    }
-	    }
-	    else {
-	    	$personIdFinal=$person[0]->personId;
-	    	$internalPersonIdFinal=$person[0]->internalPersonId;
-	    }
+		}
 
 	    if ($okPerson) {
 	    	
@@ -204,10 +192,10 @@ else {
 
 
 	echo consoleMessage("info", $nbPersonsToCreate." person(s) to be created with the json file => linked to Mathieu instead");
-	echo consoleMessage("info", $nbPersonsDoublons." person(s) as doublons, impossible to link the site");
+	echo consoleMessage("info", $nbUnknownPerson." unknown person(s) in Mongo, impossible to link the site");
 	echo consoleMessage("info", $nbSitesBooked." site(s) booked (including ".$nbPersonsToCreate." linked to Mathieu)");
 	echo consoleMessage("info", $nbSitesNotCreated.' site(s) not created : "'.implode('", "', $arrSitesNotCreated).'"');
-	echo consoleMessage("info", $nbSitesToEdit." site(s) supposed to be edited VERSUS booked+sitenotcreated+doublons (".($nbSitesBooked+$nbSitesNotCreated+$nbPersonsDoublons).")");
+	echo consoleMessage("info", $nbSitesToEdit." site(s) supposed to be edited VERSUS booked+sitenotcreated+unknownperson (".($nbSitesBooked+$nbSitesNotCreated+$nbUnknownPerson).")");
 
 	echo consoleMessage("info", "Script ends.");
 }
