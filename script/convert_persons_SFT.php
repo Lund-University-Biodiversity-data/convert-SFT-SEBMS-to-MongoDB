@@ -58,7 +58,11 @@ if ($mode=="update") {
 echo consoleMessage("info", count($tabUserAlreadyCreated)." person(s) already in mongoDb");
 
 $arr_json_person='[';
-$arr_json_person.=getJsonPersonsHardcoded();
+
+if ($mode=="reinsertall") {
+	$arr_json_person.=getJsonPersonsHardcoded();
+}
+
 $db_connection = pg_connect("host=".$DB["host"]." dbname=".$DB["database"]." user=".$DB["username"]." password=".$DB["password"])  or die("CONNECT:" . consoleMessage("error", pg_result_error()));
 
 $qPerson= "
