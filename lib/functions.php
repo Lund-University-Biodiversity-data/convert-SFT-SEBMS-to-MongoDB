@@ -251,38 +251,18 @@ function getListUsersAlreadyHardcoded() {
     // Frej S
     $tabUserIdPerson[]="960313-1";
 
+    // ADD OTHER THERE
+    //Johan B.
+    $tabUserIdPerson[]="680424-01";
+    //Elin P.
+    $tabUserIdPerson[]="830117-1";
+
+
+    // Elin
+
     return $tabUserIdPerson;
 }
 
-/*
-function getHardCodedUserId() {
-    $tabUserIdPerson=array();
-
-    //LARS
-    $tabUserIdPerson["520228-1"]=13;
-    // Mathieu
-    $tabUserIdPerson["850419-9"]=5;
-    // Fredrik
-    $tabUserIdPerson["650802-1"]=11;
-    // Martin G.
-    $tabUserIdPerson["631106-1"]=12;
-    // Åke
-    $tabUserIdPerson["610814-1"]=10;
-    // SUsanne B.
-    $tabUserIdPerson["680226-1"]=23;
-    // Thomas J
-    $tabUserIdPerson["631120-1"]=37;
-    // CHristine O.
-    $tabUserIdPerson["610308-1"]=26;
-    // Ola E.
-    $tabUserIdPerson["760602-1"]=21;
-    // Lars G.
-    $tabUserIdPerson["610226-1"]=20;
-    // Frej S
-    $tabUserIdPerson["960313-1"]=24;
-
-}
-*/
 function getJsonPersonsHardcoded() {
 	return '
    {
