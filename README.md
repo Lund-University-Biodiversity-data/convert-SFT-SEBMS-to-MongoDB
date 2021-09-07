@@ -12,9 +12,10 @@ sudo apt-get install php-mongodb
 ```
 
 **Install**
- - rename config.template.php in config.php
+ - install the repo Lund-University-Biodiversity-data/shared-functions.git
+ - rename config.template.php in config.php, and change the folders paths
  - edit the file with your PSQL config
- 
+
  **Execute ing the script**
 ```
 php convert_SFT_std_natt.php
