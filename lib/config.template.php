@@ -1,4 +1,8 @@
 <?php
+
+define("PATH_SHARED_FUNCTIONS", "/home/XXX/shared-functions/");
+define ("PATH_DOWNLOAD", "/home/XXXX/convert-SFT-SEBMS-to-MongoDB/");
+
 $commonFields=array();
 
 $commonFields["userId"]=0;

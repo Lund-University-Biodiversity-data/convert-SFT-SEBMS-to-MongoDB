@@ -7,3 +7,4 @@ sites-natt-punkt-coordinates/toscan/*
 sites-natt-punkt-coordinates/KoordinatfilerNatt/*
 lib/*.txt
 composer.lock
+composer.json

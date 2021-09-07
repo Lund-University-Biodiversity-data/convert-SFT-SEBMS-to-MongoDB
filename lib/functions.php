@@ -1,4 +1,6 @@
 <?php
+
+/*
 // format: caracters spearated by '-'. Example: xxxx-xxxx-xxxx-xxxxxxxxx
 // generates an unique ID with hexa digits.
 function generate_uniqId_format ($format) {
@@ -63,7 +65,6 @@ function getArrayPersonsFromMongo ($projectId = null) {
     
     $array_persons=array();
     
-    /**************************** connection to mongoDB   ***/
     $mng = new MongoDB\Driver\Manager($mongoConnection["url"]); // Driver Object created
 
     if ($mng) echo consoleMessage("info", "Connection to mongoDb ok");
@@ -105,7 +106,6 @@ function getArraySitesFromMongo ($protocol, $projectId) {
     
     $array_sites=array();
     
-    /**************************** connection to mongoDB   ***/
     $mng = new MongoDB\Driver\Manager($mongoConnection["url"]); // Driver Object created
 
     if ($mng) echo consoleMessage("info", "Connection to mongoDb ok");
@@ -164,10 +164,9 @@ function getArraySitesFromMongo ($protocol, $projectId) {
         //$array_sites_req[]="'".$indexSite."'";
     }
 
-    /**************************** connection to mongoDB   ***/
-
     return $array_sites;
 }
+*/
 
 $county = array();
 
