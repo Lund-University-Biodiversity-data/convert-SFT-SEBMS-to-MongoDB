@@ -1,12 +1,13 @@
 <?php
 $database="SFT";
 $dataOrigin="scriptExcel";
-$server="TEST";
 
 require dirname(__FILE__)."/lib/config.php";
 require dirname(__FILE__)."/lib/functions.php";
 require PATH_SHARED_FUNCTIONS."generic-functions.php";
 require PATH_SHARED_FUNCTIONS."mongo-functions.php";
+
+$server=DEFAULT_SERVER;
 
 $arr_protocol=array("std", "natt", "vinter", "sommar", "kust");
 

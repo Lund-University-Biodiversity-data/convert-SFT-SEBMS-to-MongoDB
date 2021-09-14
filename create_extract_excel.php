@@ -1,7 +1,7 @@
 <?php
 $database="SFT";
 $dataOrigin="scriptExcel";
-$server="PROD";
+$server=DEFAULT_SERVER;
 
 require dirname(__FILE__)."/lib/config.php";
 require dirname(__FILE__)."/lib/functions.php";
