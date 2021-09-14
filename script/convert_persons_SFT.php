@@ -2,6 +2,7 @@
 <?php
 $database="SFT";
 $dataOrigin="scriptPostgres";
+$server="PROD";
 
 require "lib/config.php";
 require "lib/functions.php";
@@ -31,7 +32,7 @@ $date_now_tz = date("Y-m-d",$date_array[1])."T".date("H:i:s",$date_array[1])."."
 $tabUserAlreadyCreated=getListUsersAlreadyHardcoded();
 
 if ($mode=="update") {
-	$mng = new MongoDB\Driver\Manager($mongoConnection["url"]); // Driver Object created
+	$mng = new MongoDB\Driver\Manager($mongoConnection[$server]); // Driver Object created
 
     if ($mng) echo consoleMessage("info", "Connection to mongoDb ok");
 

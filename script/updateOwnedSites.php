@@ -1,11 +1,12 @@
 <?php
 $database="SFT";
+$server="PROD";
 require "lib/config.php";
 require "lib/functions.php";
 echo consoleMessage("info", "Script starts.");
 echo consoleMessage("info", "php script/updateOwnedSites.php");
 
-$mng = new MongoDB\Driver\Manager($mongoConnection["url"]); // Driver Object created
+$mng = new MongoDB\Driver\Manager($mongoConnection[$server]); // Driver Object created
 
 $arr_persons=getArrayPersonsFromMongo();
 

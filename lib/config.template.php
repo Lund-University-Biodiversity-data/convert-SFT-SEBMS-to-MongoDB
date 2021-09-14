@@ -16,7 +16,9 @@ $commonFields["basisOfRecord"]="HumanObservation";
 $commonFields["multimedia"]="[ ]";
 $commonFields["licence"]="https://creativecommons.org/publicdomain/zero/1.0/";
 
-$mongoConnection["url"]="mongodb://localhost";
+$mongoConnection["TEST"]="mongodb://localhost";
+$mongoConnection["DEV"]="mongodb://canmove-dev.ekol.lu.se";
+$mongoConnection["PROD"]="mongodb://89.45.234.73";
 
 switch ($database) {
 	case "SFT":

@@ -1,5 +1,6 @@
 <?php
 $database="SFT";
+$server="PROD";
 require dirname(__FILE__)."/../lib/config.php";
 require dirname(__FILE__)."/../lib/functions.php";
 require PATH_SHARED_FUNCTIONS."generic-functions.php";
@@ -26,7 +27,7 @@ else {
 	$array_mongo_sites=getArraySitesFromMongo ($protocol, $projectId);
 	echo consoleMessage("info", count($array_mongo_sites)." sites in project.");
 
-	$mng = new MongoDB\Driver\Manager($mongoConnection["url"]); // Driver Object created
+	$mng = new MongoDB\Driver\Manager($mongoConnection[$server]); // Driver Object created
 
 	$db_connection = pg_connect("host=".$DB["host"]." dbname=".$DB["database"]." user=".$DB["username"]." password=".$DB["password"])  or die("CONNECT:" . consoleMessage("error", pg_result_error()));
 

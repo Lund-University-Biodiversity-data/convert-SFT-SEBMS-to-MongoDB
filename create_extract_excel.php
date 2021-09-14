@@ -1,6 +1,7 @@
 <?php
 $database="SFT";
 $dataOrigin="scriptExcel";
+$server="PROD";
 
 define ("SCRIPT_PATH", "/home/mathieu/Documents/repos/convert-SFT-SEBMS-to-MongoDB/");
 
@@ -125,7 +126,7 @@ else {
     //if ($debug) print_r($array_sites_mongo);
 
 	/**************************** connection to mongoDB   ***/
-    $mng = new MongoDB\Driver\Manager($mongoConnection["url"]); // Driver Object created
+    $mng = new MongoDB\Driver\Manager($mongoConnection[$server]); // Driver Object created
 
     if ($mng) echo consoleMessage("info", "Connection to mongoDb ok");
     
