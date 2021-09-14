@@ -3,6 +3,7 @@ $database="SFT";
 require dirname(__FILE__)."/../lib/config.php";
 require dirname(__FILE__)."/../lib/functions.php";
 require PATH_SHARED_FUNCTIONS."generic-functions.php";
+require PATH_SHARED_FUNCTIONS."mongo-functions.php";
 
 echo consoleMessage("info", "Script starts.");
 echo consoleMessage("info", "php script/updateBookedSites.php std");
