@@ -1,16 +1,18 @@
 <?php
 $database="SFT";
 $dataOrigin="scriptExcel";
-$server=DEFAULT_SERVER;
 
 require dirname(__FILE__)."/lib/config.php";
 require dirname(__FILE__)."/lib/functions.php";
+require PATH_SHARED_FUNCTIONS."generic-functions.php";
+require PATH_SHARED_FUNCTIONS."mongo-functions.php";
 
 //require_once "lib/PHPExcel/Classes/PHPExcel.php";
 
+$server=DEFAULT_SERVER;
 
-require SCRIPT_PATH.'vendor/autoload.php';
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
+//require SCRIPT_PATH.'vendor/autoload.php';
+//use PhpOffice\PhpSpreadsheet\Spreadsheet;
 //use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 
@@ -113,7 +115,7 @@ else {
 	$array_sites=array();
 	$array_sites_mongo=array();
 
-	$array_sites=getArraySitesFromMongo($protocol, $commonFields[$protocol]["projectId"]);
+	$array_sites=getArraySitesFromMongo($protocol, $commonFields[$protocol]["projectId"], $server);
 
 	foreach($array_sites as $indexSite => $data) {
 		$array_sites_mongo[$data["locationID"]]=$indexSite;
