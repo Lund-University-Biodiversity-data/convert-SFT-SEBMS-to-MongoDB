@@ -3,10 +3,8 @@ $database="SFT";
 $dataOrigin="scriptExcel";
 $server="TEST";
 
-define ("SCRIPT_PATH", "/home/mathieu/Documents/repos/convert-SFT-SEBMS-to-MongoDB/");
-
-require SCRIPT_PATH."lib/config.php";
-require SCRIPT_PATH."lib/functions.php";
+require dirname(__FILE__)."/lib/config.php";
+require dirname(__FILE__)."/lib/functions.php";
 require PATH_SHARED_FUNCTIONS."generic-functions.php";
 require PATH_SHARED_FUNCTIONS."mongo-functions.php";
 
