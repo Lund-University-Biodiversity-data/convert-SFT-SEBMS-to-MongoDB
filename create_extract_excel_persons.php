@@ -38,7 +38,7 @@ else {
 
 	if ($fp = fopen($path_extract, 'w')) {
 
-		$headers=array("firstName", "lastName", "birthDate", "email", "phoneNum", "mobileNum", "address1", "address2", "postCode");
+		$headers=array("firstName", "lastName", "birthDate", "email", "phoneNum", "mobileNum", "address1", "address2", "postCode", "town", "userId", "internalPersonId", "personId");
 		fputcsv($fp, $headers, ";");
 
 		foreach ($rows as $row){
