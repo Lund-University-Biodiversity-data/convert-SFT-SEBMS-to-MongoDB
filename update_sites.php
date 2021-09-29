@@ -12,6 +12,9 @@ echo consoleMessage("info", "Script starts");
 echo consoleMessage("info", "DEBUG example command :");
 echo consoleMessage("info", "php update_sites.php std 2 debug");
 
+$county=getCountyLanArray();
+$province=getProvinceLskArray();
+
 $debug=false;
 $collection="site";
 
@@ -71,7 +74,8 @@ else {
 				foreach ($arrayFieldsRequired as $key) {
 					$arrSitesPsql[$rtSites["karta"]][$key]="";
 				}
-				$arrSitesPsql[$rtSites["karta"]]["lan"]=$rtSites["lan"];
+				$arrSitesPsql[$rtSites["karta"]]["lan"]=$county[$rtSites["lan"]];
+				$arrSitesPsql[$rtSites["karta"]]["lsk"]=$province[$rtSites["lsk"]];
 				$arrSitesPsql[$rtSites["karta"]]["internalSiteId"]=$rtSites["karta"];
 				if ($rtSites["fjall104"]=="t") $arrSitesPsql[$rtSites["karta"]]["fjall104"]=1;
 				if ($rtSites["fjall142"]=="t") $arrSitesPsql[$rtSites["karta"]]["fjall142"]=1;
@@ -129,15 +133,17 @@ else {
 			case "std":
 				if (!isset($row->karta)) {
 					echo consoleMessage("error", "No karta for ".$row->siteId); 
-					exit;
+					//exit;
+					$internalSiteId=$row->adminProperties->internalSiteId;
 				}
-				$internalSiteId=$row->karta;
+				else {
+					$internalSiteId=$row->karta;
+				}
 				break;	
 
 		}
     	
     	// A FINIR
-
     	// check the existence of the field
     	// if it exists : DON'T TOUCH, MAYBE ALREADY EDITED ON PURPOSE !
     	// if it does not exist => fill it with SQL value

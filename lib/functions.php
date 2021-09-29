@@ -168,62 +168,6 @@ function getArraySitesFromMongo ($protocol, $projectId) {
 }
 */
 
-$county = array();
-
-$county['AB'] = 'Stockholms län';
-$county['AC'] = 'Västerbottens län';
-$county['BD'] = 'Norrbottens län';
-$county['C'] = 'Uppsala län';
-$county['D'] = 'Södermanlands län';
-$county['E'] = 'Östergötlands län';
-$county['F'] = 'Jönköpings län';
-$county['G'] = 'Kronobergs län';
-$county['H'] = 'Kalmar län';
-$county['I'] = 'Gotlands län';
-$county['K'] = 'Blekinge län';
-$county['M'] = 'Skåne län';
-$county['N'] = 'Hallands län';
-$county['O'] = 'Västra Götalands län';
-$county['S'] = 'Värmlands län';
-$county['T'] = 'Örebro län';
-$county['U'] = 'Västmanlands län';
-$county['W'] = 'Dalarnas län';
-$county['X'] = 'Gävleborgs län';
-$county['Y'] = 'Västernorrlands län';
-$county['Z'] = 'Jämtlands län';
-
-$province = array();
-
-$province['ÅNG'] = 'Ångermanland';
-$province['BLE'] = 'Blekinge';
-$province['BOH'] = 'Bohuslän';
-$province['DLR'] = 'Dalarna';
-$province['DLS'] = 'Dalsland';
-$province['GOT'] = 'Gotland';
-$province['GST'] = 'Gästrikland';
-$province['HAL'] = 'Halland';
-$province['HLS'] = 'Hälsingland';
-$province['HRJ'] = 'Härjedalen';
-$province['JMT'] = 'Jämtland';
-$province['LPÅ'] = 'Åsele lappmark';
-$province['LPP'] = 'Pite lappmark';
-$province['LPT'] = 'Torne lappmark';
-$province['LPU'] = 'Lule lappmark';
-$province['LPY'] = 'Lycksele lappmark';
-$province['MPD'] = 'Medelpad';
-$province['NB'] = 'Norrbotten';
-$province['NRK'] = 'Närke';
-$province['ÖGL'] = 'Östergötland';
-$province['ÖLA'] = 'Öland';
-$province['SKÅ'] = 'Skåne';
-$province['SMÅ'] = 'Småland';
-$province['SRM'] = 'Södermanland';
-$province['UPL'] = 'Uppland';
-$province['VB'] = 'Västerbotten';
-$province['VGÖ'] = 'Västergötland';
-$province['VRM'] = 'Värmland';
-$province['VST'] = 'Västmanland';
-
 
 function getListUsersAlreadyHardcoded() {
     $tabUserIdPerson=array();

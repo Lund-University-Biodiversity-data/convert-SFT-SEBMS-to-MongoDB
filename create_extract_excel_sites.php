@@ -38,7 +38,7 @@ else {
 
 	if ($fp = fopen($path_extract, 'w')) {
 
-		$headers=array("siteId", "name", "karta", "kartaTx", "lan", "verificationStatus", "internalSiteId", "fjall104", "fjall142");
+		$headers=array("siteId", "name", "internalSiteId", "lan", "lsk", "verificationStatus", "fjall104", "fjall142", "bookingComment", "paperSurveySubmitted");
 		fputcsv($fp, $headers, ";");
 
 		foreach ($rows as $row){
@@ -47,13 +47,16 @@ else {
 
 			$site["siteId"]=$row->siteId;
 			$site["name"]=(isset($row->name) ? $row->name : "");
-			$site["karta"]=(isset($row->karta) ? $row->karta : "");
-			$site["kartaTx"]=(isset($row->kartaTx) ? $row->kartaTx : "");
-			$site["lan"]=(isset($row->lan) ? $row->lan : "");
-			$site["verificationStatus"]=(isset($row->verificationStatus) ? $row->verificationStatus : "");
 			$site["internalSiteId"]=(isset($row->adminProperties->internalSiteId) ? $row->adminProperties->internalSiteId : "");
+			//$site["karta"]=(isset($row->karta) ? $row->karta : "");
+			//$site["kartaTx"]=(isset($row->kartaTx) ? $row->kartaTx : "");
+			$site["lan"]=(isset($row->adminProperties->lan) ? $row->adminProperties->lan : "");
+			$site["lsk"]=(isset($row->adminProperties->lsk) ? $row->adminProperties->lsk : "");
+			$site["verificationStatus"]=(isset($row->verificationStatus) ? $row->verificationStatus : "");
 			$site["fjall104"]=(isset($row->adminProperties->fjall104) ? $row->adminProperties->fjall104 : "");
 			$site["fjall142"]=(isset($row->adminProperties->fjall142) ? $row->adminProperties->fjall142 : "");
+			$site["bookingComment"]=(isset($row->adminProperties->bookingComment) ? $row->adminProperties->bookingComment : "");	
+			$site["paperSurveySubmitted"]=(isset($row->adminProperties->paperSurveySubmitted) ? $row->adminProperties->paperSurveySubmitted : "");			
 
 			fputcsv($fp, $site, ";");
 
