@@ -89,6 +89,7 @@ else {
 			break;
 		case "natt":
 			$arrayFieldsRequired[]="bookingComment";
+			$arrayFieldsRequired[]="paperSurveySubmitted";
 			break;
 		case "iwc":
 			break;
@@ -139,6 +140,20 @@ else {
 				else {
 					$internalSiteId=$row->karta;
 				}
+				break;
+			case "natt":
+				if (!isset($row->kartaTx)) {
+					echo consoleMessage("error", "No kartaTx for ".$row->siteId); 
+					//exit;
+					if (!isset($row->adminProperties->internalSiteId)) {
+						echo consoleMessage("error", "No internalSiteId for ".$row->siteId); 
+						//exit;
+					}
+					$internalSiteId="NO";
+				}
+				else {
+					$internalSiteId=$row->kartaTx;
+				}
 				break;	
 
 		}
@@ -151,7 +166,10 @@ else {
 	';
 
 		foreach ($arrayFieldsRequired as $key) {
-			$cmdJs.='"adminProperties.'.$key.'" : "'.$arrSitesPsql[$internalSiteId][$key].'",';
+			if (isset($arrSitesPsql[$internalSiteId][$key])) $val=$arrSitesPsql[$internalSiteId][$key];
+			else $val="";
+
+			$cmdJs.='"adminProperties.'.$key.'" : "'.$val.'",';
 		}
 		$cmdJs[strlen($cmdJs)-1]=' ';
 		$cmdJs.='}});
@@ -170,6 +188,10 @@ else {
     switch ($protocol) {
 		case "std":
 			$unset.='"lsk":1, "karta":1,';
+
+			break;
+		case "natt":
+			$unset.='"kartaTx":1,';
 
 			break;	
 
