@@ -12,8 +12,6 @@ echo consoleMessage("info", "Script starts");
 echo consoleMessage("info", "DEBUG example command :");
 echo consoleMessage("info", "php update_sites.php std 2 debug");
 
-$county=getCountyLanArray();
-$province=getProvinceLskArray();
 
 $debug=false;
 $collection="site";
@@ -74,8 +72,8 @@ else {
 				foreach ($arrayFieldsRequired as $key) {
 					$arrSitesPsql[$rtSites["karta"]][$key]="";
 				}
-				$arrSitesPsql[$rtSites["karta"]]["lan"]=$county[$rtSites["lan"]];
-				$arrSitesPsql[$rtSites["karta"]]["lsk"]=$province[$rtSites["lsk"]];
+				$arrSitesPsql[$rtSites["karta"]]["lan"]=$rtSites["lan"];
+				$arrSitesPsql[$rtSites["karta"]]["lsk"]=$rtSites["lsk"];
 				$arrSitesPsql[$rtSites["karta"]]["internalSiteId"]=$rtSites["karta"];
 				if ($rtSites["fjall104"]=="t") $arrSitesPsql[$rtSites["karta"]]["fjall104"]=1;
 				if ($rtSites["fjall142"]=="t") $arrSitesPsql[$rtSites["karta"]]["fjall142"]=1;
@@ -116,7 +114,7 @@ else {
 				foreach ($arrayFieldsRequired as $key) {
 					$arrSitesPsql[$rtSites["ruta"]][$key]="";
 				}
-				$arrSitesPsql[$rtSites["ruta"]]["lan"]=$county[$rtSites["lan"]];
+				$arrSitesPsql[$rtSites["ruta"]]["lan"]=$rtSites["lan"];
 				$arrSitesPsql[$rtSites["ruta"]]["routetype"]=$rtSites["ruttyp"];
 				$arrSitesPsql[$rtSites["ruta"]]["internalSiteId"]=$rtSites["ruta"];
 			}
@@ -165,10 +163,19 @@ else {
 
     	switch ($protocol) {
 			case "std":
+				
+
 				if (!isset($row->karta)) {
-					echo consoleMessage("error", "No karta for ".$row->siteId); 
-					//exit;
-					$internalSiteId=$row->adminProperties->internalSiteId;
+					if (!isset($row->adminProperties->internalSiteId) || $row->adminProperties->internalSiteId=="") {
+						echo consoleMessage("error", "No karta/internalSiteId for ".$row->siteId); 
+						//exit;
+						$internalSiteId="NO";
+					}
+					else {
+						//echo consoleMessage("error", "No karta for ".$row->siteId); 
+						//exit;
+						$internalSiteId=$row->adminProperties->internalSiteId;
+					}
 				}
 				else {
 					$internalSiteId=$row->karta;
@@ -177,10 +184,9 @@ else {
 
 			case "natt":
 				if (!isset($row->kartaTx)) {
-					echo consoleMessage("error", "No kartaTx for ".$row->siteId); 
 					//exit;
 					if (!isset($row->adminProperties->internalSiteId) || $row->adminProperties->internalSiteId=="") {
-						echo consoleMessage("error", "No internalSiteId for ".$row->siteId); 
+						echo consoleMessage("error", "No kartatx/internalSiteId for ".$row->siteId); 
 						//exit;
 						$internalSiteId="NO";
 					}
@@ -299,6 +305,11 @@ else {
 
 		$cmd='mongo ecodata < '.$path;
 		echo consoleMessage("info", "Command : ".$cmd);
+
+		$scp='scp '.$path.' radar@canmove-dev.ekol.lu.se:/home/radar/convert-SFT-SEBMS-to-MongoDB/'.$path;
+		echo consoleMessage("info", "Command scp DEV : ".$scp);
+		$scp='scp '.$path.' ubuntu@89.45.234.73:/home/ubuntu/convert-SFT-SEBMS-to-MongoDB/'.$path;
+		echo consoleMessage("info", "Command scp PROD : ".$scp);
 	}
 	else echo consoleMessage("error", "can't create file ".$path);
 
