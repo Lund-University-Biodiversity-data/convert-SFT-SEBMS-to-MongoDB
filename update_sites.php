@@ -97,6 +97,7 @@ else {
 
 			$arrayFieldsRequired[]="bookingComment";
 			$arrayFieldsRequired[]="summarySurveySubmitted";
+			$arrayFieldsRequired[]="routetype";
 
 			$arrSitesPsql=array();
 
@@ -116,7 +117,7 @@ else {
 					$arrSitesPsql[$rtSites["ruta"]][$key]="";
 				}
 				$arrSitesPsql[$rtSites["ruta"]]["lan"]=$county[$rtSites["lan"]];
-				$arrSitesPsql[$rtSites["ruta"]]["ruttyp"]=$rtSites["ruttyp"];
+				$arrSitesPsql[$rtSites["ruta"]]["routetype"]=$rtSites["ruttyp"];
 				$arrSitesPsql[$rtSites["ruta"]]["internalSiteId"]=$rtSites["ruta"];
 			}
 
