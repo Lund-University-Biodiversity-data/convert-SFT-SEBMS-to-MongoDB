@@ -38,7 +38,7 @@ else {
 
 	if ($fp = fopen($path_extract, 'w')) {
 
-		$headers=array("siteId", "name", "internalSiteId", "lan", "lsk", "verificationStatus", "fjall104", "fjall142", "bookingComment", "paperSurveySubmitted");
+		$headers=array("siteId", "name", "internalSiteId", "routetype", "lan", "lsk", "verificationStatus", "fjall104", "fjall142", "bookingComment", "paperSurveySubmitted", "summarySurveySubmitted", "bookedBy", "decimalLatitude", "decimalLongitude");
 		fputcsv($fp, $headers, ";");
 
 		foreach ($rows as $row){
@@ -48,6 +48,7 @@ else {
 			$site["siteId"]=$row->siteId;
 			$site["name"]=(isset($row->name) ? $row->name : "");
 			$site["internalSiteId"]=(isset($row->adminProperties->internalSiteId) ? $row->adminProperties->internalSiteId : "");
+			$site["routetype"]=(isset($row->adminProperties->routetype) ? $row->adminProperties->routetype : "");
 			//$site["karta"]=(isset($row->karta) ? $row->karta : "");
 			//$site["kartaTx"]=(isset($row->kartaTx) ? $row->kartaTx : "");
 			$site["lan"]=(isset($row->adminProperties->lan) ? $row->adminProperties->lan : "");
@@ -57,6 +58,12 @@ else {
 			$site["fjall142"]=(isset($row->adminProperties->fjall142) ? $row->adminProperties->fjall142 : "");
 			$site["bookingComment"]=(isset($row->adminProperties->bookingComment) ? $row->adminProperties->bookingComment : "");	
 			$site["paperSurveySubmitted"]=(isset($row->adminProperties->paperSurveySubmitted) ? $row->adminProperties->paperSurveySubmitted : "");			
+			$site["summarySurveySubmitted"]=(isset($row->adminProperties->summarySurveySubmitted) ? $row->adminProperties->summarySurveySubmitted : "");			
+
+			$site["bookedBy"]=(isset($row->bookedBy) ? $row->bookedBy : "");
+			$site["decimalLatitude"]=(isset($row->extent->geometry->decimalLatitude) ? $row->extent->geometry->decimalLatitude : "");
+			$site["decimalLongitude"]=(isset($row->extent->geometry->decimalLongitude) ? $row->extent->geometry->decimalLongitude : "");
+
 
 			fputcsv($fp, $site, ";");
 
