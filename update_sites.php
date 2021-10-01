@@ -82,15 +82,47 @@ else {
 			}
 
 			break;
+
 		case "sommar":
 		case "vinter":
 			break;
-		case "kust":
-			break;
+
 		case "natt":
 			$arrayFieldsRequired[]="bookingComment";
 			$arrayFieldsRequired[]="paperSurveySubmitted";
 			break;
+
+
+		case "kust":
+
+			$arrayFieldsRequired[]="bookingComment";
+			$arrayFieldsRequired[]="summarySurveySubmitted";
+
+			$arrSitesPsql=array();
+
+			$qSites="select ruta, ruttyp, lan
+		         from
+		         kustfagel200_koordinater
+		         order by ruta
+				";
+			if (isset($limit) && $limit>0) $limit.=" LIMIT ".$limit;
+			$rSites = pg_query($db_connection, $qSites);
+			if (!$rSites) die("QUERY:" . consoleMessage("error", pg_last_error()));
+
+			
+			while ($rtSites = pg_fetch_array($rSites)) {
+
+				foreach ($arrayFieldsRequired as $key) {
+					$arrSitesPsql[$rtSites["ruta"]][$key]="";
+				}
+				$arrSitesPsql[$rtSites["ruta"]]["lan"]=$county[$rtSites["lan"]];
+				$arrSitesPsql[$rtSites["ruta"]]["ruttyp"]=$rtSites["ruttyp"];
+				$arrSitesPsql[$rtSites["ruta"]]["internalSiteId"]=$rtSites["ruta"];
+			}
+
+
+			break;
+
 		case "iwc":
 			break;
 	}
@@ -141,18 +173,44 @@ else {
 					$internalSiteId=$row->karta;
 				}
 				break;
+
 			case "natt":
 				if (!isset($row->kartaTx)) {
 					echo consoleMessage("error", "No kartaTx for ".$row->siteId); 
 					//exit;
-					if (!isset($row->adminProperties->internalSiteId)) {
+					if (!isset($row->adminProperties->internalSiteId) || $row->adminProperties->internalSiteId=="") {
 						echo consoleMessage("error", "No internalSiteId for ".$row->siteId); 
 						//exit;
+						$internalSiteId="NO";
 					}
-					$internalSiteId="NO";
+					else {
+						$internalSiteId=$row->adminProperties->internalSiteId;
+					}
+					
 				}
 				else {
+					//echo "KartaTx".$row->kartaTx;
 					$internalSiteId=$row->kartaTx;
+				}
+				break;
+
+			case "kust":
+				if (!isset($row->name)) {
+					echo consoleMessage("error", "No name for ".$row->siteId); 
+					//exit;
+					if (!isset($row->adminProperties->internalSiteId) || $row->adminProperties->internalSiteId=="") {
+						echo consoleMessage("error", "No internalSiteId for ".$row->siteId); 
+						//exit;
+						$internalSiteId="NO";
+					}
+					else {
+						$internalSiteId=$row->adminProperties->internalSiteId;
+					}
+					
+				}
+				else {
+					//echo "KartaTx".$row->kartaTx;
+					$internalSiteId=$row->name;
 				}
 				break;	
 
@@ -164,18 +222,46 @@ else {
     	// if it does not exist => fill it with SQL value
 		$cmdJs.='db.'.$collection.'.update({"siteId" : "'.$row->siteId.'"}, {$set : {
 	';
+		switch ($protocol) {
+			case "std":
 
-		foreach ($arrayFieldsRequired as $key) {
-			if (isset($arrSitesPsql[$internalSiteId][$key])) $val=$arrSitesPsql[$internalSiteId][$key];
-			else $val="";
+				foreach ($arrayFieldsRequired as $key) {
+					if (isset($arrSitesPsql[$internalSiteId][$key])) $val=$arrSitesPsql[$internalSiteId][$key];
+					else $val="";
 
-			$cmdJs.='"adminProperties.'.$key.'" : "'.$val.'",';
+					$cmdJs.='"adminProperties.'.$key.'" : "'.$val.'",';
+				}
+
+				break;
+
+			case "natt": 
+				foreach ($arrayFieldsRequired as $key) {
+					if ($key=="internalSiteId") {
+						$val=$internalSiteId;
+					}
+					elseif (isset($arrSitesPsql[$internalSiteId][$key])) $val=$arrSitesPsql[$internalSiteId][$key];
+					else $val="";
+
+					$cmdJs.='"adminProperties.'.$key.'" : "'.$val.'",';
+				}
+
+				break;
+
+			case "kust": 
+				
+				foreach ($arrayFieldsRequired as $key) {
+					if (isset($arrSitesPsql[$internalSiteId][$key])) $val=$arrSitesPsql[$internalSiteId][$key];
+					else $val="";
+
+					$cmdJs.='"adminProperties.'.$key.'" : "'.$val.'",';
+				}
+
+				break;
+			
 		}
 		$cmdJs[strlen($cmdJs)-1]=' ';
 		$cmdJs.='}});
 ';
-
-
 
 
     }
@@ -193,6 +279,8 @@ else {
 		case "natt":
 			$unset.='"kartaTx":1,';
 
+		case "kust":
+			$unset.=',';
 			break;	
 
 	}
