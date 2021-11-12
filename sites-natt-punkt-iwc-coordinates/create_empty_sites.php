@@ -2,9 +2,12 @@
 $database="SFT";
 require "../lib/config.php";
 require "../lib/functions.php";
-//require_once "lib/PHPExcel/Classes/PHPExcel.php";
 require '../vendor/autoload.php';
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
+
+require PATH_SHARED_FUNCTIONS."generic-functions.php";
+require PATH_SHARED_FUNCTIONS."mongo-functions.php";
+
 
 echo consoleMessage("info", "Script starts");
 
@@ -13,10 +16,10 @@ echo consoleMessage("info", "php create_empty_sites.php natt");
 
 $debug=false;
 
-$arr_protocol=array("natt", "punkt");
+$arr_protocol=array("natt", "punkt", "iwc");
 
 if (!isset($argv[1]) || !in_array(trim($argv[1]), $arr_protocol)) {
-	echo consoleMessage("error", "First parameter missing: natt / punkt");
+	echo consoleMessage("error", "First parameter missing: natt / punkt / iwc");
 }
 else {
 
@@ -53,7 +56,7 @@ else {
 
 	$db_connection = pg_connect("host=".$DB["host"]." dbname=".$DB["database"]." user=".$DB["username"]." password=".$DB["password"])  or die("CONNECT:" . consoleMessage("error", pg_result_error()));
 
-	if ($protocol=="punkt" || $mode=="totalnatt") {
+	if ($protocol=="punkt" || $protocol=="iwc" || $mode=="totalnatt") {
 
 
 		switch($protocol) {
@@ -66,6 +69,25 @@ else {
 				$fieldIdentifier = "kartatx";
 				$fieldRouteName = "kartatx";
 				$fieldLan = "kartatx";
+
+				break;
+
+			case "iwc":
+
+				$qSites=' SELECT DISTINCT J.site as internalsiteid, K.lokalnamn, K.lan 
+							FROM total_iwc_januari J, iwc_koordinater K
+							WHERE J.site=K.site 
+							UNION 
+							SELECT DISTINCT S.site as internalsiteid, K.lokalnamn, K.lan 
+							FROM total_iwc_september S, iwc_koordinater K
+							WHERE S.site=K.site 
+							ORDER BY internalsiteid';
+
+				$fieldIdentifier = "internalsiteid";
+				$fieldRouteName = "lokalnamn";
+				$fieldLan = "lan";
+				
+				$projectId=$commonFields["iwc"]["projectId"];
 
 				break;
 
@@ -95,7 +117,10 @@ else {
 		$rSites = pg_query($db_connection, $qSites);
 		while ($rtSites = pg_fetch_array($rSites)) {
 			$line=array();
-			$line["kartatx"]=$rtSites["kartatx"];
+
+			if ($protocol!="iwc")
+				$line["kartatx"]=$rtSites["kartatx"];
+
 			$line[$fieldIdentifier]=$rtSites[$fieldIdentifier];
 			$line[$fieldRouteName]=$rtSites[$fieldRouteName];
 			$line[$fieldLan]=$rtSites[$fieldLan];
@@ -104,21 +129,26 @@ else {
 
 		echo consoleMessage("info", count($array_psql_sites)." site(s) found in psql"); 
 
-		$array_mongo_sites=getArraySitesFromMongo ($protocol, $projectId);
+		$array_mongo_sites=getArraySitesFromMongo ($protocol, $projectId, DEFAULT_SERVER);
 
 		echo consoleMessage("info", count($array_mongo_sites)." site(s) found in mongoDB"); 
 
 
-		$arrMissKartaTx=array();
+		$arrMissCodeSite=array();
 		$arrMissIdentifier=array();
 		$okSites=0;
 		foreach ($array_psql_sites as $sqlSite) {
 			if (!isset($array_mongo_sites[$sqlSite[$fieldIdentifier]])) {
-				if (!in_array($sqlSite["kartatx"], $arrMissKartaTx) )
-					$arrMissKartaTx[]=$sqlSite["kartatx"];
+				if ($protocol=="iwc")
+					$arrMissCodeSite[]=$sqlSite[$fieldIdentifier];
+				elseif (!in_array($sqlSite["kartatx"], $arrMissCodeSite) )
+					$arrMissCodeSite[]=$sqlSite["kartatx"];
 
 				$line=array();
-				$line["kartatx"]=$sqlSite["kartatx"];
+
+				if ($protocol!="iwc")
+					$line["kartatx"]=$sqlSite["kartatx"];
+
 				$line[$fieldIdentifier]=$sqlSite[$fieldIdentifier];
 				$line[$fieldRouteName]=$sqlSite[$fieldRouteName];
 				$line[$fieldLan]=$sqlSite[$fieldLan];
@@ -147,8 +177,8 @@ else {
 
 		$listKartaTxHardcoded=array("13CSO", "16CNV");
 		
-		$arrMissKartaTx=$listKartaTxHardcoded;
-		foreach ($arrMissKartaTx as $kar) {
+		$arrMissCodeSite=$listKartaTxHardcoded;
+		foreach ($arrMissCodeSite as $kar) {
 			$line=array();
 			$line[$fieldIdentifier]=$kar;
 			$line[$fieldRouteName]=$kar;
@@ -157,21 +187,34 @@ else {
 		}
 	}
 
-	echo consoleMessage("info", count($arrMissKartaTx)."  distinct kartaTx missing");
+	echo consoleMessage("info", count($arrMissCodeSite)."  distinct kartaTx missing");
 
 	if (count($arrMissIdentifier)>0) {
 
 		$json="[";
 
 		$arrDetailsSites=array();
-		$qDetailsSites="SELECT * FROM koordinater_mittpunkt_topokartan WHERE kartatx IN ('".implode("', '", $arrMissKartaTx)."')";
-		//echo $qDetailsSites;
-		$rDetailsSites = pg_query($db_connection, $qDetailsSites);
-		while ($rtDetailsSites = pg_fetch_array($rDetailsSites)) {
-			if (isset($arrDetailsSites[$rtDetailsSites["kartatx"]]))
-				echo consoleMessage("error", "doublon for kartatx ".$rtDetailsSites["kartatx"]." in koordinater_mittpunkt_topokartan"); 
 
-			$arrDetailsSites[$rtDetailsSites["kartatx"]]=$rtDetailsSites;
+		if ($protocol=="iwc") {
+			$qDetailsSites="SELECT * FROM iwc_koordinater WHERE site IN ('".implode("', '", $arrMissCodeSite)."')";
+			//echo $qDetailsSites;
+			$rDetailsSites = pg_query($db_connection, $qDetailsSites);
+			while ($rtDetailsSites = pg_fetch_array($rDetailsSites)) {
+				$arrDetailsSites[$rtDetailsSites["site"]]=$rtDetailsSites;
+			}
+
+		}
+		else {
+			$qDetailsSites="SELECT * FROM koordinater_mittpunkt_topokartan WHERE kartatx IN ('".implode("', '", $arrMissCodeSite)."')";
+			//echo $qDetailsSites;
+			$rDetailsSites = pg_query($db_connection, $qDetailsSites);
+			while ($rtDetailsSites = pg_fetch_array($rDetailsSites)) {
+				if (isset($arrDetailsSites[$rtDetailsSites["kartatx"]]))
+					echo consoleMessage("error", "doublon for kartatx ".$rtDetailsSites["kartatx"]." in koordinater_mittpunkt_topokartan"); 
+
+				$arrDetailsSites[$rtDetailsSites["kartatx"]]=$rtDetailsSites;
+			}
+
 		}
 		
 		$nbJson=0;
@@ -186,23 +229,49 @@ else {
 
 		foreach ($arrMissIdentifier as $dataMiss) {
 
+			$okAdd=true;
 
 			switch($protocol) {
 				case "natt":
+					$longitude=$arrDetailsSites[$dataMiss["kartatx"]]["wgs84_lon"];
+					$latitude=$arrDetailsSites[$dataMiss["kartatx"]]["wgs84_lat"];
 					$nameSite= $dataMiss["kartatx"].' - NATT';
+
+					$identif="kartatx";
 				break;
 				case "punkt":
+					$longitude=$arrDetailsSites[$dataMiss["kartatx"]]["wgs84_lon"];
+					$latitude=$arrDetailsSites[$dataMiss["kartatx"]]["wgs84_lat"];
 					$nameSite= $dataMiss[$fieldIdentifier].' - '.$dataMiss[$fieldRouteName];
+
+					$identif="kartatx";
+				break;
+				case "iwc":
+
+					$identif="internalsiteid";
+
+					if (trim($arrDetailsSites[$dataMiss[$identif]]["mitt_wgs84_lon"])=="" || trim($arrDetailsSites[$dataMiss[$identif]]["mitt_wgs84_lat"])=="") {
+						echo consoleMessage("error", "Coordinates missing for ".$dataMiss[$identif].": ".$arrDetailsSites[$dataMiss[$identif]]["mitt_wgs84_lon"]." / ".$arrDetailsSites[$dataMiss[$identif]]["mitt_wgs84_lat"]); 
+
+						$okAdd=false;
+
+					}
+					$longitude=$arrDetailsSites[$dataMiss[$identif]]["mitt_wgs84_lon"];
+					$latitude=$arrDetailsSites[$dataMiss[$identif]]["mitt_wgs84_lat"];
+					$nameSite= $dataMiss["lokalnamn"].' - IWC';
+
+
 				break;
 
 			}
 
 
-			if (!isset($arrDetailsSites[$dataMiss["kartatx"]])) 
-				echo consoleMessage("error", "No coordinates for kartatx: '".$rtDetailsSites["kartatx"]."' / ".$dataMiss[$fieldIdentifier]); 
+			if (!$okAdd || !isset($arrDetailsSites[$dataMiss[$identif]])) {
+				echo consoleMessage("error", "No coordinates for ".$dataMiss[$identif]." / ".$dataMiss[$fieldIdentifier]); 
+			}
 			else {
 
-				
+				// "kartaTx" : "'.$dataMiss["kartatx"].'",
 
 				$json.='
 	{
@@ -213,7 +282,6 @@ else {
 		"status" : "active",
 		"verificationStatus" : "godkänd",
 		"type" : "",
-		"kartaTx" : "'.$dataMiss["kartatx"].'",
 		"area" : "0",
 		"projects" : [
 			"'.$commonFields[$protocol]["projectId"].'"
@@ -221,25 +289,25 @@ else {
 		"geoIndex" : {
 			"type" : "Point",
 			"coordinates" : [
-				'.$arrDetailsSites[$dataMiss["kartatx"]]["wgs84_lon"].',
-				'.$arrDetailsSites[$dataMiss["kartatx"]]["wgs84_lat"].',
+				'.$longitude.',
+				'.$latitude.',
 				6
 			]
 		},
 		"extent" : {
 			"geometry" : {
-				"decimalLongitude" : '.$arrDetailsSites[$dataMiss["kartatx"]]["wgs84_lon"].',
-				"decimalLatitude" : '.$arrDetailsSites[$dataMiss["kartatx"]]["wgs84_lat"].',
+				"decimalLongitude" : '.$longitude.',
+				"decimalLatitude" : '.$latitude.',
 				"centre" : [
-					'.$arrDetailsSites[$dataMiss["kartatx"]]["wgs84_lon"].',
-					'.$arrDetailsSites[$dataMiss["kartatx"]]["wgs84_lat"].',
+					'.$longitude.',
+					'.$latitude.',
 					6
 				],
 				"aream2" : 0,
 				"type" : "Point",
 				"coordinates" : [
-					'.$arrDetailsSites[$dataMiss["kartatx"]]["wgs84_lon"].',
-					'.$arrDetailsSites[$dataMiss["kartatx"]]["wgs84_lat"].',
+					'.$longitude.',
+					'.$latitude.',
 					6
 				],
 				"areaKmSq" : 0
@@ -247,9 +315,9 @@ else {
 			"source" : "Point"
 		},
 		"transectParts" : [],
-		"lan" : "'.$dataMiss[$fieldLan].'",
 		"adminProperties" : {
-			"internalSiteId" : "'.$dataMiss[$fieldIdentifier].'"
+			"internalSiteId" : "'.$dataMiss[$fieldIdentifier].'",
+			"lan" : "'.$dataMiss[$fieldLan].'"
 		},
 		"description" : ""
 	}
@@ -277,7 +345,7 @@ else {
 				fwrite($fp, $json);
 				fclose($fp);
 
-				echo "scp ".$path_json_result." ubuntu@89.45.234.73:/home/ubuntu/convert-SFT-SEBMS-to-MongoDB/sites-natt-punkt-coordinates/json/\n";
+				echo "scp ".$path_json_result." ubuntu@89.45.234.73:/home/ubuntu/convert-SFT-SEBMS-to-MongoDB/sites-natt-punkt-iwc-coordinates/json/\n";
 				echo 'mongoimport --db ecodata --collection site --jsonArray --file '.$path_json_result."\n";
 			}
 			else echo consoleMessage("error", "can't create file ".$path);

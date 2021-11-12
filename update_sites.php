@@ -76,7 +76,9 @@ else {
 				$arrSitesPsql[$rtSites["karta"]]["lsk"]=$rtSites["lsk"];
 				$arrSitesPsql[$rtSites["karta"]]["internalSiteId"]=$rtSites["karta"];
 				if ($rtSites["fjall104"]=="t") $arrSitesPsql[$rtSites["karta"]]["fjall104"]=1;
+				else $arrSitesPsql[$rtSites["karta"]]["fjall104"]=0;
 				if ($rtSites["fjall142"]=="t") $arrSitesPsql[$rtSites["karta"]]["fjall142"]=1;
+				else  $arrSitesPsql[$rtSites["karta"]]["fjall142"]=0;
 			}
 
 			break;
@@ -318,60 +320,30 @@ else {
 
 
 /*
-	switch ($protocol) {
 
-		case "std":
+db.site.find({projects:"89383d0f-9735-4fe7-8eb4-8b2e9e9b7b5c", "adminProperties.fjall104":{$exists:true}, "adminProperties.fjall104":{$ne:"1"}}).count()
 
-		$qSites="select karta, fjall104, fjall142
-         from
-         standardrutter_biotoper
-         order by karta
-		";
-		$rSites = pg_query($db_connection, $qSites);
-		if (!$rSites) die("QUERY:" . consoleMessage("error", pg_last_error()));
+db.site.updateMany({
+	projects:"89383d0f-9735-4fe7-8eb4-8b2e9e9b7b5c", 
+	"adminProperties.fjall104":{$exists:true}, 
+	"adminProperties.fjall104":{$ne:"1"}
+},
+{$set: {
+	"adminProperties.fjall104": "0"
+}}
+)
 
-		$arr104=array();
-		$arr142=array();
-		while ($rtSites = pg_fetch_array($rSites)) {
-			if ($rtSites["fjall104"]=="t") $arr104[]=$rtSites["karta"];
-			if ($rtSites["fjall142"]=="t") $arr142[]=$rtSites["karta"];
-		}
+db.site.find({projects:"89383d0f-9735-4fe7-8eb4-8b2e9e9b7b5c", "adminProperties.fjall142":{$exists:true}, "adminProperties.fjall142":{$ne:"1"}}).count()
 
-		$mng = new MongoDB\Driver\Manager(); 
-	    if ($mng) echo consoleMessage("info", "Connection to mongoDb ok");
-
-		$bulk = new MongoDB\Driver\BulkWrite;
-	    //$filter = [];
-	    $filter = ['projects' => $commonFields[$protocol]["projectId"], "karta" => ['$in' => $arr104]];
-	    print_r($filter);
-	    $options =  ['$set' => ['adminProperties.Fjall104' => true]];
-	    $updateOptions = ['multi' => true];
-	    $bulk->update($filter, $options, $updateOptions); 
-	    $result = $mng->executeBulkWrite('ecodata.site', $bulk);
-
-print_r($result);
-
-		$bulk = new MongoDB\Driver\BulkWrite;
-	    //$filter = [];
-	    $filter = ['projects' => $commonFields[$protocol]["projectId"], "karta" => ['$in' => $arr142]];
-	    print_r($filter);
-	    $options =  ['$set' => ['adminProperties.Fjall142' => true]];
-	    $updateOptions = ['multi' => true];
-	    $bulk->update($filter, $options, $updateOptions); 
-	    $result = $mng->executeBulkWrite('ecodata.site', $bulk);
-
-print_r($result);
-
-		break;
-
-
-		case "natt":
-
-		break;
-	}
+db.site.updateMany({
+	projects:"89383d0f-9735-4fe7-8eb4-8b2e9e9b7b5c", 
+	"adminProperties.fjall142":{$exists:true}, 
+	"adminProperties.fjall142":{$ne:"1"}
+},
+{$set: {
+	"adminProperties.fjall142": "0"
+}}
+)
 */
-
-
-
 
 }

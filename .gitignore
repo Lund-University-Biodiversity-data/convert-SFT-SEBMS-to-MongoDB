@@ -2,9 +2,10 @@ json/
 dump_json_sft_sebms/
 config.php
 script/*.mongo
-sites-natt-punkt-coordinates/json/*
-sites-natt-punkt-coordinates/toscan/*
-sites-natt-punkt-coordinates/KoordinatfilerNatt/*
+sites-natt-punkt-iwc-coordinates/json/*
+sites-natt-punkt-iwc-coordinates/toscan/*
+sites-natt-punkt-iwc-coordinates/KoordinatfilerNatt/*
 lib/*.txt
 composer.lock
 composer.json
+old/
