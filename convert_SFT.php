@@ -17,10 +17,10 @@ $debug=false;
 
 // parameters
 // 1- protocol: std (standardrutterna) - natt (nattrutterna) - vinter (vinterrutterna) - sommar (sommarrutterna) - kust (kustfagelrutterna)
-$arr_protocol=array("std", "natt", "vinter", "sommar", "kust");
+$arr_protocol=array("std", "natt", "vinter", "sommar", "kust", "iwc");
 
 if (!isset($argv[1]) || !in_array(trim($argv[1]), $arr_protocol)) {
-	echo consoleMessage("error", "First parameter missing: std / natt / vinter / sommar / kust");
+	echo consoleMessage("error", "First parameter missing: std / natt / vinter / sommar / kust / iwc");
 }
 else {
 
@@ -44,7 +44,7 @@ else {
 	}
 	$array_persons=array();
 
-	$array_sites=getArraySitesFromMongo($protocol, $commonFields[$protocol]["projectId"]);
+	$array_sites=getArraySitesFromMongo($protocol, $commonFields[$protocol]["projectId"], "TEST");
 	$array_sites_req=array();
 
     $mng = new MongoDB\Driver\Manager(); // Driver Object created
@@ -134,11 +134,29 @@ else {
 			";
 
 			break;
+
+		case "iwc":
+
+			$qEvents="
+			select P.efternamn, P.fornamn, P.persnr, T.datum ,T.site AS sitename, T.yr, T.metod, 'januari' as period
+			from total_iwc_januari T
+			left join personer P on P.persnr = T.persnr 
+			where T.site  IN ".$req_sites."  
+			AND T.art='000'
+			UNION 
+			select P.efternamn, P.fornamn, P.persnr, T.datum ,T.site AS sitename, T.yr, T.metod, 'september' as period
+			from total_iwc_september T
+			left join personer P on P.persnr = T.persnr 
+			where T.site  IN ".$req_sites."  
+			AND T.art='000'
+			order by datum
+			";
+
+			break;
 	}
 
 	if (isset($limitEvents) && $limitEvents>0)
 		$qEvents.=" LIMIT ".$limitEvents;
-	
 
 	$array_species_guid=array();
 	// GET the list of species
@@ -258,6 +276,18 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 				";
 				$nbPts=1;
 				break;
+			case "iwc":
+				$qRecords="
+					select EL.arthela AS names, EL.latin as scientificname, T.art, T.datum
+					from total_iwc_januari T, eurolist EL
+					where EL.art=T.art 
+					and T.site='".$rtEvents["sitename"]."'  
+					AND T.art<>'000'
+					AND T.datum='".$rtEvents["datum"]."'
+					order by datum
+				";
+				$nbPts=1;
+				break;
 		}
 
 		if (isset($limitEvents) && $limitEvents>0)
@@ -293,7 +323,42 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 		//echo "Date: $date_now_tz\n";
 
 		$helpers="[{}]";
-		if ($protocol=="kust") {
+		if ($protocol=="iwc") {
+
+			$start_time=0;
+			$eventDate=date("Y-m-d", strtotime($rtEvents["datum"]))."T00:00:00Z";
+
+			$helpers=getHelpers($db_connection, $protocol, $rtEvents["sitename"], $rtEvents["datum"], $rtEvents["persnr"]);
+
+			$per=$rtEvents["period"];
+			switch ($rtEvents["metod"]) {
+				case "L":
+					$observedFrom="land";
+					break;
+				case "B":
+					$observedFrom="båt";
+					break;	
+				case "F":
+					$observedFrom="flygg";
+					break;
+				case "":
+					$observedFrom="";
+					break;
+				default:
+					$observedFrom="error";
+					echo consoleMessage("error", "unknown method : ".$rtEvents["metod"]);
+					break;
+			}
+			$specific_iwc='"observedFrom" : "'.$observedFrom.'",
+			"period" : "'.$per.'",
+			"windSpeedKmPerHourCategorical": "",
+			"istäcke" : "",
+			"windDirectionCategorical" : "",
+			"noSpecies" : "nej",
+			';
+
+		}
+		elseif ($protocol=="kust") {
 
 			if ($rtEvents["start"]!="") {
 				$start_time=substr($rtEvents["start"], 0, 5);
@@ -337,7 +402,9 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 				'.$ducklingSize.',
 				';
 
-			$qHelpers="
+			$helpers=getHelpers($db_connection, $protocol, $rtEvents["sitename"], $rtEvents["datum"], $rtEvents["persnr"]);
+
+			/*$qHelpers="
 			select *
 			from kustfagel200_medobs KE, personer P
 			where P.persnr=KE.persnr
@@ -356,7 +423,7 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 					{"helper" : "'.$help.'"},';
 			}
 			$helpers[strlen($helpers)-1]=' ';
-			$helpers.= "]";
+			$helpers.= "]";*/
 
 			$arrKustMammals=array();
 		}
@@ -685,6 +752,7 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 
 				case "sommar":
 				case "vinter":
+				case "iwc":
 					
 					$animals="birds";
 					$speciesFieldName="species";
@@ -899,6 +967,8 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 
 			case "std":
 				$specific_fields.='
+				"surveyStartTime" : "'.$start_time.'",
+				"surveyFinishTime" : "'.$finish_time.'",
 				'.$timeOfObservation.'
 				'.$distanceCovered.'
 				'.$minutesSpentObserving.'
@@ -913,7 +983,10 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 			break;
 
 			case "natt":
-			$specific_fields.=$specific_natt.
+			$specific_fields.='
+				"surveyStartTime" : "'.$start_time.'",
+				"surveyFinishTime" : "'.$finish_time.'",'.
+				$specific_natt.
 				$timeOfObservation.
 				'
 				"mammalObservations" : [
@@ -934,7 +1007,10 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 			break;
 
 			case "kust":
-				$specific_fields.=$specific_kust.
+				$specific_fields.='
+				"surveyStartTime" : "'.$start_time.'",
+				"surveyFinishTime" : "'.$finish_time.'",'.
+				$specific_kust.
 					'"mammalObservations" : [
 					'.(count($arrKustMammals)>0 ? implode(",", $arrKustMammals) : '"nej"').'
 				],';
@@ -944,7 +1020,14 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 
 			case "sommar":
 			case "vinter":
-				$specific_fields.=$specific_punkt;
+				$specific_fields.='
+				"surveyStartTime" : "'.$start_time.'",
+				"surveyFinishTime" : "'.$finish_time.'",'.
+				$specific_punkt;
+				break;
+
+			case "iwc":
+				$specific_fields.=$specific_iwc;
 				break;
 
 		}
@@ -958,7 +1041,6 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 			"outputNotCompleted" : false,
 			"data" : {
 				"eventRemarks" : "'.$eventRemarks.'",
-				"surveyFinishTime" : "'.$finish_time.'",
 				"locationAccuracy" : 50,
 				"surveyDate" : "'.$date_survey.'",
 				'.$specific_fields.'
@@ -967,7 +1049,6 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 				"locationSource" : "Google maps",
 				"recordedBy" : "'.$recorder_name.'",
 				"helpers" : '.$helpers.',
-				"surveyStartTime" : "'.$start_time.'",
 				"locationCentroidLongitude" : null,
 				"observations" : [
 					'.$data_field["birds"].'

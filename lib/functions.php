@@ -1,5 +1,42 @@
 <?php
 
+function getHelpers($db_connection, $protocol, $sitename, $datum, $persnr) {
+
+    switch($protocol) {
+        case "iwc":
+            $table="iwc_medobs";
+            $sitefield="site";
+            break;
+        case "kust":
+            $table="kustfagel200_medobs";
+            $sitefield="ruta";
+            break;
+
+    }
+    $qHelpers="
+    select *
+    from ".$table." KE, personer P
+    where P.persnr=KE.persnr
+    AND KE.".$sitefield." = '".$sitename."'
+    AND CAST(yr AS text)=LEFT('".$datum."',4)
+    AND P.persnr<>'".$persnr."'
+    ";
+    $rHelpers = pg_query($db_connection, $qHelpers);
+    if (!$rHelpers) die("QUERY:" . consoleMessage("error", pg_last_error()));
+
+    $helpers= "[
+    ";
+    while ($rtHelpers = pg_fetch_array($rHelpers)) {
+        $help=$rtHelpers["fornamn"].' '.$rtHelpers["efternamn"];
+        $helpers.= '
+            {"helper" : "'.$help.'"},';
+    }
+    $helpers[strlen($helpers)-1]=' ';
+    $helpers.= "]";
+
+
+    return $helpers;
+}
 /*
 // format: caracters spearated by '-'. Example: xxxx-xxxx-xxxx-xxxxxxxxx
 // generates an unique ID with hexa digits.
