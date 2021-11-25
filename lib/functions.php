@@ -25,11 +25,11 @@ function getHelpers($db_connection, $protocol, $sitename, $datum, $persnr) {
     if (!$rHelpers) die("QUERY:" . consoleMessage("error", pg_last_error()));
 
     $helpers= "[
-    ";
+            ";
     while ($rtHelpers = pg_fetch_array($rHelpers)) {
         $help=$rtHelpers["fornamn"].' '.$rtHelpers["efternamn"];
         $helpers.= '
-            {"helper" : "'.$help.'"},';
+                {"helper" : "'.$help.'"},';
     }
     $helpers[strlen($helpers)-1]=' ';
     $helpers.= "]";

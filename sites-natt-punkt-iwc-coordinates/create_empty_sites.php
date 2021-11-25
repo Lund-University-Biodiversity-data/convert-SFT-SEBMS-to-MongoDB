@@ -56,6 +56,8 @@ else {
 
 	$db_connection = pg_connect("host=".$DB["host"]." dbname=".$DB["database"]." user=".$DB["username"]." password=".$DB["password"])  or die("CONNECT:" . consoleMessage("error", pg_result_error()));
 
+	echo consoleMessage("info", "connected to ".$DB["database"]);
+
 	if ($protocol=="punkt" || $protocol=="iwc" || $mode=="totalnatt") {
 
 
@@ -74,14 +76,16 @@ else {
 
 			case "iwc":
 
-				$qSites=' SELECT DISTINCT J.site as internalsiteid, K.lokalnamn, K.lan 
+				/*$qSites=' SELECT DISTINCT J.site as internalsiteid, K.lokalnamn, K.lan 
 							FROM total_iwc_januari J, iwc_koordinater K
 							WHERE J.site=K.site 
 							UNION 
 							SELECT DISTINCT S.site as internalsiteid, K.lokalnamn, K.lan 
 							FROM total_iwc_september S, iwc_koordinater K
 							WHERE S.site=K.site 
-							ORDER BY internalsiteid';
+							ORDER BY internalsiteid';*/
+				$qSites=' SELECT site as internalsiteid, lokalnamn, lan, goose, helcom_sub, ln_karta, ki, ev, area
+							FROM iwc_koordinater';
 
 				$fieldIdentifier = "internalsiteid";
 				$fieldRouteName = "lokalnamn";
@@ -97,7 +101,8 @@ else {
 				$fieldIdentifier = "internalsiteid";
 				$fieldLan = "lan";
 
-				$qSites="select CONCAT(persnr, '-', rnr ) as internalsiteid, kartatx, ruttnamn, lan from (
+				$qSites="select CONCAT(persnr, '-', rnr ) as internalsiteid, kartatx, ruttnamn, lan 
+					from (
 					SELECT DISTINCT p.persnr, p.rnr, p.kartatx, p.ruttnamn, p.lan FROM punktrutter p, totalvinter_pkt v 
 								WHERE p.persnr=v.persnr
 								AND p.rnr=v.rnr
@@ -118,8 +123,20 @@ else {
 		while ($rtSites = pg_fetch_array($rSites)) {
 			$line=array();
 
-			if ($protocol!="iwc")
+			if ($protocol!="iwc"){
 				$line["kartatx"]=$rtSites["kartatx"];
+			}
+			else {
+				$specificAdmin=array();
+				$specificAdmin["goose"]=$rtSites["goose"];
+				$specificAdmin["helcom_sub"]=$rtSites["helcom_sub"];
+				$specificAdmin["ln_karta"]=$rtSites["ln_karta"];
+				$specificAdmin["ki"]=$rtSites["ki"];
+				$specificAdmin["ev"]=$rtSites["ev"];
+				$specificAdmin["area"]=$rtSites["area"];
+
+				$line["adminSpecific"]=$specificAdmin;
+			}
 
 			$line[$fieldIdentifier]=$rtSites[$fieldIdentifier];
 			$line[$fieldRouteName]=$rtSites[$fieldRouteName];
@@ -146,8 +163,12 @@ else {
 
 				$line=array();
 
-				if ($protocol!="iwc")
+				if ($protocol!="iwc"){
 					$line["kartatx"]=$sqlSite["kartatx"];
+				}
+				else {
+					$line["adminSpecific"]=$sqlSite["adminSpecific"];
+				}
 
 				$line[$fieldIdentifier]=$sqlSite[$fieldIdentifier];
 				$line[$fieldRouteName]=$sqlSite[$fieldRouteName];
@@ -230,6 +251,7 @@ else {
 		foreach ($arrMissIdentifier as $dataMiss) {
 
 			$okAdd=true;
+			$adminPropertiesSpecific="";
 
 			switch($protocol) {
 				case "natt":
@@ -258,8 +280,13 @@ else {
 					}
 					$longitude=$arrDetailsSites[$dataMiss[$identif]]["mitt_wgs84_lon"];
 					$latitude=$arrDetailsSites[$dataMiss[$identif]]["mitt_wgs84_lat"];
-					$nameSite= $dataMiss["lokalnamn"].' - IWC';
+					$nameSite=$dataMiss["lokalnamn"].' - IWC';
 
+					$adminPropertiesSpecific="";
+					foreach($dataMiss["adminSpecific"] as $keySpecific => $valueSpecific){
+						$adminPropertiesSpecific.=',
+							"'.$keySpecific.'": "'.$valueSpecific.'"';
+					}
 
 				break;
 
@@ -317,7 +344,8 @@ else {
 		"transectParts" : [],
 		"adminProperties" : {
 			"internalSiteId" : "'.$dataMiss[$fieldIdentifier].'",
-			"lan" : "'.$dataMiss[$fieldLan].'"
+			"lan" : "'.$dataMiss[$fieldLan].'"'.
+			$adminPropertiesSpecific.'
 		},
 		"description" : ""
 	}
@@ -345,6 +373,7 @@ else {
 				fwrite($fp, $json);
 				fclose($fp);
 
+				echo "scp ".$path_json_result." radar@canmove-dev.ekol.lu.se:/home/radar/convert-SFT-SEBMS-to-MongoDB/sites-natt-punkt-iwc-coordinates/json/\n";
 				echo "scp ".$path_json_result." ubuntu@89.45.234.73:/home/ubuntu/convert-SFT-SEBMS-to-MongoDB/sites-natt-punkt-iwc-coordinates/json/\n";
 				echo 'mongoimport --db ecodata --collection site --jsonArray --file '.$path_json_result."\n";
 			}

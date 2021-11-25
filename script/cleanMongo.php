@@ -1,8 +1,12 @@
 <?php
-require "lib/functions.php";
+$database="SFT";
+require "lib/config.php";
+//require "lib/functions.php";
+require PATH_SHARED_FUNCTIONS."generic-functions.php";
+
 echo consoleMessage("info", "Script start.");
 
-$arr_protocol=array("clean", "SEBMS-punktlokal", "SEBMS-slinga", "SFT-std", "SFT-natt", "SFT-vinter", "SFT-sommar", "SFT-kust");
+$arr_protocol=array("clean", "SEBMS-punktlokal", "SEBMS-slinga", "SFT-std", "SFT-natt", "SFT-vinter", "SFT-sommar", "SFT-kust", "SFT-iwc");
 
 if (!isset($argv[1]) || !in_array(trim($argv[1]), $arr_protocol)) {
 	echo consoleMessage("error", "First parameter missing: ".implode("/", $arr_protocol));
@@ -16,8 +20,6 @@ else {
 		$protocol=$explArg[1];
 
 		echo consoleMessage("info", "Clean ".$database." => scheme ".$protocol);
-
-		require "lib/config.php";
 
 		$filename = "script/cleanMongo-".$argv[1].".mongo";
 		if ($myfile = fopen($filename, "w")) {

@@ -57,6 +57,7 @@ else {
 
 	$req_sites="(".implode(",", $array_sites_req).")";
 
+
 	echo consoleMessage("info", count($array_sites)." site(s) for the project ".$commonFields[$protocol]["projectId"]);
 	/**************************** connection to mongoDB   ***/
 
@@ -137,19 +138,23 @@ else {
 
 		case "iwc":
 
-			$qEvents="
-			select P.efternamn, P.fornamn, P.persnr, T.datum ,T.site AS sitename, T.yr, T.metod, 'januari' as period
-			from total_iwc_januari T
-			left join personer P on P.persnr = T.persnr 
-			where T.site  IN ".$req_sites."  
-			AND T.art='000'
+			/*
+			
 			UNION 
-			select P.efternamn, P.fornamn, P.persnr, T.datum ,T.site AS sitename, T.yr, T.metod, 'september' as period
+			select P.efternamn, P.fornamn, P.persnr, T.datum ,T.site AS sitename, T.yr, T.metod, 'september' as period, T.komm
 			from total_iwc_september T
 			left join personer P on P.persnr = T.persnr 
 			where T.site  IN ".$req_sites."  
 			AND T.art='000'
 			order by datum
+			*/
+			$qEvents="
+			select P.efternamn, P.fornamn, P.persnr, T.datum ,T.site AS sitename, T.yr, T.metod, 'januari' as period, T.komm
+			from total_iwc_januari T
+			left join personer P on P.persnr = T.persnr 
+			where T.site  IN ".$req_sites."  
+			AND T.art='000'
+			
 			";
 
 			break;
@@ -161,16 +166,35 @@ else {
 	$array_species_guid=array();
 	// GET the list of species
 	foreach ($commonFields["listSpeciesId"] as $animals => $listId) {
-		$url="https://lists.biodiversitydata.se/ws/speciesListItems/".$commonFields["listSpeciesId"][$animals];
+		$url="https://lists.biodiversitydata.se/ws/speciesListItems/".$commonFields["listSpeciesId"][$animals]."?includeKVP=true";
 		$obj = json_decode(file_get_contents($url), true);
 
 		foreach($obj as $sp) {
-			//$array_species_guid[$sp["scientificName"]]=$sp["lsid"];
-			$array_species_guid[$animals][$sp["name"]]=$sp["lsid"];
+			
+
+			// if no lsid => check the KVP values
+			if(!isset($sp["lsid"])) {
+				//echo consoleMessage("error", "No lsid for species ".$sp["name"]." => ");
+				foreach ($sp["kvpValues"] as $iKvp => $kvp) {
+					if ($kvp["key"]=="dyntaxa_id" && isset($kvp["value"]) && is_numeric($kvp["value"])) {
+						echo consoleMessage("info", "dyntaxa_id found in KPVvalues for ".$sp["name"]);
+						$array_species_guid[$animals][$sp["name"]]=$kvp["value"];
+					}
+				}
+			}
+			else {
+				//$array_species_guid[$sp["scientificName"]]=$sp["lsid"];
+				$array_species_guid[$animals][$sp["name"]]=$sp["lsid"];
+			}
+
+			if (!isset($array_species_guid[$animals][$sp["name"]])) {
+				echo consoleMessage("error", "No dyntaxa_id for ".$sp["name"]);
+			}
 		}
 
 		echo consoleMessage("info", "Species list ".$commonFields["listSpeciesId"][$animals]." obtained. ".count($obj)." elements");
-
+//exit();
+//print_r($array_species_guid[$animals]);
 	}
 
 	//print_r($array_species_guid);
@@ -196,6 +220,7 @@ else {
 	while ($rtEvents = pg_fetch_array($rEvents)) {
 
 		$siteInfo["locationID"]=$array_sites[$rtEvents["sitename"]]["locationID"];
+		//$siteInfo["locationName"]=$array_sites[$rtEvents["sitename"]]["commonName"]; 
 		$siteInfo["locationName"]=$array_sites[$rtEvents["sitename"]]["locationName"]; 
 		$siteInfo["decimalLatitude"]=$array_sites[$rtEvents["sitename"]]["decimalLatitude"]; // create an array of sites 
 		$siteInfo["decimalLongitude"]=$array_sites[$rtEvents["sitename"]]["decimalLongitude"]; 
@@ -277,15 +302,27 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 				$nbPts=1;
 				break;
 			case "iwc":
-				$qRecords="
-					select EL.arthela AS names, EL.latin as scientificname, T.art, T.datum
+			/*
+select EL.arthela AS names, EL.latin as scientificname, T.art, T.datum, T.antal 
 					from total_iwc_januari T, eurolist EL
 					where EL.art=T.art 
 					and T.site='".$rtEvents["sitename"]."'  
 					AND T.art<>'000'
-					AND T.datum='".$rtEvents["datum"]."'
+					AND T.yr='".$rtEvents["yr"]."'
+					union
+			*/
+				$qRecords="
+					
+					select EL.arthela AS names, EL.latin as scientificname, T.art, T.datum, T.antal
+					from total_iwc_".$rtEvents["period"]." T, eurolist EL
+					where EL.art=T.art 
+					and T.site='".$rtEvents["sitename"]."'  
+					AND T.art<>'000'
+					AND T.yr='".$rtEvents["yr"]."'
+					AND T.metod='".$rtEvents["metod"]."'
 					order by datum
 				";
+
 				$nbPts=1;
 				break;
 		}
@@ -298,7 +335,8 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 		//echo $qRecords;
 		$rRecords = pg_query($db_connection, $qRecords);
 		if (!$rRecords) die("QUERY:" . consoleMessage("error", pg_last_error()));
-
+		$nbRecords=pg_num_rows($rRecords);
+		
 		$nbLines++;
 		if ($nbLines%100==0) echo number_format($nbLines, 0, ".", " ")." ĺines\n";
 
@@ -325,8 +363,22 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 		$helpers="[{}]";
 		if ($protocol=="iwc") {
 
-			$start_time=0;
+			$start_time="";
+
+
+			if (is_null($rtEvents["datum"]) || trim($rtEvents["datum"])=="") {
+				if ($rtEvents["period"]=="januari") {
+					$rtEvents["datum"]=$rtEvents["yr"]."0115";
+					$eventRemarks.="Date missing in historical data => 15 Jan. ";
+				}
+				elseif ($rtEvents["period"]=="september") {
+					$rtEvents["datum"]=$rtEvents["yr"]."0910";
+					$eventRemarks.="Date missing in historical data => 10 Sep. ";
+				}
+			}
 			$eventDate=date("Y-m-d", strtotime($rtEvents["datum"]))."T00:00:00Z";
+
+			$eventRemarks.=$rtEvents["komm"];
 
 			$helpers=getHelpers($db_connection, $protocol, $rtEvents["sitename"], $rtEvents["datum"], $rtEvents["persnr"]);
 
@@ -349,13 +401,19 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 					echo consoleMessage("error", "unknown method : ".$rtEvents["metod"]);
 					break;
 			}
+			// check the number of records 
+			if ($nbRecords==0) {
+				$noSpecies="ja";
+				//echo "NO SPECIES ".$rtEvents["datum"]." ".$rtEvents["yr"]." ".$rtEvents["sitename"]." ".$rtEvents["period"];
+			}
+			else $noSpecies="nej";
+			
 			$specific_iwc='"observedFrom" : "'.$observedFrom.'",
-			"period" : "'.$per.'",
-			"windSpeedKmPerHourCategorical": "",
-			"istäcke" : "",
-			"windDirectionCategorical" : "",
-			"noSpecies" : "nej",
-			';
+				"period" : "'.$per.'",
+				"windSpeedKmPerHourCategorical": "",
+				"istäcke" : "",
+				"windDirectionCategorical" : "",
+				"noSpecies" : "'.$noSpecies.'",';
 
 		}
 		elseif ($protocol=="kust") {
@@ -849,6 +907,21 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 
 					break;
 
+				case "iwc":
+
+					if ($animalsDataField=="birds") {
+						
+
+						if (trim($rtRecords["antal"])=="") {
+							echo consoleMessage("error", "No number of species for ".$rtRecords["art"].$rtEvents["sitename"].$rtEvents["datum"]);
+							exit();
+						}
+						$IC=$rtRecords["antal"];
+
+					}
+
+					break;
+
 
 
 			}
@@ -1132,6 +1205,7 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 		var_dump($arrSpeciesNotFound);
 	}
 
+	echo "scp dump_json_sft_sebms/".$database."/".$protocol."/postgres_json_* radar@canmove-dev.ekol.lu.se:/home/radar/convert-SFT-SEBMS-to-MongoDB/dump_json_sft_sebms/".$database."/".$protocol."/\n";
 	echo "scp dump_json_sft_sebms/".$database."/".$protocol."/postgres_json_* ubuntu@89.45.234.73:/home/ubuntu/convert-SFT-SEBMS-to-MongoDB/dump_json_sft_sebms/".$database."/".$protocol."/\n";
 
 	echo consoleMessage("info", "Script ends");
