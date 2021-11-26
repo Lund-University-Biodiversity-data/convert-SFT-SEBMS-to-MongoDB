@@ -140,13 +140,7 @@ else {
 
 			/*
 			
-			UNION 
-			select P.efternamn, P.fornamn, P.persnr, T.datum ,T.site AS sitename, T.yr, T.metod, 'september' as period, T.komm
-			from total_iwc_september T
-			left join personer P on P.persnr = T.persnr 
-			where T.site  IN ".$req_sites."  
-			AND T.art='000'
-			order by datum
+			
 			*/
 			$qEvents="
 			select P.efternamn, P.fornamn, P.persnr, T.datum ,T.site AS sitename, T.yr, T.metod, 'januari' as period, T.komm
@@ -154,7 +148,13 @@ else {
 			left join personer P on P.persnr = T.persnr 
 			where T.site  IN ".$req_sites."  
 			AND T.art='000'
-			
+			UNION 
+			select P.efternamn, P.fornamn, P.persnr, T.datum ,T.site AS sitename, T.yr, T.metod, 'september' as period, T.komm
+			from total_iwc_september T
+			left join personer P on P.persnr = T.persnr 
+			where T.site  IN ".$req_sites."  
+			AND T.art='000'
+			order by datum
 			";
 
 			break;
