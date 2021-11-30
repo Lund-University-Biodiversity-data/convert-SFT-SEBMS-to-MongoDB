@@ -217,6 +217,11 @@ else {
 	$arr_json_person='[
 	';
 	$nbLines=0;
+
+	
+	$tabHelperMatch=array();
+
+
 	while ($rtEvents = pg_fetch_array($rEvents)) {
 
 		$siteInfo["locationID"]=$array_sites[$rtEvents["sitename"]]["locationID"];
@@ -361,6 +366,8 @@ select EL.arthela AS names, EL.latin as scientificname, T.art, T.datum, T.antal
 		//echo "Date: $date_now_tz\n";
 
 		$helpers="[{}]";
+		$helperIds=array();
+
 		if ($protocol=="iwc") {
 
 			$start_time="";
@@ -377,12 +384,32 @@ select EL.arthela AS names, EL.latin as scientificname, T.art, T.datum, T.antal
 				}
 			}
 			$eventDate=date("Y-m-d", strtotime($rtEvents["datum"]))."T00:00:00Z";
+			$date_survey=date("Y-m-d", strtotime($rtEvents["datum"]))."T00:00:00Z";
 
 			$eventRemarks.=$rtEvents["komm"];
 
-			$helpers=getHelpers($db_connection, $protocol, $rtEvents["sitename"], $rtEvents["datum"], $rtEvents["persnr"]);
+			//$helpers=getHelpers($db_connection, $protocol, $rtEvents["sitename"], $rtEvents["datum"], $rtEvents["persnr"]);
+			$helpersArr=getHelpers($db_connection, $protocol, $rtEvents["sitename"], $rtEvents["datum"], $rtEvents["persnr"]);
 
-			$per=$rtEvents["period"];
+			$helpers= "[ ";
+			$helperIds=array();
+		    foreach ($helpersArr as $helpPersnr => $helpName) {
+		        $helpers.= '
+		                {"helper" : "'.$helpName.'"},';
+
+		        if (!isset($tabHelperMatch[$helpPersnr])) {
+		        	$helperMongo=getPersonFromInternalId($helpPersnr, "TEST");
+		        	//echo "helper : ".$helperMongo["personId"]."\n";
+		        	$tabHelperMatch[$helpPersnr]=$helperMongo["personId"];
+		        }
+
+		        $helperIds[]=$tabHelperMatch[$helpPersnr];
+		    }
+		    $helpers[strlen($helpers)-1]=' ';
+		    $helpers.= "]";
+
+
+			$per=ucfirst($rtEvents["period"]);
 			switch ($rtEvents["metod"]) {
 				case "L":
 					$observedFrom="land";
@@ -460,7 +487,27 @@ select EL.arthela AS names, EL.latin as scientificname, T.art, T.datum, T.antal
 				'.$ducklingSize.',
 				';
 
-			$helpers=getHelpers($db_connection, $protocol, $rtEvents["sitename"], $rtEvents["datum"], $rtEvents["persnr"]);
+			//$helpers=getHelpers($db_connection, $protocol, $rtEvents["sitename"], $rtEvents["datum"], $rtEvents["persnr"]);
+
+			$helpersArr=getHelpers($db_connection, $protocol, $rtEvents["sitename"], $rtEvents["datum"], $rtEvents["persnr"]);
+
+			$helpers= "[ ";
+			$helperIds=array();
+		    foreach ($helpersArr as $helpPersnr => $helpName) {
+		        $helpers.= '
+		                {"helper" : "'.$helpName.'"},';
+
+		        if (!isset($tabHelperMatch[$helpPersnr])) {
+		        	$helperMongo=getPersonFromInternalId($helpPersnr, "TEST");
+		        	//echo "helper : ".$helperMongo["personId"]."\n";
+		        	$tabHelperMatch[$helpPersnr]=$helperMongo["personId"];
+		        }
+
+		        $helperIds[]=$tabHelperMatch[$helpPersnr];
+		    }
+		    $helpers[strlen($helpers)-1]=' ';
+		    $helpers.= "]";
+
 
 			/*$qHelpers="
 			select *
@@ -1029,6 +1076,7 @@ select EL.arthela AS names, EL.latin as scientificname, T.art, T.datum, T.antal
 			"personId" : "'.$array_persons[$rtEvents["persnr"]].'",
 			"verificationStatus" : "approved",
 			"mainTheme" : ""
+			'.(count($helperIds)>0 ? ', "helperIds" : ["'.implode('","', $helperIds ).'"]' : "").'
 		},';
 
 

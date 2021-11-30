@@ -644,8 +644,8 @@ else {
                             $line["openw"]="";
                             $line["ind"]="";
                             
-                            if (isset($obs->island[0])) $line["i100m"]=$obs->island[0];
-                            if (isset($obs->water[0])) $line["openw"]=$obs->water[0];
+                            if (isset($obs->island)) $line["i100m"]=$obs->island;
+                            if (isset($obs->water)) $line["openw"]=$obs->water;
                             if (isset($obs->individualCount)) $line["ind"]=$obs->individualCount;
 
                             break;
