@@ -24,11 +24,11 @@ echo consoleMessage("info", "php create_extract_excel.php std 2 debug");
 $debug=false;
 
 // parameters
-// 1- protocol: std (standardrutterna) - natt (nattrutterna) - vinter (vinterrutterna) - sommar (sommarrutterna) - kust (kustfagelrutterna)
-$arr_protocol=array("std", "natt", "vinter", "sommar", "kust");
+// 1- protocol: std (standardrutterna) - natt (nattrutterna) - vinter (vinterrutterna) - sommar (sommarrutterna) - kust (kustfåglarrutterna - iwc (sjöfåglarrutterna)
+$arr_protocol=array("std", "natt", "vinter", "sommar", "kust", "iwc");
 
 if (!isset($argv[1]) || !in_array(trim($argv[1]), $arr_protocol)) {
-	echo consoleMessage("error", "First parameter missing: std / natt / vinter / sommar / kust");
+	echo consoleMessage("error", "First parameter missing: std / natt / vinter / sommar / kust / iwc");
 }
 else {
 
@@ -53,6 +53,8 @@ else {
         $url="https://lists.biodiversitydata.se/ws/speciesListItems/".$commonFields["listSpeciesId"][$animals]."?includeKVP=true";
         $obj = json_decode(file_get_contents($url), true);
 
+        echo consoleMessage("info", "reading species list ".$url);
+
         // for the punktrutter, we gather owls and birds
         if (($protocol=="vinter" || $protocol=="sommar") && $animals=="owls") {
             $animals="birds";
@@ -60,8 +62,33 @@ else {
 
         foreach($obj as $sp) {
 
-            if (trim($sp["lsid"])=="") echo consoleMessage("error", "No lsid/guid for ".$sp["name"]);
+            // if no-lsid, use the species name instead 
+            if (trim($sp["lsid"])=="") {
+                $indexSp=$sp["name"];
+                echo consoleMessage("warning", "No lsid/guid for ".$sp["name"]." use name instead (".$indexSp.")");
+            }
+            else {
+                $indexSp=$sp["lsid"];
+            }
 
+            $art="";
+
+            foreach($sp["kvpValues"] as $iSp => $eltSp) {
+
+                if (isset($eltSp["key"]) && $eltSp["key"]=="art") {
+                    $art=$eltSp["value"];
+                    $art=str_pad($art, 3, '0', STR_PAD_LEFT);
+                }
+            }
+
+            if ($art=="") {
+                echo consoleMessage("error", "No art for ".$sp["name"]."/".$sp["lsid"]);
+                $art="-";
+            }
+            else {
+                $array_species_art[$animals][$indexSp]=$art;
+            }
+            /*
             if (isset($sp["kvpValues"][0]["key"]) && $sp["kvpValues"][0]["key"]=="art") {
                 $art=$sp["kvpValues"][0]["value"];
                 $array_species_art[$animals][$sp["lsid"]]=$art;
@@ -69,11 +96,10 @@ else {
             else {
                 echo consoleMessage("error", "No ART for ".$sp["name"]);
             }
-
+            */
         }
         echo consoleMessage("info", "Species list ".$commonFields["listSpeciesId"][$animals]." obtained for ".$animals.". ".count($obj)." elements");
     }
-
 
 	switch($protocol) {
 		case "std":
@@ -110,6 +136,11 @@ else {
             $headers=array("persnr", "ruta", "datum", "yr", "art", "i100m", "openw", "ind", "temp");
 			$nbPts=1;
 			break;
+        case "iwc":
+
+            $headers=array("persnr", "site", "datum", "yr", "art", "period", "metod", "antal", "komm");
+            $nbPts=1;
+            break;
 	}
 
 	$array_sites=array();
@@ -223,6 +254,7 @@ else {
             }
             
             $eventDate=$output->data->surveyDate;
+
             $year=substr($eventDate, 0, 4);
             /*
             if (isset($arrOutputFromRecord[$output->outputId]["eventDate"])) {
@@ -251,6 +283,16 @@ else {
                     break;
                 case "kust":
                     $line["ruta"]=$array_sites_mongo[$output->data->location];
+                    break;
+                case "iwc":
+                    $line["site"]=$array_sites_mongo[$output->data->location];
+
+                    
+                    // specific for the year in iwc
+                    // year +1 if december
+                    if (substr($eventDate, 5, 2)==12) $year=substr($eventDate, 0, 4)+1;
+                    else $year=substr($eventDate, 0, 4);
+                    
                     break;
                 case "sommar":
                 case "vinter":
@@ -338,6 +380,17 @@ else {
                     $line["i100m"]="";
                     $line["openw"]="";
                     $line["ind"]="";
+
+                    break;
+
+                case "iwc":
+                    // first the header with art='000'
+                    $line["art"]="000";
+
+                    $line["period"]=$output->data->period;
+                    $line["metod"]=$output->data->observedFrom;
+                    $line["antal"]="";
+                    $line["komm"]=$output->data->eventRemarks;
 
                     break;
 
@@ -511,10 +564,17 @@ else {
                     switch($animals) {
                         case "birds":
                             if (!isset($obs->species->guid) || !isset($array_species_art[$animals][$obs->species->guid])) {
-                                $art="ERROR";
-                                var_dump($obs);
+                                if (!isset($obs->species->scientificName) || !isset($array_species_art[$animals][$obs->species->scientificName])) {
+                                    $art="ERROR";
+                                    //var_dump($obs);
 
-                                echo consoleMessage("error", "No ART for  ".$animals." / ".$obs->species->guid);
+                                    echo consoleMessage("error", "No ART for  ".$animals." / ".$obs->species->guid." / ".$obs->species->scientificName);
+                                }
+                                else {
+                                    $art=str_pad($array_species_art[$animals][$obs->species->scientificName], 3, "0", STR_PAD_LEFT);
+                                    //echo $obs->species->scientificName." => ".$art."\n";
+                                }
+                                
                             }
                             else {
                                 $art=str_pad($array_species_art[$animals][$obs->species->guid], 3, "0", STR_PAD_LEFT);
@@ -648,6 +708,15 @@ else {
                             if (isset($obs->water)) $line["openw"]=$obs->water;
                             if (isset($obs->individualCount)) $line["ind"]=$obs->individualCount;
 
+                            break;
+
+                        case "iwc":   
+
+                            
+                            $line["period"]=$output->data->period;
+                            $line["metod"]=$output->data->observedFrom;
+                            $line["antal"]=$obs->individualCount;
+                            $line["komm"]="";
                             break;
 
                         case "sommar":

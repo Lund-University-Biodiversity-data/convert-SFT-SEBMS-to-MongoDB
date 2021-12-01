@@ -420,8 +420,8 @@ select EL.arthela AS names, EL.latin as scientificname, T.art, T.datum, T.antal
 				case "F":
 					$observedFrom="flygg";
 					break;
-				case "":
-					$observedFrom="";
+				case "X":
+					$observedFrom="X";
 					break;
 				default:
 					$observedFrom="error";
