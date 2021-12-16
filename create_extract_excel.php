@@ -135,7 +135,7 @@ else {
 			break;
 		case "kust":
 
-            $headers=array("persnr", "ruta", "datum", "yr", "art", "i100m", "openw", "ind", "temp");
+            $headers=array("persnr", "ruta", "datum", "yr", "art", "i100m", "openw", "ind", "surveyStartTime", "surveyFinishTime");
 			$nbPts=1;
 			break;
         case "iwc":
@@ -382,6 +382,8 @@ else {
                     $line["i100m"]="";
                     $line["openw"]="";
                     $line["ind"]="";
+                    $line["surveyStartTime"]=$output->data->surveyStartTime;
+                    $line["surveyFinishTime"]=$output->data->surveyFinishTime;
 
                     break;
 
@@ -705,7 +707,9 @@ else {
                             $line["i100m"]="";
                             $line["openw"]="";
                             $line["ind"]="";
-                            
+                            $line["surveyStartTime"]="";
+                            $line["surveyFinishTime"]="";
+
                             if (isset($obs->island)) $line["i100m"]=$obs->island;
                             if (isset($obs->water)) $line["openw"]=$obs->water;
                             if (isset($obs->individualCount)) $line["ind"]=$obs->individualCount;
