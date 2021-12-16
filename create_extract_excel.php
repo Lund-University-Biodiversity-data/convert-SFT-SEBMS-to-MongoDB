@@ -630,26 +630,26 @@ else {
                             for ($iP=1;$iP<=$nbPts;$iP++) {
                                 $line["p".$iP]="";
                             }  
-                            if (isset($obs->P01)) $line["p1"]=$obs->P01;
-                            if (isset($obs->P02)) $line["p2"]=$obs->P02;
-                            if (isset($obs->P03)) $line["p3"]=$obs->P03;
-                            if (isset($obs->P04)) $line["p4"]=$obs->P04;
-                            if (isset($obs->P05)) $line["p5"]=$obs->P05;
-                            if (isset($obs->P06)) $line["p6"]=$obs->P06;
-                            if (isset($obs->P07)) $line["p7"]=$obs->P07;
-                            if (isset($obs->P08)) $line["p8"]=$obs->P08;
+                            if (isset($obs->P01)) $line["p1"]=trim($obs->P01);
+                            if (isset($obs->P02)) $line["p2"]=trim($obs->P02);
+                            if (isset($obs->P03)) $line["p3"]=trim($obs->P03);
+                            if (isset($obs->P04)) $line["p4"]=trim($obs->P04);
+                            if (isset($obs->P05)) $line["p5"]=trim($obs->P05);
+                            if (isset($obs->P06)) $line["p6"]=trim($obs->P06);
+                            if (isset($obs->P07)) $line["p7"]=trim($obs->P07);
+                            if (isset($obs->P08)) $line["p8"]=trim($obs->P08);
 
                             for ($iP=1;$iP<=$nbPts;$iP++) {
                                 $line["l".$iP]="";
                             }  
-                            if (isset($obs->L01)) $line["l1"]=$obs->L01;
-                            if (isset($obs->L02)) $line["l2"]=$obs->L02;
-                            if (isset($obs->L03)) $line["l3"]=$obs->L03;
-                            if (isset($obs->L04)) $line["l4"]=$obs->L04;
-                            if (isset($obs->L05)) $line["l5"]=$obs->L05;
-                            if (isset($obs->L06)) $line["l6"]=$obs->L06;
-                            if (isset($obs->L07)) $line["l7"]=$obs->L07;
-                            if (isset($obs->L08)) $line["l8"]=$obs->L08;
+                            if (isset($obs->L01)) $line["l1"]=trim($obs->L01);
+                            if (isset($obs->L02)) $line["l2"]=trim($obs->L02);
+                            if (isset($obs->L03)) $line["l3"]=trim($obs->L03);
+                            if (isset($obs->L04)) $line["l4"]=trim($obs->L04);
+                            if (isset($obs->L05)) $line["l5"]=trim($obs->L05);
+                            if (isset($obs->L06)) $line["l6"]=trim($obs->L06);
+                            if (isset($obs->L07)) $line["l7"]=trim($obs->L07);
+                            if (isset($obs->L08)) $line["l8"]=trim($obs->L08);
 
                             $line["pkind"]=0;
                             $line["lind"]=0;
@@ -672,26 +672,26 @@ else {
                             for ($iP=1;$iP<=$nbPts;$iP++) {
                                 $line["p".str_pad($iP, 2, '0', STR_PAD_LEFT)]="";
                             }  
-                            if (isset($obs->P01)) $line["p01"]=$obs->P01;
-                            if (isset($obs->P02)) $line["p02"]=$obs->P02;
-                            if (isset($obs->P03)) $line["p03"]=$obs->P03;
-                            if (isset($obs->P04)) $line["p04"]=$obs->P04;
-                            if (isset($obs->P05)) $line["p05"]=$obs->P05;
-                            if (isset($obs->P06)) $line["p06"]=$obs->P06;
-                            if (isset($obs->P07)) $line["p07"]=$obs->P07;
-                            if (isset($obs->P08)) $line["p08"]=$obs->P08;
-                            if (isset($obs->P09)) $line["p09"]=$obs->P09;
-                            if (isset($obs->P10)) $line["p10"]=$obs->P10;
-                            if (isset($obs->P11)) $line["p11"]=$obs->P11;
-                            if (isset($obs->P12)) $line["p12"]=$obs->P12;
-                            if (isset($obs->P13)) $line["p13"]=$obs->P13;
-                            if (isset($obs->P14)) $line["p14"]=$obs->P14;
-                            if (isset($obs->P15)) $line["p15"]=$obs->P15;
-                            if (isset($obs->P16)) $line["p16"]=$obs->P16;
-                            if (isset($obs->P17)) $line["p17"]=$obs->P17;
-                            if (isset($obs->P18)) $line["p18"]=$obs->P18;
-                            if (isset($obs->P19)) $line["p19"]=$obs->P19;
-                            if (isset($obs->P20)) $line["p20"]=$obs->P20;
+                            if (isset($obs->P01)) $line["p01"]=trim($obs->P01);
+                            if (isset($obs->P02)) $line["p02"]=trim($obs->P02);
+                            if (isset($obs->P03)) $line["p03"]=trim($obs->P03);
+                            if (isset($obs->P04)) $line["p04"]=trim($obs->P04);
+                            if (isset($obs->P05)) $line["p05"]=trim($obs->P05);
+                            if (isset($obs->P06)) $line["p06"]=trim($obs->P06);
+                            if (isset($obs->P07)) $line["p07"]=trim($obs->P07);
+                            if (isset($obs->P08)) $line["p08"]=trim($obs->P08);
+                            if (isset($obs->P09)) $line["p09"]=trim($obs->P09);
+                            if (isset($obs->P10)) $line["p10"]=trim($obs->P10);
+                            if (isset($obs->P11)) $line["p11"]=trim($obs->P11);
+                            if (isset($obs->P12)) $line["p12"]=trim($obs->P12);
+                            if (isset($obs->P13)) $line["p13"]=trim($obs->P13);
+                            if (isset($obs->P14)) $line["p14"]=trim($obs->P14);
+                            if (isset($obs->P15)) $line["p15"]=trim($obs->P15);
+                            if (isset($obs->P16)) $line["p16"]=trim($obs->P16);
+                            if (isset($obs->P17)) $line["p17"]=trim($obs->P17);
+                            if (isset($obs->P18)) $line["p18"]=trim($obs->P18);
+                            if (isset($obs->P19)) $line["p19"]=trim($obs->P19);
+                            if (isset($obs->P20)) $line["p20"]=trim($obs->P20);
 
                             $line["pk"]=0;
                             $line["ind"]=0;
@@ -712,7 +712,7 @@ else {
 
                             if (isset($obs->island)) $line["i100m"]=$obs->island;
                             if (isset($obs->water)) $line["openw"]=$obs->water;
-                            if (isset($obs->individualCount)) $line["ind"]=$obs->individualCount;
+                            if (isset($obs->individualCount)) $line["ind"]=trim($obs->individualCount);
 
                             break;
 
@@ -731,31 +731,31 @@ else {
                             for ($iP=1;$iP<=$nbPts;$iP++) {
                                 $line["p".str_pad($iP, 2, '0', STR_PAD_LEFT)]="";
                             }  
-                            if (isset($obs->P01)) $line["p01"]=$obs->P01;
-                            if (isset($obs->P02)) $line["p02"]=$obs->P02;
-                            if (isset($obs->P03)) $line["p03"]=$obs->P03;
-                            if (isset($obs->P04)) $line["p04"]=$obs->P04;
-                            if (isset($obs->P05)) $line["p05"]=$obs->P05;
-                            if (isset($obs->P06)) $line["p06"]=$obs->P06;
-                            if (isset($obs->P07)) $line["p07"]=$obs->P07;
-                            if (isset($obs->P08)) $line["p08"]=$obs->P08;
-                            if (isset($obs->P09)) $line["p09"]=$obs->P09;
-                            if (isset($obs->P10)) $line["p10"]=$obs->P10;
-                            if (isset($obs->P11)) $line["p11"]=$obs->P11;
-                            if (isset($obs->P12)) $line["p12"]=$obs->P12;
-                            if (isset($obs->P13)) $line["p13"]=$obs->P13;
-                            if (isset($obs->P14)) $line["p14"]=$obs->P14;
-                            if (isset($obs->P15)) $line["p15"]=$obs->P15;
-                            if (isset($obs->P16)) $line["p16"]=$obs->P16;
-                            if (isset($obs->P17)) $line["p17"]=$obs->P17;
-                            if (isset($obs->P18)) $line["p18"]=$obs->P18;
-                            if (isset($obs->P19)) $line["p19"]=$obs->P19;
-                            if (isset($obs->P20)) $line["p20"]=$obs->P20;
+                            if (isset($obs->P01)) $line["p01"]=trim($obs->P01);
+                            if (isset($obs->P02)) $line["p02"]=trim($obs->P02);
+                            if (isset($obs->P03)) $line["p03"]=trim($obs->P03);
+                            if (isset($obs->P04)) $line["p04"]=trim($obs->P04);
+                            if (isset($obs->P05)) $line["p05"]=trim($obs->P05);
+                            if (isset($obs->P06)) $line["p06"]=trim($obs->P06);
+                            if (isset($obs->P07)) $line["p07"]=trim($obs->P07);
+                            if (isset($obs->P08)) $line["p08"]=trim($obs->P08);
+                            if (isset($obs->P09)) $line["p09"]=trim($obs->P09);
+                            if (isset($obs->P10)) $line["p10"]=trim($obs->P10);
+                            if (isset($obs->P11)) $line["p11"]=trim($obs->P11);
+                            if (isset($obs->P12)) $line["p12"]=trim($obs->P12);
+                            if (isset($obs->P13)) $line["p13"]=trim($obs->P13);
+                            if (isset($obs->P14)) $line["p14"]=trim($obs->P14);
+                            if (isset($obs->P15)) $line["p15"]=trim($obs->P15);
+                            if (isset($obs->P16)) $line["p16"]=trim($obs->P16);
+                            if (isset($obs->P17)) $line["p17"]=trim($obs->P17);
+                            if (isset($obs->P18)) $line["p18"]=trim($obs->P18);
+                            if (isset($obs->P19)) $line["p19"]=trim($obs->P19);
+                            if (isset($obs->P20)) $line["p20"]=trim($obs->P20);
 
                             $line["pk"]=0;
                             $line["ind"]=0;
 
-                            if (isset($obs->pk)) $line["pk"]=$obs->pk;
+                            if (isset($obs->pk)) $line["pk"]=trim($obs->Pk);
                             if (isset($obs->individualCount)) $line["ind"]=$obs->individualCount;
 
                             break;
