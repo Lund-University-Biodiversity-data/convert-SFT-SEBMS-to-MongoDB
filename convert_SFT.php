@@ -761,14 +761,13 @@ select EL.arthela AS names, EL.latin as scientificname, T.art, T.datum, T.antal
 
 			$docPerson = iterator_to_array($rows);
 			if (count($docPerson)!=0) {
-				$array_persons[$rtEvents["persnr"]] = $docPerson[0]->personId;
-				$userId = (isset($docPerson[0]->userId) ? $docPerson[0]->userId : $userId);
-
+				$array_persons[$rtEvents["persnr"]]["personId"] = $docPerson[0]->personId;
+				$array_persons[$rtEvents["persnr"]]["userId"] = (isset($docPerson[0]->userId) ? $docPerson[0]->userId : $userId);
 				//echo consoleMessage("info", "Person exists in database: ".$array_persons[$rtEvents["persnr"]]);
 			}
 			else {
 
-				$array_persons[$rtEvents["persnr"]]=generate_uniqId_format("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx");
+				$array_persons[$rtEvents["persnr"]]["personId"]=generate_uniqId_format("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx");
 
 				$qPerson= "
 						select *
@@ -785,7 +784,7 @@ select EL.arthela AS names, EL.latin as scientificname, T.art, T.datum, T.antal
 				$arr_json_person.='{
 					"dateCreated" : ISODate("'.$date_now_tz.'"),
 					"lastUpdated" : ISODate("'.$date_now_tz.'"),
-					"personId" : "'.$array_persons[$rtEvents["persnr"]].'",
+					"personId" : "'.$array_persons[$rtEvents["persnr"]]["personId"].'",
 					"firstName" : "'.$rtPerson["fornamn"].'",
 					"lastName" : "'.$rtPerson["efternamn"].'",
 					"gender" : "'.$rtPerson["sx"].'",
@@ -1046,7 +1045,7 @@ select EL.arthela AS names, EL.latin as scientificname, T.art, T.datum, T.antal
 				"outputSpeciesId" : "'.$outputSpeciesId.'",
 				"projectActivityId" : "'.$commonFields[$protocol]["projectActivityId"].'",
 				"projectId" : "'.$commonFields[$protocol]["projectId"].'",
-				"userId" : "'.$userId.'"
+				"userId" : "'.$array_persons[$rtEvents["persnr"]]["userId"].'"
 			},';
 
 
@@ -1072,8 +1071,8 @@ select EL.arthela AS names, EL.latin as scientificname, T.art, T.datum, T.antal
 			"siteId" : "'.$siteInfo["locationID"].'",
 			"status" : "active",
 			"type" : "'.$commonFields[$protocol]["type"].'",
-			"userId" : "'.$userId.'",
-			"personId" : "'.$array_persons[$rtEvents["persnr"]].'",
+			"userId" : "'.$array_persons[$rtEvents["persnr"]]["userId"].'",
+			"personId" : "'.$array_persons[$rtEvents["persnr"]]["personId"].'",
 			"verificationStatus" : "approved",
 			"mainTheme" : ""
 			'.(count($helperIds)>0 ? ', "helperIds" : ["'.implode('","', $helperIds ).'"]' : "").'

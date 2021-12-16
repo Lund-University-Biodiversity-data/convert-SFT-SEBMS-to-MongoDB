@@ -87,6 +87,9 @@ else {
             }
             else {
                 $array_species_art[$animals][$indexSp]=$art;
+
+                // fix : add the name as well, in case the lsid change during time
+                $array_species_art[$animals][$sp["name"]]=$art;
             }
             /*
             if (isset($sp["kvpValues"][0]["key"]) && $sp["kvpValues"][0]["key"]=="art") {
@@ -100,7 +103,6 @@ else {
         }
         echo consoleMessage("info", "Species list ".$commonFields["listSpeciesId"][$animals]." obtained for ".$animals.". ".count($obj)." elements");
     }
-
 	switch($protocol) {
 		case "std":
 			$nbPts=8;
@@ -568,7 +570,7 @@ else {
                                     $art="ERROR";
                                     //var_dump($obs);
 
-                                    echo consoleMessage("error", "No ART for  ".$animals." / ".$obs->species->guid." / ".$obs->species->scientificName);
+                                    echo consoleMessage("error", "No ART for ".$animals." / ".$obs->species->guid." / ".$obs->species->scientificName);
                                 }
                                 else {
                                     $art=str_pad($array_species_art[$animals][$obs->species->scientificName], 3, "0", STR_PAD_LEFT);
@@ -584,7 +586,7 @@ else {
                         case "amphibians":
                             if (!isset($obs->speciesAmphibians->guid) || !isset($array_species_art[$animals][$obs->speciesAmphibians->guid])) {
                                 $art="ERROR";
-                                echo consoleMessage("error", "No ART for  ".$animals." / ".$obs->speciesAmphibians->guid);
+                                echo consoleMessage("error", "No ART for ".$animals." / ".$obs->speciesAmphibians->guid);
                             }
                             else {
                                 $art=str_pad($array_species_art[$animals][$obs->speciesAmphibians->guid], 3, "0", STR_PAD_LEFT);
@@ -693,7 +695,7 @@ else {
                             $line["ind"]=0;
                             for ($iP=1;$iP<=$nbPts;$iP++) {
                                 if ($line["p".str_pad($iP, 2, '0', STR_PAD_LEFT)]!="" && $line["p".str_pad($iP, 2, '0', STR_PAD_LEFT)]>0) $line["pk"]++;
-                                $line["ind"]+=$line["p".str_pad($iP, 2, '0', STR_PAD_LEFT)];
+                                $line["ind"]+=intval($line["p".str_pad($iP, 2, '0', STR_PAD_LEFT)]);
                             }  
 
                             break;
