@@ -9,10 +9,10 @@ require PATH_SHARED_FUNCTIONS."mongo-functions.php";
 
 $server=DEFAULT_SERVER;
 
-$arr_protocol=array("std", "natt", "vinter", "sommar", "kust");
+$arr_protocol=array("std", "natt", "vinter", "sommar", "kust", "iwc");
 
 if (!isset($argv[1]) || !in_array(trim($argv[1]), $arr_protocol)) {
-	echo consoleMessage("error", "First parameter missing: std / natt / vinter / sommar / kust");
+	echo consoleMessage("error", "First parameter missing: std / natt / vinter / sommar / kust / iwc");
 }
 else {
 
@@ -38,7 +38,18 @@ else {
 
 	if ($fp = fopen($path_extract, 'w')) {
 
-		$headers=array("siteId", "name", "internalSiteId", "routetype", "lan", "lsk", "verificationStatus", "fjall104", "fjall142", "bookingComment", "paperSurveySubmitted", "summarySurveySubmitted", "bookedBy", "decimalLatitude", "decimalLongitude");
+		$headers=array("siteId", "name", "internalSiteId", "routetype", "lan", "lsk", "verificationStatus", "bookingComment", "paperSurveySubmitted", "summarySurveySubmitted", "bookedBy", "decimalLatitude", "decimalLongitude");
+
+		switch ($protocol) {
+
+			case "iwc":
+				array_push($headers, "goose", "helcom_sub", "ln_karta", "ki", "ev", "area");
+				break;
+
+			default: 
+				array_push($headers, "fjall104", "fjall142");
+				break;
+		}
 		fputcsv($fp, $headers, ";");
 
 		foreach ($rows as $row){
@@ -54,8 +65,6 @@ else {
 			$site["lan"]=(isset($row->adminProperties->lan) ? $row->adminProperties->lan : "");
 			$site["lsk"]=(isset($row->adminProperties->lsk) ? $row->adminProperties->lsk : "");
 			$site["verificationStatus"]=(isset($row->verificationStatus) ? $row->verificationStatus : "");
-			$site["fjall104"]=(isset($row->adminProperties->fjall104) ? $row->adminProperties->fjall104 : "");
-			$site["fjall142"]=(isset($row->adminProperties->fjall142) ? $row->adminProperties->fjall142 : "");
 			$site["bookingComment"]=(isset($row->adminProperties->bookingComment) ? $row->adminProperties->bookingComment : "");	
 			$site["paperSurveySubmitted"]=(isset($row->adminProperties->paperSurveySubmitted) ? $row->adminProperties->paperSurveySubmitted : "");			
 			$site["summarySurveySubmitted"]=(isset($row->adminProperties->summarySurveySubmitted) ? $row->adminProperties->summarySurveySubmitted : "");			
@@ -64,6 +73,24 @@ else {
 			$site["decimalLatitude"]=(isset($row->extent->geometry->decimalLatitude) ? $row->extent->geometry->decimalLatitude : "");
 			$site["decimalLongitude"]=(isset($row->extent->geometry->decimalLongitude) ? $row->extent->geometry->decimalLongitude : "");
 
+			switch ($protocol) {
+
+				case "iwc":
+
+					$site["goose"]=(isset($row->adminProperties->goose) ? $row->adminProperties->goose : "");
+					$site["helcom_sub"]=(isset($row->adminProperties->helcom_sub) ? $row->adminProperties->helcom_sub : "");
+					$site["ln_karta"]=(isset($row->adminProperties->ln_karta) ? $row->adminProperties->ln_karta : "");
+					$site["ki"]=(isset($row->adminProperties->ki) ? $row->adminProperties->ki : "");
+					$site["ev"]=(isset($row->adminProperties->ev) ? $row->adminProperties->ev : "");
+					$site["area"]=(isset($row->adminProperties->area) ? $row->adminProperties->area : "");
+					break;
+
+				default: 
+					
+					$site["fjall104"]=(isset($row->adminProperties->fjall104) ? $row->adminProperties->fjall104 : "");
+					$site["fjall142"]=(isset($row->adminProperties->fjall142) ? $row->adminProperties->fjall142 : "");
+					break;
+			}
 
 			fputcsv($fp, $site, ";");
 

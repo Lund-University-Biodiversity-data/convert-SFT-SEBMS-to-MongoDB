@@ -9,10 +9,10 @@ require PATH_SHARED_FUNCTIONS."mongo-functions.php";
 
 $server=DEFAULT_SERVER;
 
-$arr_protocol=array("std", "natt", "vinter", "sommar", "kust");
+$arr_protocol=array("std", "natt", "vinter", "sommar", "kust", "iwc");
 
 if (!isset($argv[1]) || !in_array(trim($argv[1]), $arr_protocol)) {
-	echo consoleMessage("error", "First parameter missing: std / natt / vinter / sommar / kust");
+	echo consoleMessage("error", "First parameter missing: std / natt / vinter / sommar / kust / iwc");
 }
 else {
 
