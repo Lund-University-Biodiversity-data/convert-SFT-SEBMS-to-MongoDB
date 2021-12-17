@@ -38,25 +38,45 @@ else {
 
 	if ($fp = fopen($path_extract, 'w')) {
 
-		$headers=array("firstName", "lastName", "birthDate", "email", "phoneNum", "mobileNum", "address1", "address2", "postCode", "town", "userId", "internalPersonId", "personId");
+		$headers=array("persnr", "fornamn", "efternamn", "sx", "birthDate", "epost", "telhem", "telmobil", "address1", "address2", "postnr", "ort", "userId", "personId");
 		fputcsv($fp, $headers, ";");
 
 		foreach ($rows as $row){
 
 			$person=array();
 
-			$person["firstName"]=(isset($row->firstName) ? $row->firstName : "");
-			$person["lastName"]=(isset($row->lastName) ? $row->lastName : "");
+			if (isset($row->gender)) {
+				switch($row->gender) {
+					case "man":
+						$gender="M";
+						break;
+					case "kvinna":
+						$gender="F";
+						break;
+					case "annat":
+						$gender="annat";
+						break;
+					default:
+						$gender="?";
+						break;
+				}
+			}
+			else $gender="";
+
+
+			$person["persnr"]=(isset($row->internalPersonId) ? $row->internalPersonId : "");
+			$person["fornamn"]=(isset($row->firstName) ? $row->firstName : "");
+			$person["efternamn"]=(isset($row->lastName) ? $row->lastName : "");
+			$person["sx"]=$gender;
 			$person["birthDate"]=(isset($row->birthDate) ? $row->birthDate : "");
-			$person["email"]=(isset($row->email) ? $row->email : "");
-			$person["phoneNum"]=(isset($row->phoneNum) ? $row->phoneNum : "");
-			$person["mobileNum"]=(isset($row->mobileNum) ? $row->mobileNum : "");
+			$person["epost"]=(isset($row->email) ? $row->email : "");
+			$person["telhem"]=(isset($row->phoneNum) ? $row->phoneNum : "");
+			$person["telmobil"]=(isset($row->mobileNum) ? $row->mobileNum : "");
 			$person["address1"]=(isset($row->address1) ? $row->address1 : "");
 			$person["address2"]=(isset($row->address2) ? $row->address2 : "");
-			$person["postCode"]=(isset($row->postCode) ? $row->postCode : "");
-			$person["town"]=(isset($row->town) ? $row->town : "");
+			$person["postnr"]=(isset($row->postCode) ? $row->postCode : "");
+			$person["ort"]=(isset($row->town) ? $row->town : "");
 			$person["userId"]=(isset($row->userId) ? $row->userId : "");
-			$person["internalPersonId"]=(isset($row->internalPersonId) ? $row->internalPersonId : "");
 			$person["personId"]=$row->personId;
 
 			fputcsv($fp, $person, ";");
