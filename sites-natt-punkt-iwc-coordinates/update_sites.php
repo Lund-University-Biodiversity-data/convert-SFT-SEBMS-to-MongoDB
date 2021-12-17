@@ -85,6 +85,35 @@ else {
 
 		case "sommar":
 		case "vinter":
+			$arrayFieldsRequired[]="kartaTx";
+			$arrayFieldsRequired[]="sevin";
+			$arrayFieldsRequired[]="start";
+
+			$arrSitesPsql=array();
+
+			$qSites="select persnr, rnr, kartatx, lan, senvin, start
+		         from
+		         punktrutter
+		         order by kartatx
+				";
+			if (isset($limit) && $limit>0) $limit.=" LIMIT ".$limit;
+			$rSites = pg_query($db_connection, $qSites);
+			if (!$rSites) die("QUERY:" . consoleMessage("error", pg_last_error()));
+
+			
+			while ($rtSites = pg_fetch_array($rSites)) {
+
+				foreach ($arrayFieldsRequired as $key) {
+					$arrSitesPsql[$rtSites["persnr"]."-".$rtSites["rnr"]][$key]="";
+				}
+				$arrSitesPsql[$rtSites["persnr"]."-".$rtSites["rnr"]]["kartaTx"]=$rtSites["kartatx"];
+				$arrSitesPsql[$rtSites["persnr"]."-".$rtSites["rnr"]]["internalSiteId"]=$rtSites["persnr"]."-".$rtSites["rnr"];
+				$arrSitesPsql[$rtSites["persnr"]."-".$rtSites["rnr"]]["senvin"]=$rtSites["senvin"];
+				$arrSitesPsql[$rtSites["persnr"]."-".$rtSites["rnr"]]["start"]=$rtSites["start"];
+				$arrSitesPsql[$rtSites["persnr"]."-".$rtSites["rnr"]]["lan"]=$rtSites["lan"];
+			}
+
+
 			break;
 
 		case "natt":
@@ -164,6 +193,21 @@ else {
     foreach ($rows as $row){
 
     	switch ($protocol) {
+    		case "sommar":
+    		case "vinter":
+
+    			if (!isset($row->adminProperties->internalSiteId) || $row->adminProperties->internalSiteId=="") {
+					echo consoleMessage("error", "No internalSiteId for ".$row->siteId); 
+					//exit;
+					$internalSiteId="NO";
+				}
+				else {
+					$internalSiteId=$row->adminProperties->internalSiteId;
+				}
+
+
+    			break;
+			
 			case "std":
 				
 
@@ -232,6 +276,8 @@ else {
 		$cmdJs.='db.'.$collection.'.update({"siteId" : "'.$row->siteId.'"}, {$set : {
 	';
 		switch ($protocol) {
+			case "sommar":
+			case "vinter":
 			case "std":
 
 				foreach ($arrayFieldsRequired as $key) {
@@ -285,6 +331,8 @@ else {
 			$unset.='"lsk":1, "karta":1,';
 
 			break;
+		case "sommar":
+		case "vinter":
 		case "natt":
 			$unset.='"kartaTx":1,';
 

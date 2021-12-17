@@ -42,6 +42,11 @@ else {
 
 		switch ($protocol) {
 
+			case "sommar":
+			case "vinter":
+
+				array_push($headers, "kartatx", "start", "senvin");
+				break;
 			case "iwc":
 				array_push($headers, "goose", "helcom_sub", "ln_karta", "ki", "ev", "area");
 				break;
@@ -74,6 +79,14 @@ else {
 			$site["decimalLongitude"]=(isset($row->extent->geometry->decimalLongitude) ? $row->extent->geometry->decimalLongitude : "");
 
 			switch ($protocol) {
+
+				case "sommar":
+				case "vinter":
+
+					$site["kartatx"]=(isset($row->adminProperties->kartaTx) ? $row->adminProperties->kartaTx : "");
+					$site["start"]=(isset($row->adminProperties->start) ? $row->adminProperties->start : "");
+					$site["senvin"]=(isset($row->adminProperties->senvin) ? $row->adminProperties->senvin : "");
+					break;
 
 				case "iwc":
 
