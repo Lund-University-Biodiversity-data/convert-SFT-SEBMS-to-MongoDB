@@ -255,7 +255,10 @@ else {
                 if ($debug) echo consoleMessage("warn", "OUTPUT ID ".$output->outputId." does not exist in records array => no records");
             }
             
-            $eventDate=$output->data->surveyDate;
+            //echo "date avant :".$output->data->surveyDate."<br>";
+            //$eventDate=$output->data->surveyDate;
+            $eventDate=substr(str_replace("-", "", $output->data->surveyDate), 0, 8);
+            //echo "date avant :".$eventDate."<br>";exit();
 
             $year=substr($eventDate, 0, 4);
             /*
