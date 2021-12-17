@@ -24,7 +24,7 @@ else {
 
 	$projectId=$commonFields[$protocol]["projectId"];
 
-	$filter = ['projects' => $projectId];
+	$filter = ['projects' => $projectId, 'status' => 'active'];
 	$options = [];
 	$query = new MongoDB\Driver\Query($filter, $options); 
 
