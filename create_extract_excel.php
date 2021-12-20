@@ -306,7 +306,7 @@ else {
 
                     $explodeSite=explode("-", $array_sites_mongo[$output->data->location]);
                     if (count($explodeSite)!=3)
-                        echo consoleMessage("error", "ERROR - number of elements in internalSiteId ".count($explodeSite)." - ".$array_sites_mongo[$output->data->location]);
+                        echo consoleMessage("error", "ERROR - number of elements in internalSiteId ".count($explodeSite)." - ".$array_sites_mongo[$output->data->location]." - LocationId in output is : ".$output->data->location);
                     $line["persnr"]=$explodeSite[0]."-".$explodeSite[1];
                     $line["rnr"]=$explodeSite[2];
 
