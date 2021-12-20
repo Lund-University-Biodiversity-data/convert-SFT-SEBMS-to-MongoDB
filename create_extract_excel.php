@@ -184,9 +184,11 @@ else {
     $filter = ['projectActivityId' => $commonFields[$protocol]["projectActivityId"], "status" => "active", "verificationStatus" => "approved"];
     //$filter = [];
     $options = [];
-/*    $options = [
-       'limit' => $limitFiles,
-    ];    */
+    if (isset($limitFiles) && is_numeric($limitFiles)) {
+        $options = [
+           'limit' => $limitFiles,
+        ];    
+    }
     $query = new MongoDB\Driver\Query($filter, $options); 
 
     //db.site.find({"projects":"dab767a5-929e-4733-b8eb-c9113194201f"}, {"projects":1, "name":1}).pretty()
@@ -295,7 +297,7 @@ else {
                     
                     // specific for the year in iwc
                     // year +1 if december
-                    if (substr($eventDate, 5, 2)==12) $year=substr($eventDate, 0, 4)+1;
+                    if (substr($eventDate, 4, 2)==12) $year=substr($eventDate, 0, 4)+1;
                     else $year=substr($eventDate, 0, 4);
                     
                     break;
@@ -304,13 +306,15 @@ else {
 
                     $explodeSite=explode("-", $array_sites_mongo[$output->data->location]);
                     if (count($explodeSite)!=3)
-                        echo consoleMessage("error", "ERROR - number f elements in internalSiteId ".count($explodeSite)." - ".$array_sites_mongo[$output->data->location]);
+                        echo consoleMessage("error", "ERROR - number of elements in internalSiteId ".count($explodeSite)." - ".$array_sites_mongo[$output->data->location]);
                     $line["persnr"]=$explodeSite[0]."-".$explodeSite[1];
                     $line["rnr"]=$explodeSite[2];
 
                     // specific for the year in punkturutter
                     // year -1 if before june
-                    if (substr($eventDate, 5, 2)<6) $year=substr($eventDate, 0, 4)-1;
+                    if (substr($eventDate, 4, 2)<6) {
+                        $year=substr($eventDate, 0, 4)-1;
+                    }
                     else $year=substr($eventDate, 0, 4);
                     
                     break;
