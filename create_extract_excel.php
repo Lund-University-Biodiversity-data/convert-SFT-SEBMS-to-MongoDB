@@ -301,21 +301,26 @@ else {
                     else $year=substr($eventDate, 0, 4);
                     
                     break;
-                case "sommar":
+                    
                 case "vinter":
 
+                     // specific for the year in VINTER
+                    // year -1 if before june
+                    if (substr($eventDate, 4, 2)<6) {
+                        $year=substr($eventDate, 0, 4)-1;
+                    }
+                    else $year=substr($eventDate, 0, 4);
+
+                    // NO BREAK HERE !!
+
+                case "sommar":
                     $explodeSite=explode("-", $array_sites_mongo[$output->data->location]);
                     if (count($explodeSite)!=3)
                         echo consoleMessage("error", "ERROR - number of elements in internalSiteId ".count($explodeSite)." - ".$array_sites_mongo[$output->data->location]." - LocationId in output is : ".$output->data->location);
                     $line["persnr"]=$explodeSite[0]."-".$explodeSite[1];
                     $line["rnr"]=$explodeSite[2];
 
-                    // specific for the year in punkturutter
-                    // year -1 if before june
-                    if (substr($eventDate, 4, 2)<6) {
-                        $year=substr($eventDate, 0, 4)-1;
-                    }
-                    else $year=substr($eventDate, 0, 4);
+                   
                     
                     break;
             }
