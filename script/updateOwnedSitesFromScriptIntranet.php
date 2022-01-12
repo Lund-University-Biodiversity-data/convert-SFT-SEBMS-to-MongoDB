@@ -36,7 +36,7 @@ if ($mng) {
 
     foreach ($rows as $row){
 
-    	if (isset($row->owner) && trim($row->owner)!=0) {
+    	if (isset($row->owner) && trim($row->owner)!="") {
 	    	$arrSitesOwners[$row->siteId]=$row->owner;
     	}
 	}
@@ -58,7 +58,7 @@ if ($mng) {
 
     	$arrayOwner[$row->personId]=(isset($row->ownedSites) ? $row->ownedSites : array());
 	}
-	echo consoleMessage("info", count($arrayOwner)." persons with field ownedSites obtained.");
+	echo consoleMessage("info", count($arrayOwner)." person(s) with field ownedSites obtained.");
 
 
 
@@ -95,7 +95,7 @@ if ($mng) {
 
 	}
 
-	echo consoleMessage("info", $nbSitesOwned." sites updated with a new owner.");
+	echo consoleMessage("info", $nbSitesOwned." site(s) updated with a new owner.");
 
 
 }
