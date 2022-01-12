@@ -1,6 +1,6 @@
 <?php
 $database="SFT";
-$server="PROD";
+$server="TEST";
 require dirname(__FILE__)."/../lib/config.php";
 require dirname(__FILE__)."/../lib/functions.php";
 require PATH_SHARED_FUNCTIONS."generic-functions.php";
@@ -25,8 +25,8 @@ if ($mng) {
 
 
 	// get all the sites
-    $filter = [];
-    $filter = ["dataOrigin" => "scriptSitePunktIntranet", "verificationStatus"=>"godkänd", "status"=>"active"];
+    $filter = ["status"=>"active"];
+    //$filter = ["dataOrigin" => "scriptSitePunktIntranet", "verificationStatus"=>"godkänd", "status"=>"active"];
     $options = [];
     $query = new MongoDB\Driver\Query($filter, $options); 
 
@@ -67,15 +67,15 @@ if ($mng) {
 
 	foreach ($arrSitesOwners as $siteId => $owner) {
 
-		echo "site $siteId owned by $owner \n";
+		//echo "site $siteId owned by $owner \n";
 
 		if (!isset($arrayOwner[$owner])) {
-			echo consoleMessage("error", "No person with id $owner in the array");
+			echo consoleMessage("error", "No person with id $owner in the array to link to site $siteId");
 
 		}
 		else {
 			if (in_array($siteId, $arrayOwner[$owner])) {
-				echo "ok\n";
+				//echo "ok\n";
 			}
 			else {
 
