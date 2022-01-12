@@ -81,7 +81,7 @@ if ($mng) {
 			}
 			else {
 
-				echo consoleMessage("info", "Add personId $owner for site $siteId");
+				echo consoleMessage("info", "Add site $siteId for personId $owner");
 
 				$bulk = new MongoDB\Driver\BulkWrite;
 			    //$filter = [];
