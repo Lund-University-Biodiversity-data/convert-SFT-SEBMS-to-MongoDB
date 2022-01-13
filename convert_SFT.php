@@ -44,7 +44,7 @@ else {
 	}
 	$array_persons=array();
 
-	$array_sites=getArraySitesFromMongo($protocol, $commonFields[$protocol]["projectId"], "TEST");
+	$array_sites=getArraySitesFromMongo($commonFields[$protocol]["projectId"], "TEST");
 	$array_sites_req=array();
 
     $mng = new MongoDB\Driver\Manager(); // Driver Object created

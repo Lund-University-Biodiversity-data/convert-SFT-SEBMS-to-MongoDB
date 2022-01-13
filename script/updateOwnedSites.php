@@ -20,7 +20,7 @@ $nbSitesOwned=0;
 
 foreach ($listProjects as $projectId) {
 
-	$array_mongo_sites=getArraySitesFromMongo ("punkt", $projectId);
+	$array_mongo_sites=getArraySitesFromMongo ($projectId);
 	echo consoleMessage("info", count($array_mongo_sites)." sites in project.");
 
 

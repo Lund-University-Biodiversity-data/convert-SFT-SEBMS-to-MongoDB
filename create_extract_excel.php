@@ -148,7 +148,7 @@ else {
 	$array_sites=array();
 	$array_sites_mongo=array();
 
-	$array_sites=getArraySitesFromMongo($protocol, $commonFields[$protocol]["projectId"], $server);
+	$array_sites=getArraySitesFromMongo($commonFields[$protocol]["projectId"], $server);
 
 	foreach($array_sites as $indexSite => $data) {
 		$array_sites_mongo[$data["locationID"]]=$indexSite;

@@ -146,7 +146,7 @@ else {
 
 		echo consoleMessage("info", count($array_psql_sites)." site(s) found in psql"); 
 
-		$array_mongo_sites=getArraySitesFromMongo ($protocol, $projectId, DEFAULT_SERVER);
+		$array_mongo_sites=getArraySitesFromMongo ($projectId, DEFAULT_SERVER);
 
 		echo consoleMessage("info", count($array_mongo_sites)." site(s) found in mongoDB"); 
 

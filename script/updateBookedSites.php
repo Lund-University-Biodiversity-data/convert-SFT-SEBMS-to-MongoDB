@@ -24,7 +24,7 @@ else {
 	$defaultPersonId = "35af2711-e759-4da9-b0f4-bdd615790289";
 
 	// get all the sites
-	$array_mongo_sites=getArraySitesFromMongo ($protocol, $projectId, $server);
+	$array_mongo_sites=getArraySitesFromMongo ($projectId, $server);
 	echo consoleMessage("info", count($array_mongo_sites)." sites in project.");
 
 	$mng = new MongoDB\Driver\Manager($mongoConnection[$server]); // Driver Object created
