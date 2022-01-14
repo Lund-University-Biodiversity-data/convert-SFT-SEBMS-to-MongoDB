@@ -257,11 +257,28 @@ else {
             if (!isset($arrOutputFromRecord[$output->outputId])) {
                 if ($debug) echo consoleMessage("warn", "OUTPUT ID ".$output->outputId." does not exist in records array => no records");
             }
-            
+
+
             //echo "date avant :".$output->data->surveyDate."<br>";
             //$eventDate=$output->data->surveyDate;
             $eventDate=substr(str_replace("-", "", $output->data->surveyDate), 0, 8);
             //echo "date avant :".$eventDate."<br>";exit();
+
+
+            $eventDateDetails=array();
+            $out=sscanf($output->data->surveyDate, "%d-%d-%dT%d:%d:%dZ", $eventDateDetails["year"], $eventDateDetails["month"], $eventDateDetails["day"], $eventDateDetails["hour"],    $eventDateDetails["minute"], $eventDateDetails["second"]);
+            
+            if (($eventDateDetails["hour"]==22 || $eventDateDetails["hour"]==23) && $eventDateDetails["minute"]==0 && $eventDateDetails["second"]==0) {
+
+                echo $eventDate=date('Ymd', strtotime($eventDate. ' + 1 days'));
+
+                echo consoleMessage("warn", "Date tranformed from ".$output->data->surveyDate." to ".$eventDate);
+            }
+
+
+            // bug discovered in BioCollect : when a date is chosen thrgouh the JS snipet, it's set to 00:00:00. And when save, it's the day before with T22:00:00Z (or 23:00)
+
+
 
             $year=substr($eventDate, 0, 4);
             /*
