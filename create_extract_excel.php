@@ -270,7 +270,7 @@ else {
             
             if (($eventDateDetails["hour"]==22 || $eventDateDetails["hour"]==23) && $eventDateDetails["minute"]==0 && $eventDateDetails["second"]==0) {
 
-                echo $eventDate=date('Ymd', strtotime($eventDate. ' + 1 days'));
+                $eventDate=date('Ymd', strtotime($eventDate. ' + 1 days'));
 
                 echo consoleMessage("warn", "Date tranformed from ".$output->data->surveyDate." to ".$eventDate);
             }
