@@ -787,7 +787,7 @@ else {
                             $line["pk"]=0;
                             $line["ind"]=0;
 
-                            if (isset($obs->pk)) $line["pk"]=trim($obs->Pk);
+                            if (isset($obs->pk)) $line["pk"]=trim($obs->pk);
                             if (isset($obs->individualCount)) $line["ind"]=$obs->individualCount;
 
                             break;
