@@ -272,7 +272,7 @@ else {
 
                 $eventDate=date('Ymd', strtotime($eventDate. ' + 1 days'));
 
-                echo consoleMessage("warn", "Date tranformed from ".$output->data->surveyDate." to ".$eventDate);
+                //echo consoleMessage("warn", "Date tranformed from ".$output->data->surveyDate." to ".$eventDate);
             }
 
 
