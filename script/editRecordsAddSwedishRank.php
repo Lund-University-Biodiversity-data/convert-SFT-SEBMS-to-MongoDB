@@ -99,7 +99,7 @@ foreach ($rows as $row){
 						//echo consoleMessage("info", "Activity $row->activityId edited  with swedishRank ".$array_species_guid[$animal][$obs->species->guid]["rank"]." for ".$obs->species->scientificName);
 	    			}
 	    			else {
-	    				echo consoleMessage("info", "no species info for ".$obs->species->scientificName."/guid#:".$obs->species->guid." => maybe the guid changed ?");
+	    				echo consoleMessage("error", "No species info for activityId#".$row->activityId." and ".$obs->species->scientificName."/guid#:".$obs->species->guid." => maybe the guid changed ?");
 	    			}
     			}
 	    		else {
