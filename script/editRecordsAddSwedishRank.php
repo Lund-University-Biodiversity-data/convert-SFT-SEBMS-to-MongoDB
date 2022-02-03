@@ -1,7 +1,7 @@
 <?php
 $database="SFT";
-$server="TEST";
 require dirname(__FILE__)."/../lib/config.php";
+$server=DEFAULT_SERVER;
 require dirname(__FILE__)."/../lib/functions.php";
 require PATH_SHARED_FUNCTIONS."generic-functions.php";
 

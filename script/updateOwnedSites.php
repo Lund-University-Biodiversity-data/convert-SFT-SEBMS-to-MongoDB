@@ -1,7 +1,7 @@
 <?php
 $database="SFT";
-$server="PROD";
 require "lib/config.php";
+$server=DEFAULT_SERVER;
 require "lib/functions.php";
 echo consoleMessage("info", "Script starts.");
 echo consoleMessage("info", "php script/updateOwnedSites.php");
