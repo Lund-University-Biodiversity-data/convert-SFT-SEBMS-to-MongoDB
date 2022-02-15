@@ -280,15 +280,10 @@ else {
 
 
 
-            $year=substr($eventDate, 0, 4);
-            /*
-            if (isset($arrOutputFromRecord[$output->outputId]["eventDate"])) {
-                $year=substr($arrOutputFromRecord[$output->outputId]["eventDate"], 0, 4);
-            }
-            else $year="";
-            */
+            //$year=substr($eventDate, 0, 4);
 
-            //$line["kart_id"]="";
+            $year=getYearFromSurveyDateAndProtocol($eventDate, $protocol);
+
 
             if (!isset($arrPerson[$arrActivityDetails[$output->activityId]["personId"]])) {
                  echo consoleMessage("error", "No person for activity ID ".$output->activityId);
@@ -312,16 +307,17 @@ else {
                 case "iwc":
                     $line["site"]=$array_sites_mongo[$output->data->location];
 
-                    
+                    /*
                     // specific for the year in iwc
                     // year +1 if december
                     if (substr($eventDate, 4, 2)==12) $year=substr($eventDate, 0, 4)+1;
                     else $year=substr($eventDate, 0, 4);
-                    
+                    */
                     break;
                     
                 case "vinter":
 
+                    /*
                      // specific for the year in VINTER
                     // year -1 if before june
                     if (substr($eventDate, 4, 2)<6) {
@@ -330,7 +326,7 @@ else {
                     else $year=substr($eventDate, 0, 4);
 
                     // NO BREAK HERE !!
-
+                    */
                 case "sommar":
                     $explodeSite=explode("-", $array_sites_mongo[$output->data->location]);
                     if (count($explodeSite)!=3)

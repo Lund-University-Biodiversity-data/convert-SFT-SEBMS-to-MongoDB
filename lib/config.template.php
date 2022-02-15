@@ -3,6 +3,7 @@ define("DEFAULT_SERVER", "PROD");
 define("PATH_SHARED_FUNCTIONS", "/home/XXX/shared-functions/");
 define ("PATH_DOWNLOAD", "/home/XXXX/convert-SFT-SEBMS-to-MongoDB/");
 
+define("MONGODB_NAME", "ecodata");
 $commonFields=array();
 
 $commonFields["userId"]=0;

@@ -47,8 +47,14 @@ foreach ($commonFields["listSpeciesId"] as $animals => $listId) {
 			else echo consoleMessage("error", "No lsid/dyntaxa for ".$sp["name"]);
 		}
 
-		if (isset($rank) && trim($rank)!="")
+		if ($key=="") {
+			echo consoleMessage("error", "No species info for ".$sp["name"]);
+
+		}
+		else {
+			if (isset($rank) && trim($rank)!="")
 			$array_species_guid[$animals][$key]["rank"]=$rank;
+		}
 		
 
 	}
@@ -57,6 +63,9 @@ foreach ($commonFields["listSpeciesId"] as $animals => $listId) {
 //exit();
 //print_r($array_species_guid[$animals]);
 }
+
+exit();
+
 
 // get all the sites
 $filter = ["status"=>"active"];
