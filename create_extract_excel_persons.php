@@ -105,8 +105,8 @@ else {
 			        "pers.firstName" => 1,
 			        "pers.lastName" => 1,
 			        "pers.gender" => 1,
-			        "pers.birthDate" => 1,
-			        "pers.epost" => 1,
+			        //"pers.birthDate" => 1,
+			        "pers.email" => 1,
 			        "pers.phoneNum" => 1,
 			        "pers.mobileNum" => 1,
 			        "pers.address1" => 1,
@@ -159,7 +159,7 @@ else {
 						$person["fornamn"]=(isset($output->pers[0]->firstName) ? $output->pers[0]->firstName : "");
 						$person["efternamn"]=(isset($output->pers[0]->lastName) ? $output->pers[0]->lastName : "");
 						$person["sx"]=$gender;
-						$person["birthDate"]=(isset($output->pers[0]->birthDate) ? $output->pers[0]->birthDate : "");
+						//$person["birthDate"]=(isset($output->pers[0]->birthDate) ? $output->pers[0]->birthDate : "");
 						$person["epost"]=(isset($output->pers[0]->email) ? $output->pers[0]->email : "");
 						$person["telhem"]=(isset($output->pers[0]->phoneNum) ? $output->pers[0]->phoneNum : "");
 						$person["telmobil"]=(isset($output->pers[0]->mobileNum) ? $output->pers[0]->mobileNum : "");
@@ -224,7 +224,7 @@ else {
 			$person["fornamn"]=(isset($row->firstName) ? $row->firstName : "");
 			$person["efternamn"]=(isset($row->lastName) ? $row->lastName : "");
 			$person["sx"]=$gender;
-			$person["birthDate"]=(isset($row->birthDate) ? $row->birthDate : "");
+			//$person["birthDate"]=(isset($row->birthDate) ? $row->birthDate : "");
 			$person["epost"]=(isset($row->email) ? $row->email : "");
 			$person["telhem"]=(isset($row->phoneNum) ? $row->phoneNum : "");
 			$person["telmobil"]=(isset($row->mobileNum) ? $row->mobileNum : "");
@@ -249,7 +249,7 @@ else {
 
 	if ($fp = fopen($path_extract, 'w')) {
 
-		$headers=array("persnr", "fornamn", "efternamn", "sx", "birthDate", "epost", "telhem", "telmobil", "address1", "address2", "postnr", "ort", "userId", "personId", "protocols");
+		$headers=array("persnr", "fornamn", "efternamn", "sx", /*"birthDate", */"epost", "telhem", "telmobil", "address1", "address2", "postnr", "ort", "userId", "personId", "protocols");
 		fputcsv($fp, $headers, ";");
 
 
