@@ -10,7 +10,7 @@ echo consoleMessage("info", "php script/addHelperId.php kust");
 
 $mng = new MongoDB\Driver\Manager($mongoConnection[$server]); // Driver Object created
 
-$arr_protocol=array("kust", "iwc");
+$arr_protocol=array("kust", "iwc", "natt");
 
 if (!isset($argv[1]) || !in_array(trim($argv[1]), $arr_protocol)) {
 	echo consoleMessage("error", "First parameter missing: ".implode("/", $arr_protocol));
@@ -18,7 +18,6 @@ if (!isset($argv[1]) || !in_array(trim($argv[1]), $arr_protocol)) {
 else {
 
 	$protocol=$argv[1];
-
 	/*
 	// get all the sites
 	$filter = ["status"=>"active", "data.helpers.helper" => ['$exists' => true ] ];
@@ -42,6 +41,7 @@ else {
 	       ]],
 	       ['$match'=>[
 	           'status'=> 'active',
+	           'act.projectId'=> $commonFields[$protocol]["projectId"],
 	           'data.helpers.helper' => [ '$exists' => true ],
 	       ]],
 	       ['$project'=> [
