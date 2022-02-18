@@ -27,6 +27,15 @@ else {
 	$manualPersonProject["kust"]["ÅKE ANDERSSON"]="d46c6ba7-d7f9-48b9-7c4c-c4e4eec894e0"; // 380703-2
 
 
+	$manualPersonProject["iwc"]["JAN KARLSSON"]="b4522b0c-2e92-2337-e951-9367c4f1058d"; // 511229-1
+	$manualPersonProject["iwc"]["TOMMY ERIKSSON"]="a0da46fe-d913-ea73-99b0-8a0dae426f38"; // 491129-1
+	$manualPersonProject["iwc"]["JAN GUSTAFSSON"]="b0a97fab-b278-ae58-246d-a3354066a273"; // 580425-1
+	$manualPersonProject["iwc"]["ANDERS ERIKSSON"]="eb14c4e6-49af-aa8f-f4c4-7bd6fc65253b"; // 750512-1
+	// BENGT ANDERSSON - 490705-1
+	// BENGT ANDERSSON - 530211-1 
+	$manualPersonProject["iwc"]["TOMAS CARLSSON"]="41f4c6e6-db39-ba7e-3afd-3b242ff32bd0"; // 551123-1 
+	$manualPersonProject["iwc"]["ARNE ANDERSSON"]="a4d3cfa4-965f-f8ef-58f9-df43eccf00c1"; // 551223-2
+
 	$protocol=$argv[1];
 	/*
 	// get all the sites
@@ -58,7 +67,7 @@ else {
 	           "activityId" => 1,
 	           "outputId" => 1,
 	           "data.helpers" => 1,
-	           "act.helperId" => 1,
+	           "act.helperIds" => 1,
 	       ]],
 	       /*['$limit' => 10]*/
 	   ],
@@ -81,7 +90,7 @@ else {
 
 		foreach ($rtArray as $row){
 
-			if (!isset($row->act[0]->helperId)) {
+			if (!isset($row->act[0]->helperIds) || count($row->act[0]->helperIds)==0) {
 
 				//if (count($row->data->helpers)>2)
 				//echo "go helpers".count($row->data->helpers)." => ".$row->activityId."\n";
@@ -177,16 +186,17 @@ else {
 						//if (count($helperId)>1)
 							//echo consoleMessage("info", "Add personId (".implode("/", $helperId).")");
 						$nbHadd++;
-						/*
-						$bulk = new MongoDB\Driver\BulkWrite;
-						//$filter = [];
-						$filter = ['activityId' => $row->activityId, "data.observations.species.guid" => $obs->species->guid];
-						//print_r($filter);
-						$options =  ['$set' => ['data.observations.$.swedishRank' => $array_species_guid[$animal][$obs->species->guid]["rank"]]];
-						$updateOptions = [];
-						$bulk->update($filter, $options, $updateOptions); 
-						$result = $mng->executeBulkWrite('ecodata.output', $bulk);
-						*/
+
+						if (isset($argv[2]) && $argv[2]=="exec") {
+							$bulk = new MongoDB\Driver\BulkWrite;
+							//$filter = [];
+							$filter = ['activityId' => $row->activityId];
+							//print_r($filter);
+							$options =  ['$set' => ['helperIds' => $helperId]];
+							$updateOptions = [];
+							$bulk->update($filter, $options, $updateOptions); 
+							$result = $mng->executeBulkWrite('ecodata.activity', $bulk);
+						}
 					}
 					else {
 						$nbHmiss++;
@@ -195,9 +205,10 @@ else {
 				
 			}
 			else {
-				var_dump($row->act[0]->helperId);
-				echo consoleMessage("info", "Already helperIds ".$row->activityId);
-				$nbSRok++;
+				//var_dump($row->act[0]->helperId);
+
+				//echo consoleMessage("info", "Already helperIds ".$row->activityId." => ".count($row->act[0]->helperIds));
+				$nbHok++;
 			}
 		}
 
