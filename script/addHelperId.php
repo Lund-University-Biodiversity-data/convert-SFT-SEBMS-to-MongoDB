@@ -103,29 +103,19 @@ else {
 
 					foreach($row->data->helpers as $help) {
 
-						if (!isset($arrPersons[$help->helper])) {
-							$personName=explode(" ", $help->helper, 2);
+						if (!isset($help->helper)) {
+							echo consoleMessage("warn", "helper field not set, empty row ? => ".$row->activityId);
+						}
+						else {
 
-							if (isset($personName[0]) && isset($personName[1]) && count($personName)==2) {
-								//echo implode("/", $personName)."\n";
+							if (!isset($arrPersons[$help->helper])) {
+								$personName=explode(" ", $help->helper, 2);
 
-								// first try with BIG LETTERS
-								$filter = ["firstName"=>mb_strtoupper($personName[0]), "lastName"=>mb_strtoupper($personName[1])];
-								$options = [];
-								$query = new MongoDB\Driver\Query($filter, $options); 
-								$rowsP = $mng->executeQuery("ecodata.person", $query);
+								if (isset($personName[0]) && isset($personName[1]) && count($personName)==2) {
+									//echo implode("/", $personName)."\n";
 
-								$nbPers=0;
-								foreach($rowsP as $person) {
-									//echo "validé pour le personId".$person->personId."\n";
-									$nbPers++;
-									$persId=$person->personId;
-								}
-
-								if ($nbPers!=1) {
-
-									// 2nd try with SMALL LETTERS
-									$filter = ["firstName"=>($personName[0]), "lastName"=>($personName[1])];
+									// first try with BIG LETTERS
+									$filter = ["firstName"=>mb_strtoupper($personName[0]), "lastName"=>mb_strtoupper($personName[1])];
 									$options = [];
 									$query = new MongoDB\Driver\Query($filter, $options); 
 									$rowsP = $mng->executeQuery("ecodata.person", $query);
@@ -139,52 +129,71 @@ else {
 
 									if ($nbPers!=1) {
 
+										// 2nd try with SMALL LETTERS
+										$filter = ["firstName"=>($personName[0]), "lastName"=>($personName[1])];
+										$options = [];
+										$query = new MongoDB\Driver\Query($filter, $options); 
+										$rowsP = $mng->executeQuery("ecodata.person", $query);
 
-										// NEW ROUND BUT WITH THE MANUAL personId
-										if (isset($manualPersonProject[$protocol][$help->helper])) {
-											echo consoleMessage("info", "manual fix for ".$help->helper."");
-											$helperId[]=$manualPersonProject[$protocol][$help->helper];
-											$arrPersons[$help->helper]=$manualPersonProject[$protocol][$help->helper];
+										$nbPers=0;
+										foreach($rowsP as $person) {
+											//echo "validé pour le personId".$person->personId."\n";
+											$nbPers++;
+											$persId=$person->personId;
 										}
-										else {
 
-											$okAddHelperId=false;
-											echo consoleMessage("warn", "Did not find 1 person with that name (".$nbPers." instead) : ".$help->helper. " activityId => ".$row->activityId);
+										if ($nbPers!=1) {
+
+
+											// NEW ROUND BUT WITH THE MANUAL personId
+											if (isset($manualPersonProject[$protocol][$help->helper])) {
+												echo consoleMessage("info", "manual fix for ".$help->helper."");
+												$helperId[]=$manualPersonProject[$protocol][$help->helper];
+												$arrPersons[$help->helper]=$manualPersonProject[$protocol][$help->helper];
+											}
+											else {
+
+												$okAddHelperId=false;
+												echo consoleMessage("warn", "Did not find 1 person with that name (".$nbPers." instead) : ".$help->helper. " activityId => ".$row->activityId);
+											}
+
+										} else {
+											$helperId[]=$persId;
+											$arrPersons[$help->helper]=$persId;
 										}
 
-									} else {
+									}
+									else {
 										$helperId[]=$persId;
 										$arrPersons[$help->helper]=$persId;
 									}
+									/*}
+									else {
+										$okAddHelperId=false;
+									}*/
+									
+								}
+								else {
+
+									echo consoleMessage("warn", "Impossible to explode personName (".count($personName).", ".$help->helper.") => activityId ".$row->activityId);
+									$okAddHelperId=false;
 
 								}
-								else {
-									$helperId[]=$persId;
-									$arrPersons[$help->helper]=$persId;
-								}
-								/*}
-								else {
-									$okAddHelperId=false;
-								}*/
-								
 							}
 							else {
-
-								echo consoleMessage("warn", "Impossible to explode personName (".count($personName).") => ".$help->helper);
-								$okAddHelperId=false;
-
+								//echo consoleMessage("info", "Person already found (".$help->helper.") => ".$arrPersons[$help->helper]);
+								$helperId[]=$arrPersons[$help->helper];
 							}
+
 						}
-						else {
-							//echo consoleMessage("info", "Person already found (".$help->helper.") => ".$arrPersons[$help->helper]);
-							$helperId[]=$arrPersons[$help->helper];
-						}
+
+
 						
 					}
 
 					if ($okAddHelperId && count($helperId)>0) {
 						//if (count($helperId)>1)
-							//echo consoleMessage("info", "Add personId (".implode("/", $helperId).")");
+						echo consoleMessage("info", "Add personId (".implode("/", $helperId).") => ".$row->activityId);
 						$nbHadd++;
 
 						if (isset($argv[2]) && $argv[2]=="exec") {
