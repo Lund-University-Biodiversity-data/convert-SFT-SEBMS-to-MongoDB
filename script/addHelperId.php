@@ -138,9 +138,9 @@ else {
 											$arrPersons[$help->helper]=$manualPersonProject[$protocol][$help->helper];
 										}
 										else {
-											
+
 											$okAddHelperId=false;
-											echo consoleMessage("warn", "Did not find 1 person with that name (".$nbPers." instead) : ".$help->helper);
+											echo consoleMessage("warn", "Did not find 1 person with that name (".$nbPers." instead) : ".$help->helper. " activityId => ".$row->activityId);
 										}
 
 									} else {
