@@ -71,7 +71,7 @@ else {
 		echo consoleMessage("info", "From ".($yrStart!="" ? $yrStart : "-empty-")." to ".($yrEnd!="" ? $yrEnd : "-empty-"));
 
 
-		// 2 loops : one for the personId, the 2nd for the medinventerare
+		// 2 loops : one for the personId, the 2nd for the medinventerare (helperId)
 		for ($iLoop=1;$iLoop<=2;$iLoop++) {
 
 			// get all the persons involved as personId
@@ -163,6 +163,7 @@ else {
 
 						for ($iPers=0;$iPers<count($output->pers); $iPers++){
 
+
 							if(!isset($arrPersons[$output->pers[$iPers]->personId])) {
 			            		//echo $year. " OK => only from ".$yrStart." to ".$yrEnd." - ".$output->activityId."\n";
 			            		$person=array();
@@ -187,13 +188,32 @@ else {
 								$person["userId"]=(isset($output->pers[$iPers]->userId) ? $output->pers[$iPers]->userId : "");
 								$person["personId"]=$output->pers[$iPers]->personId;
 
+								// to specify if the person is huvudinventerare (personId) or medinventerare (helperId)
+								if ($iLoop==1) {
+									$person["huvudinventerare"]="X";
+									$person["medinventerare"]="";
+								}
+								else {
+									$person["huvudinventerare"]="";
+									$person["medinventerare"]="X";
+								}
 								$person[$output->name]=$output->name;
 
 
 								$arrPersons[$output->pers[$iPers]->personId]=$person;
 								//if ($iLoop==2) echo "OK person (".$output->pers[$iPers]->firstName.$output->pers[$iPers]->lastName.") fron activity ".$output->activityId."\n";
+								
 							}
 							else {
+
+								if ($iLoop==1) {
+									$arrPersons[$output->pers[$iPers]->personId]["huvudinventerare"]="X";
+								}
+								else {
+									$arrPersons[$output->pers[$iPers]->personId]["medinventerare"]="X";
+								}
+
+
 								if (!isset($arrPersons[$output->pers[$iPers]->personId][$output->name])) {
 									$arrPersons[$output->pers[$iPers]->personId][$output->name]=$output->name;
 								}
@@ -263,6 +283,8 @@ else {
 			$person["ort"]=(isset($row->town) ? $row->town : "");
 			$person["userId"]=(isset($row->userId) ? $row->userId : "");
 			$person["personId"]=$row->personId;
+			$person["huvudinventerare"]="?";
+			$person["medinventerare"]="?";
 			$person["protocols"]=$protocol;
 
 			$arrPersons[]=$person;
@@ -278,7 +300,7 @@ else {
 
 	if ($fp = fopen($path_extract, 'w')) {
 
-		$headers=array("persnr", "fornamn", "efternamn", "sx", /*"birthDate", */"epost", "telhem", "telmobil", "address1", "address2", "postnr", "ort", "userId", "personId", "protocols");
+		$headers=array("persnr", "fornamn", "efternamn", "sx", /*"birthDate", */"epost", "telhem", "telmobil", "address1", "address2", "postnr", "ort", "userId", "personId", "huvudinventerare", "medinventerare", "delprogram");
 		fputcsv($fp, $headers, ";");
 
 
