@@ -12,9 +12,8 @@ require PATH_SHARED_FUNCTIONS."mongo-functions.php";
 echo consoleMessage("info", "Script starts");
 
 echo consoleMessage("info", "DEBUG example command :");
-echo consoleMessage("info", "php create_empty_sites.php natt");
+echo consoleMessage("info", "php create_empty_sites.php natt totalnatt");
 
-$debug=false;
 
 $arr_protocol=array("natt", "punkt", "iwc");
 
@@ -33,19 +32,11 @@ else {
 			exit();
 		} 
 		else {
-			if (isset($argv[3]) && $argv[3]=="debug") {
-				$debug=true;
-				echo consoleMessage("info", "DEBUG mode");
-			}
 
 			$mode=$argv[2];
 		}
 	}
 	else {
-		if (isset($argv[2]) && $argv[2]=="debug") {
-			$debug=true;
-			echo consoleMessage("info", "DEBUG mode");
-		}
 
 	}
 
@@ -70,7 +61,7 @@ else {
 
 				$fieldIdentifier = "kartatx";
 				$fieldRouteName = "kartatx";
-				$fieldLan = "kartatx";
+				$fieldLan = "lan";
 
 				break;
 
@@ -182,33 +173,49 @@ else {
 				$okSites++;
 			}
 		}
-		if ($debug) print_r($arrMissIdentifier);
-
+		
 
 		
 
 		echo consoleMessage("info", $okSites."  site(s) found among ".count($array_psql_sites)." => ".number_format(($okSites*100/count($array_psql_sites)), 2)."%");
 		echo consoleMessage("info", count($arrMissIdentifier)." missing site(s) among ".count($array_psql_sites)." => ".number_format((count($arrMissIdentifier)*100/count($array_psql_sites)), 2)."%");
 	}
-	else {
+	elseif ($protocol=="natt" && $mode=="list") {
 
+		if (!isset($argv[3])) {
+			echo consoleMessage("error", "Argument missing with list codes like 88NBG#56HYT#90kKOI");
+			exit();
+		}
+		else {
+			$explList=explode("#", $argv[3]);
+		}
+
+		foreach ($explList as $site) {
+			if (strlen($site)!=5) {
+				echo consoleMessage("error", "Wrong site code, must be 5 caracters : ".$site);
+				exit();
+			}
+		}
 		$fieldIdentifier = "kartatx";
 		$fieldRouteName = "kartatx";
-		$fieldLan = "kartatx";
+		$fieldLan = "lan";
 
-		$listKartaTxHardcoded=array("13CSO", "16CNV");
+		$listKartaTxHardcoded=$explList;
 		
 		$arrMissCodeSite=$listKartaTxHardcoded;
 		foreach ($arrMissCodeSite as $kar) {
 			$line=array();
 			$line[$fieldIdentifier]=$kar;
 			$line[$fieldRouteName]=$kar;
-			$line[$fieldLan]=$kar;
+			$line[$fieldLan]="";
 			$arrMissIdentifier[]=$line;
 		}
 	}
-
-	echo consoleMessage("info", count($arrMissCodeSite)."  distinct kartaTx missing");
+	else {
+		echo consoleMessage("error", "wrong protocol/mode => stop ".$protocol."/".$mode);
+		exit();
+	}
+	echo consoleMessage("info", count($arrMissCodeSite)." distinct kartaTx missing");
 
 	if (count($arrMissIdentifier)>0) {
 
@@ -255,11 +262,20 @@ else {
 
 			switch($protocol) {
 				case "natt":
+					if (!isset($arrDetailsSites[$dataMiss["kartatx"]])) {
+						echo consoleMessage("error", "No data for ".$dataMiss["kartatx"]);
+						exit(); 
+					}
 					$longitude=$arrDetailsSites[$dataMiss["kartatx"]]["wgs84_lon"];
 					$latitude=$arrDetailsSites[$dataMiss["kartatx"]]["wgs84_lat"];
 					$nameSite= $dataMiss["kartatx"].' - NATT';
 
 					$identif="kartatx";
+
+					$adminPropertiesSpecific.=',
+			"bookingComment": "",
+			"paperSurveySubmitted": ""';
+
 				break;
 				case "punkt":
 					$longitude=$arrDetailsSites[$dataMiss["kartatx"]]["wgs84_lon"];
