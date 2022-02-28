@@ -44,17 +44,14 @@ else {
 
 	if ($protocol!="all") {
 		$projectId=$commonFields[$protocol]["projectId"];
+		$projectActivityId=$commonFields[$protocol]["projectActivityId"];
 		echo consoleMessage("info", "ProjectId : ".$projectId);
 
-		$fieldNameFilterProject="projectId";
-		$fieldValueFilterProject=$projectId;
 	}
 	else {
 		$projectId="";
+		$projectActivityId="";
 		echo consoleMessage("info", "All projects from SFT hub");
-
-		$fieldNameFilterProject="hub";
-		$fieldValueFilterProject=$hub;
 	}
 	
 
@@ -85,7 +82,7 @@ else {
 	                    'as'=>'act'
 	                ]],
 	                ['$match'=>[
-	                	"act.projectId" => $projectId, // can be removed later if protocol = all
+	                	"act.projectActivityId" => $projectActivityId, // can be removed later if protocol = all
 	                	"act.status" => [
 	                		'$in' => ["active", "under review"]
 	                	]
@@ -125,7 +122,7 @@ else {
 
 	        // remove the filter project when all protocol. Add a filter on the hub
 			if($protocol=="all"){
-				unset($aggregate["pipeline"][1]['$match']["act.projectId"]);
+				unset($aggregate["pipeline"][1]['$match']["act.projectActivityId"]);
 				$aggregate["pipeline"][3]['$match']["pers.hub"]="sft";
 
 			}

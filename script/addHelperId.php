@@ -144,7 +144,6 @@ else {
 
 										if ($nbPers!=1) {
 
-
 											// NEW ROUND BUT WITH THE MANUAL personId
 											if (isset($manualPersonProject[$protocol][$help->helper])) {
 												echo consoleMessage("info", "manual fix for ".$help->helper."");
