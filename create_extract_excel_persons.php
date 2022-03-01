@@ -84,7 +84,10 @@ else {
 	                ['$match'=>[
 	                	"act.projectActivityId" => $projectActivityId, // can be removed later if protocol = all
 	                	"act.status" => [
-	                		'$in' => ["active", "under review"]
+	                		'$in' => ["active"]
+	                	],
+	                	"act.verificationStatus" => [
+	                		'$in' => ["approved", "under review"]
 	                	]
 	                ]],
 				    ['$lookup'=>[
