@@ -13,6 +13,15 @@ $mng = new MongoDB\Driver\Manager($mongoConnection[$server]); // Driver Object c
 $array_species_sn=array();
 $array_species_guid=array();
 
+$arr_protocol=array("std", "natt", "vinter", "sommar", "kust", "iwc");
+
+if (!isset($argv[1]) || !in_array(trim($argv[1]), $arr_protocol)) {
+    echo consoleMessage("error", "First parameter missing: std / natt / vinter / sommar / kust / iwc");
+    exit();
+}
+$protocol=$argv[1];
+
+
 foreach ($commonFields["listSpeciesId"] as $animals => $listId) {
     $url="https://lists.biodiversitydata.se/ws/speciesListItems/".$commonFields["listSpeciesId"][$animals]."?includeKVP=true";
     $obj = json_decode(file_get_contents($url), true);
@@ -39,7 +48,7 @@ foreach ($commonFields["listSpeciesId"] as $animals => $listId) {
 //echo $array_species_rank["birds"][3090]; exit;
 
 // get all the sites
-$filter = ["status"=>"active", "name" => $commonFields["natt"]["name"]];
+$filter = ["status"=>"active", "name" => $commonFields[$protocol]["name"]];
 //$filter = ["dataOrigin" => "scriptSitePunktIntranet", "verificationStatus"=>"godkänd", "status"=>"active"];
 $options = [];
 /*$options = [
