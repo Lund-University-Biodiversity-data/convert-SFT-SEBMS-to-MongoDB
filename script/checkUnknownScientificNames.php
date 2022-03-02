@@ -39,7 +39,7 @@ foreach ($commonFields["listSpeciesId"] as $animals => $listId) {
 //echo $array_species_rank["birds"][3090]; exit;
 
 // get all the sites
-$filter = ["status"=>"active", "name" => $commonFields["std"]["name"]];
+$filter = ["status"=>"active", "name" => $commonFields["natt"]["name"]];
 //$filter = ["dataOrigin" => "scriptSitePunktIntranet", "verificationStatus"=>"godkänd", "status"=>"active"];
 $options = [];
 /*$options = [
@@ -53,6 +53,8 @@ $nbSNok=0;
 $nbSNfixed=0;
 $nbSNerror=0;
 $nbSNunknown=0;
+$nbActivitiesError=0;
+
 foreach ($rows as $row){
 
     $animals="birds";
@@ -77,12 +79,24 @@ foreach ($rows as $row){
 
                 }
                 else {
-                    echo consoleMessage("error", "Can't fix with rank ".intval($obs->swedishRank)." ".$array_species_rank[$animals][intval($obs->swedishRank)]);
+                    if (!isset($obs->swedishRank)) {
+                        echo consoleMessage("error", "No field swedishRank for ".$obs->species->name.", activity : ".$row->activityId);
+
+                    }
+                    elseif (intval($obs->swedishRank)==0) {
+                        echo consoleMessage("error", "swedishRank is 0 for ".$obs->species->name.", activity : ".$row->activityId);
+
+                    }
+                    else 
+                        echo consoleMessage("error", "Can't fix with rank ".intval($obs->swedishRank)." ".$array_species_rank[$animals][intval($obs->swedishRank)]." name : ".$obs->species->name." activity : ".$row->activityId);
                 }
             }
                 
         }
-        if ($dateCreated!="") echo consoleMessage("warn", "Problem with activity ".$row->activityId." created ".$dateCreated);
+        if ($dateCreated!="") {
+            //echo consoleMessage("warn", "Problem with activity ".$row->activityId." created ".$dateCreated);
+            $nbActivitiesError++;
+        }
     }
     else {
         echo consoleMessage("warn", "No observations  for ".$row->activityId);
@@ -93,5 +107,7 @@ echo consoleMessage("info", $nbSNok." ok scientificNames.");
 echo consoleMessage("info", $nbSNerror." error scientificNames.");
 echo consoleMessage("info", $nbSNfixed." fixed scientificNames.");
 echo consoleMessage("info", "including ".$nbSNunknown." unknown scientificNames.");
+
+echo consoleMessage("info", $nbActivitiesError." activity error scientificNames.");
 
 ?>
