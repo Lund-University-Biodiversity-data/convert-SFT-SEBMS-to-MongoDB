@@ -51,7 +51,7 @@ foreach ($commonFields["listSpeciesId"] as $animals => $listId) {
 //echo $array_species_rank["birds"][3090]; exit;
 
 // get all the sites
-$filter = ["status"=>"active", "name" => $commonFields[$protocol]["name"]];
+$filter = ["status"=>"active", "name" => $commonFields[$protocol]["name"], "verificationStatus" => ['$ne' => "draft"]];
 //$filter = ["dataOrigin" => "scriptSitePunktIntranet", "verificationStatus"=>"godkänd", "status"=>"active"];
 $options = [];
 /*$options = [
