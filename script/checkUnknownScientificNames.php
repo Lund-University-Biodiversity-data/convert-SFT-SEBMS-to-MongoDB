@@ -14,6 +14,7 @@ $array_species_sn=array();
 $array_species_guid=array();
 
 $debug=false;
+$exec=false;
 
 $arr_protocol=array("std", "natt", "vinter", "sommar", "kust", "iwc");
 
@@ -24,6 +25,7 @@ if (!isset($argv[1]) || !in_array(trim($argv[1]), $arr_protocol)) {
 $protocol=$argv[1];
 
 if (isset($argv[2]) && $argv[2]=="debug") $debug=true;
+elseif (isset($argv[2]) && $argv[2]=="exec") $exec=true;
 
 foreach ($commonFields["listSpeciesId"] as $animals => $listId) {
     $url="https://lists.biodiversitydata.se/ws/speciesListItems/".$commonFields["listSpeciesId"][$animals]."?includeKVP=true";
@@ -47,7 +49,7 @@ foreach ($commonFields["listSpeciesId"] as $animals => $listId) {
     echo consoleMessage("info", "Species list ".$commonFields["listSpeciesId"][$animals]." obtained. ".count($obj)." elements");
 
 }
-//print_r($array_species_sn["birds"]);
+//print_r($array_species_sn["birds"]);exit();
 //echo $array_species_rank["birds"][3090]; exit;
 
 // get all the sites
@@ -63,6 +65,7 @@ $rows = $mng->executeQuery("ecodata.output", $query);
 
 $nbSNok=0;
 $nbSNfixed=0;
+$nbSNfixedReal=0;
 $nbSNerror=0;
 $nbSNunknown=0;
 $nbActivitiesError=0;
@@ -86,6 +89,21 @@ foreach ($rows as $row){
                 $dateCreated=$row->data->surveyDate;
 
                 if (isset($obs->swedishRank) && isset($array_species_rank[$animals][intval($obs->swedishRank)]) && trim($array_species_rank[$animals][intval($obs->swedishRank)])!="") {
+
+                    if ($exec) {
+                        $bulk = new MongoDB\Driver\BulkWrite;
+                        //$filter = [];
+                        $filter = ['activityId' => $row->activityId, "data.observations.swedishRank" => $obs->swedishRank];
+                        //print_r($filter);
+                        $options =  ['$set' => ['data.observations.$.species.scientificName' => $array_species_rank[$animals][intval($obs->swedishRank)]]];
+                        $updateOptions = [];
+                        $bulk->update($filter, $options, $updateOptions); 
+                        $result = $mng->executeBulkWrite('ecodata.output', $bulk);
+
+                        $nbSNfixedReal+=$result->getModifiedCount();
+                    }
+
+
                     $nbSNfixed++;
                     //echo consoleMessage("warn", $obs->species->scientificName." replaced by ".$array_species_rank[$animals][intval($obs->swedishRank)]);
 
@@ -118,6 +136,7 @@ foreach ($rows as $row){
 echo consoleMessage("info", $nbSNok." ok scientificNames.");
 echo consoleMessage("info", $nbSNerror." error scientificNames.");
 echo consoleMessage("info", $nbSNfixed." fixed scientificNames.");
+echo consoleMessage("info", $nbSNfixedReal." fixed in database scientificNames.");
 echo consoleMessage("info", "including ".$nbSNunknown." unknown scientificNames.");
 
 echo consoleMessage("info", $nbActivitiesError." activity error scientificNames.");
