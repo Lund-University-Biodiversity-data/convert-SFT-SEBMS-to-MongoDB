@@ -6,12 +6,14 @@ require dirname(__FILE__)."/../lib/functions.php";
 require PATH_SHARED_FUNCTIONS."generic-functions.php";
 
 echo consoleMessage("info", "Script starts.");
-echo consoleMessage("info", "php script/editRecordsAddSwedishRank.php");
+echo consoleMessage("info", "php script/editRecordsAddSwedishRank.php protocol [debug]");
 
 $mng = new MongoDB\Driver\Manager($mongoConnection[$server]); // Driver Object created
 
 $array_species_sn=array();
 $array_species_guid=array();
+
+$debug=false;
 
 $arr_protocol=array("std", "natt", "vinter", "sommar", "kust", "iwc");
 
@@ -21,6 +23,7 @@ if (!isset($argv[1]) || !in_array(trim($argv[1]), $arr_protocol)) {
 }
 $protocol=$argv[1];
 
+if (isset($argv[2]) && $argv[2]=="debug") $debug=true;
 
 foreach ($commonFields["listSpeciesId"] as $animals => $listId) {
     $url="https://lists.biodiversitydata.se/ws/speciesListItems/".$commonFields["listSpeciesId"][$animals]."?includeKVP=true";
@@ -103,7 +106,7 @@ foreach ($rows as $row){
                 
         }
         if ($dateCreated!="") {
-            //echo consoleMessage("warn", "Problem with activity ".$row->activityId." created ".$dateCreated);
+            if ($debug) echo consoleMessage("warn", "Problem with activity ".$row->activityId." created ".$dateCreated);
             $nbActivitiesError++;
         }
     }
