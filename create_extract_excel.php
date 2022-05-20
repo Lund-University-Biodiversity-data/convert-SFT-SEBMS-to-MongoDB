@@ -135,7 +135,7 @@ else {
 			break;
 		case "kust":
 
-            $headers=array("persnr", "ruta", "datum", "yr", "verificationStatus", "art", "i100m", "openw", "ind", "surveyStartTime", "surveyFinishTime", "activityIdMongo");
+            $headers=array("persnr", "ruta", "datum", "yr", "verificationStatus", "art", "i100m", "openw", "ind", "surveyStartTime", "surveyFinishTime", "ducklingCounted", "ducklingCount", "ducklingSize", "activityIdMongo");
 			$nbPts=1;
 			break;
         case "iwc":
@@ -412,9 +412,9 @@ else {
                     $line["ind"]="";
                     $line["surveyStartTime"]=$output->data->surveyStartTime;
                     $line["surveyFinishTime"]=$output->data->surveyFinishTime;
-                    $line["ducklingCounted"]="";
-                    $line["ducklingCount"]="";
-                    $line["ducklingSize"]="";
+                    $line["ducklingCounted"]=$output->data->ducklingCounted;
+                    $line["ducklingCount"]=$output->data->ducklingCount;
+                    $line["ducklingSize"]=$output->data->ducklingSize;
 
                     break;
 
@@ -742,9 +742,6 @@ else {
                             if (isset($obs->water)) $line["openw"]=$obs->water;
                             if (isset($obs->individualCount)) $line["ind"]=trim($obs->individualCount);
 
-                            if (isset($obs->ducklingCounted)) $line["ducklingCounted"]=$obs->ducklingCounted;
-                            if (isset($obs->ducklingCount)) $line["ducklingCount"]=$obs->ducklingCounted;
-                            if (isset($obs->ducklingSize)) $line["ducklingSize"]=$obs->ducklingSize;
 
                             break;
 
