@@ -135,7 +135,7 @@ foreach ($rows as $row){
 
 echo consoleMessage("info", $nbSNok." ok scientificNames.");
 echo consoleMessage("info", $nbSNerror." error scientificNames.");
-echo consoleMessage("info", $nbSNfixed." fixed scientificNames.");
+echo consoleMessage("info", $nbSNfixed." to be fixed scientificNames.");
 echo consoleMessage("info", $nbSNfixedReal." fixed in database scientificNames.");
 echo consoleMessage("info", "including ".$nbSNunknown." unknown scientificNames.");
 

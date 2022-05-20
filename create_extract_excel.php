@@ -412,6 +412,9 @@ else {
                     $line["ind"]="";
                     $line["surveyStartTime"]=$output->data->surveyStartTime;
                     $line["surveyFinishTime"]=$output->data->surveyFinishTime;
+                    $line["ducklingCounted"]="";
+                    $line["ducklingCount"]="";
+                    $line["ducklingSize"]="";
 
                     break;
 
@@ -731,10 +734,17 @@ else {
                             $line["ind"]="";
                             $line["surveyStartTime"]="";
                             $line["surveyFinishTime"]="";
+                            $line["ducklingCounted"]="";
+                            $line["ducklingCount"]="";
+                            $line["ducklingSize"]="";
 
                             if (isset($obs->island)) $line["i100m"]=$obs->island;
                             if (isset($obs->water)) $line["openw"]=$obs->water;
                             if (isset($obs->individualCount)) $line["ind"]=trim($obs->individualCount);
+
+                            if (isset($obs->ducklingCounted)) $line["ducklingCounted"]=$obs->ducklingCounted;
+                            if (isset($obs->ducklingCount)) $line["ducklingCount"]=$obs->ducklingCounted;
+                            if (isset($obs->ducklingSize)) $line["ducklingSize"]=$obs->ducklingSize;
 
                             break;
 
