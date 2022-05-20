@@ -135,7 +135,7 @@ else {
 			break;
 		case "kust":
 
-            $headers=array("persnr", "ruta", "datum", "yr", "verificationStatus", "art", "i100m", "openw", "ind", "surveyStartTime", "surveyFinishTime", "ducklingCounted", "ducklingCount", "ducklingSize", "activityIdMongo");
+            $headers=array("persnr", "ruta", "datum", "yr", "verificationStatus", "art", "i100m", "openw", "ind", "surveyStartTime", "surveyFinishTime", "ducklingsCounted", "ducklingCount", "ducklingSize", "activityIdMongo");
 			$nbPts=1;
 			break;
         case "iwc":
@@ -412,7 +412,7 @@ else {
                     $line["ind"]="";
                     $line["surveyStartTime"]=$output->data->surveyStartTime;
                     $line["surveyFinishTime"]=$output->data->surveyFinishTime;
-                    $line["ducklingCounted"]=$output->data->ducklingCounted;
+                    $line["ducklingsCounted"]=$output->data->ducklingsCounted;
                     $line["ducklingCount"]=$output->data->ducklingCount;
                     $line["ducklingSize"]=$output->data->ducklingSize;
 
@@ -734,7 +734,7 @@ else {
                             $line["ind"]="";
                             $line["surveyStartTime"]="";
                             $line["surveyFinishTime"]="";
-                            $line["ducklingCounted"]="";
+                            $line["ducklingsCounted"]="";
                             $line["ducklingCount"]="";
                             $line["ducklingSize"]="";
 
