@@ -135,7 +135,7 @@ else {
 			break;
 		case "kust":
 
-            $headers=array("persnr", "ruta", "datum", "yr", "verificationStatus", "art", "i100m", "openw", "ind", "surveyStartTime", "surveyFinishTime", "ducklingsCounted", "ducklingCount", "ducklingSize", "activityIdMongo");
+            $headers=array("persnr", "ruta", "datum", "yr", "verificationStatus", "art", "i100m", "openw", "ind", "surveyStartTime", "surveyFinishTime", "pulliCounted", "pulliCount", "pulliSize", "activityIdMongo");
 			$nbPts=1;
 			break;
         case "iwc":
