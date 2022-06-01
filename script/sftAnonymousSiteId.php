@@ -48,9 +48,14 @@ else {
 
 	if (!$fileRefused) {
 
+
+		// 1- read the excel file, add the anonymizedIdd to the database
+		echo consoleMessage("info", "1- read the excel file, add the anonymizedIdd to the database");
+
 		// get all the sites
 		$arrSitesDetails=getArraySitesFromMongo($commonFields[$protocol]["projectId"], $server);
 		$arrUniqueIds=array();
+		$arrUniqueSites=array();
 
 		$firstRow=2;
 		$nbErrors=0;
@@ -66,6 +71,7 @@ else {
 				$nbErrors++;
 			} else {
 				$arrUniqueIds[]=$anonymizedId;
+				$arrUniqueSites[]=$internalSiteId;
 
 				if (!isset($arrSitesDetails[$internalSiteId])) {
 					echo consoleMessage("error", "No site data for ".$data["karta"]);
@@ -124,9 +130,25 @@ else {
 		}
 		echo consoleMessage("info", $nbOk." line(s) OK.");
 		echo consoleMessage("info", $nbErrors." line(s) ERRORED.");
+
+
+		echo consoleMessage("info", "2- check if sites have not been found in the file");
+
+		echo consoleMessage("info", count($arrSitesDetails)." site(s) in the database for protocol ".$protocol);
+		echo consoleMessage("info", count($arrUniqueSites)." site(s) in the file");
+
+		foreach($arrSitesDetails as $iSI => $dataSite) {
+			if (!in_array($iSI, $arrUniqueSites)) {
+				echo consoleMessage("error", $iSI." from database is not present in the excel file");
+
+			}
+		}
+
+
 		echo consoleMessage("info", "script ends after ".$iR." line(s) processed");
 
 	}
 
 }
 
+echo consoleMessage("info", "script ends.");
