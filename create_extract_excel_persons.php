@@ -117,6 +117,7 @@ else {
 				        "pers.address2" => 1,
 				        "pers.postCode" => 1,
 				        "pers.town" => 1,
+				        "pers.anonymizedId" => 1,
 				        "pers.userId" => 1,
 	                ]]
 	            ],
@@ -185,6 +186,7 @@ else {
 								$person["address2"]=(isset($output->pers[$iPers]->address2) ? $output->pers[$iPers]->address2 : "");
 								$person["postnr"]=(isset($output->pers[$iPers]->postCode) ? $output->pers[$iPers]->postCode : "");
 								$person["ort"]=(isset($output->pers[$iPers]->town) ? $output->pers[$iPers]->town : "");
+								$person["anonymizedId"]=(isset($output->pers[$iPers]->anonymizedId) ? $output->pers[$iPers]->anonymizedId : "");
 								$person["userId"]=(isset($output->pers[$iPers]->userId) ? $output->pers[$iPers]->userId : "");
 								$person["personId"]=$output->pers[$iPers]->personId;
 
@@ -281,6 +283,7 @@ else {
 			$person["address2"]=(isset($row->address2) ? $row->address2 : "");
 			$person["postnr"]=(isset($row->postCode) ? $row->postCode : "");
 			$person["ort"]=(isset($row->town) ? $row->town : "");
+			$person["anonymizedId"]=(isset($row->anonymizedId) ? $row->anonymizedId : "");
 			$person["userId"]=(isset($row->userId) ? $row->userId : "");
 			$person["personId"]=$row->personId;
 			$person["huvudinventerare"]="?";
@@ -300,7 +303,7 @@ else {
 
 	if ($fp = fopen($path_extract, 'w')) {
 
-		$headers=array("persnr", "fornamn", "efternamn", "sx", /*"birthDate", */"epost", "telhem", "telmobil", "address1", "address2", "postnr", "ort", "userId", "personId", "huvudinventerare", "medinventerare", "delprogram");
+		$headers=array("persnr", "fornamn", "efternamn", "sx", /*"birthDate", */"epost", "telhem", "telmobil", "address1", "address2", "postnr", "ort", "anonymizedId", "userId", "personId", "huvudinventerare", "medinventerare", "delprogram");
 		fputcsv($fp, $headers, ";");
 
 
