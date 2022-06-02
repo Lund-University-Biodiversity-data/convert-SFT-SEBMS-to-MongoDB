@@ -52,7 +52,7 @@ else {
 				break;
 
 			default: 
-				array_push($headers, "fjall104", "fjall142");
+				array_push($headers, "fjall104", "fjall142", "anonymizedId", "StaRegOSId", "StaRegPPId");
 				break;
 		}
 		fputcsv($fp, $headers, ";");
@@ -103,6 +103,9 @@ else {
 					
 					$site["fjall104"]=(isset($row->adminProperties->fjall104) ? $row->adminProperties->fjall104 : "");
 					$site["fjall142"]=(isset($row->adminProperties->fjall142) ? $row->adminProperties->fjall142 : "");
+					$site["anonymizedId"]=(isset($row->adminProperties->anonymizedId) ? $row->adminProperties->anonymizedId : "");
+					$site["StnRegOSId"]=(isset($row->adminProperties->StnRegOSId) ? $row->adminProperties->StnRegOSId : "");
+					$site["StnRegPPId"]=(isset($row->adminProperties->StnRegPPId) ? $row->adminProperties->StnRegPPId : "");
 					break;
 			}
 
