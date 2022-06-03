@@ -49,8 +49,8 @@ else {
 	if (!$fileRefused) {
 
 
-		// 1- read the excel file, add the anonymizedIdd to the database
-		echo consoleMessage("info", "1- read the excel file, add the anonymizedIdd to the database");
+		// 1- read the excel file, add the anonymizedId to the database
+		echo consoleMessage("info", "1- read the excel file, add the anonymizedId to the database");
 
 		// get all the sites
 		$arrSitesDetails=getArraySitesFromMongo($commonFields[$protocol]["projectId"], $server);
@@ -74,7 +74,7 @@ else {
 				$arrUniqueSites[]=$internalSiteId;
 
 				if (!isset($arrSitesDetails[$internalSiteId])) {
-					echo consoleMessage("error", "No site data for ".$data["karta"]);
+					echo consoleMessage("error", "No site data for ".$internalSiteId);
 					$nbErrors++;
 				}
 				else {

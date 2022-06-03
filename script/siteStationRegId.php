@@ -60,7 +60,6 @@ else {
 		}
 		// get all the sites
 		$arrSitesDetails=getArraySitesFromMongo($commonFields[$protocol]["projectId"], $server);
-		$arrUniqueIds=array();
 		$arrUniqueSites=array();
 
 		// get all the anonymizedId
@@ -117,6 +116,8 @@ else {
 				if (!$errorInternalSiteId) {
 
 
+					$arrUniqueSites[]=$internalSiteId;
+
 					if ((isset($arrSitesDetails[$internalSiteId]["StnRegOSId"]) 
 						&& $arrSitesDetails[$internalSiteId]["StnRegOSId"]!=""
 						&& $arrSitesDetails[$internalSiteId]["StnRegOSId"]!=$osId
@@ -154,56 +155,6 @@ else {
 				else {
 					$nbErrors++;
 				}
-				/*
-				if (in_array($anonymizedId, $arrUniqueIds)) {
-					echo consoleMessage("error", "DOUBLON for anonymizedId ".$anonymizedId.", already set to another route");
-					$nbErrors++;
-				} else {
-					$arrUniqueIds[]=$anonymizedId;
-					$arrUniqueSites[]=$internalSiteId;
-
-					if (!isset($arrSitesDetails[$internalSiteId])) {
-						echo consoleMessage("error", "No site data for ".$data["karta"]);
-						$nbErrors++;
-					}
-					else {
-					    $filter = [
-					    	'adminProperties.internalSiteId' => $internalSiteId
-					    ];
-						$options = [];
-						$query = new MongoDB\Driver\Query($filter, $options); 
-
-						$rows = $mng->executeQuery("ecodata.site", $query);
-						$rowsToArray = $rows->toArray();
-
-						if (count($rowsToArray)==1) {
-
-							if (isset($arrSitesDetails[$internalSiteId]["anonymizedId"]) && $arrSitesDetails[$internalSiteId]["anonymizedId"]!="" && $arrSitesDetails[$internalSiteId]["anonymizedId"]!=$anonymizedId) {
-								echo consoleMessage("error", "anonymizedId already set for ".$internalSiteId.". Value in DDB : ".$arrSitesDetails[$internalSiteId]["anonymizedId"].". Value to set : ".$anonymizedId);
-								$nbErrors++;
-							}
-							else {
-							
-								$bulk = new MongoDB\Driver\BulkWrite;
-
-							    $options =  ['$set' => [
-							    	'adminProperties.anonymizedId' => $anonymizedId
-							    ]];
-
-							    $updateOptions = ['multi' => false];
-							    $bulk->update($filter, $options, $updateOptions); 
-							    $result = $mng->executeBulkWrite('ecodata.site', $bulk);
-
-							    $nbOk++;
-							}
-						}
-						else {
-							echo consoleMessage("error", count($rowsToArray)." row(s) for ".$internalSiteId);
-							$nbErrors++;
-						}
-					}
-				}
-				*/
 			}
 
 
@@ -223,7 +174,7 @@ else {
 		echo consoleMessage("info", $nbOk." line(s) OK.");
 		echo consoleMessage("info", $nbErrors." line(s) ERRORED.");
 
-		/*
+		
 		echo consoleMessage("info", "2- check if sites have not been found in the file");
 
 		echo consoleMessage("info", count($arrSitesDetails)." site(s) in the database for protocol ".$protocol);
@@ -238,7 +189,7 @@ else {
 
 
 		echo consoleMessage("info", "script ends after ".$iR." line(s) processed");
-		*/
+		
 
 	}
 
