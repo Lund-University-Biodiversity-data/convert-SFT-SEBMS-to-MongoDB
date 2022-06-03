@@ -174,7 +174,7 @@ else {
 
 					$iR++;
 
-					addAnonymizedPersonIdInDb($mng, $iSI, $anonymizedId);
+					addAnonymizedPersonIdInDb($mng, $iSI, $maxAnonymizedId);
 					
 				    $nbOk++;
 
