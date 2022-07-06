@@ -19,7 +19,7 @@ echo consoleMessage("info", "php script/sftAnonymousSiteId.php std");
 
 $tmpfname = "script/excel/sft_anonymized_sites.xlsx";
 
-$arr_protocol=array("std");
+$arr_protocol=array("std", "pkt");
 
 if (!isset($argv[1]) || !in_array(trim($argv[1]), $arr_protocol)) {
 	echo consoleMessage("error", "First parameter missing: ".implode("/", $arr_protocol));
@@ -53,7 +53,9 @@ else {
 		echo consoleMessage("info", "1- read the excel file, add the anonymizedId to the database");
 
 		// get all the sites
-		$arrSitesDetails=getArraySitesFromMongo($commonFields[$protocol]["projectId"], $server);
+		if ($protocol=="pkt") $projectId=$commonFields["punkt"]["projectId"];
+		else $projectId=$commonFields[$protocol]["projectId"];
+		$arrSitesDetails=getArraySitesFromMongo($projectId, $server);
 		$arrUniqueIds=array();
 		$arrUniqueSites=array();
 
@@ -63,8 +65,19 @@ else {
 
 		for ($iR=$firstRow;$worksheet->getCell('A'.$iR)->getValue()!=""; $iR++) {
 
-			$internalSiteId=$worksheet->getCell('A'.$iR)->getValue();
-			$anonymizedId=$worksheet->getCell('B'.$iR)->getValue();
+			switch ($protocol) {
+				case "pkt":
+					$colInternalSiteId="D";
+					$colIAnonymizedId="E";
+					break;
+				case "std":
+				default:
+					$colInternalSiteId="A";
+					$colIAnonymizedId="B";
+					break;
+			}
+			$internalSiteId=$worksheet->getCell($colInternalSiteId.$iR)->getValue();
+			$anonymizedId=$worksheet->getCell($colIAnonymizedId.$iR)->getValue();
 			
 			if (in_array($anonymizedId, $arrUniqueIds)) {
 				echo consoleMessage("error", "DOUBLON for anonymizedId ".$anonymizedId.", already set to another route");
@@ -114,15 +127,7 @@ else {
 					}
 				}
 
-
-
-
-
 			}
-
-
-		    
-
 
 			if ($iR%100==0) echo consoleMessage("info", $iR." line(s) processed");
 

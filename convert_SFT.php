@@ -17,10 +17,10 @@ $debug=false;
 
 // parameters
 // 1- protocol: std (standardrutterna) - natt (nattrutterna) - vinter (vinterrutterna) - sommar (sommarrutterna) - kust (kustfagelrutterna)
-$arr_protocol=array("std", "natt", "vinter", "sommar", "kust", "iwc");
+$arr_protocol=array("std", "natt", "vinter", "sommar", "kust", "iwc", "kust2021");
 
 if (!isset($argv[1]) || !in_array(trim($argv[1]), $arr_protocol)) {
-	echo consoleMessage("error", "First parameter missing: std / natt / vinter / sommar / kust / iwc");
+	echo consoleMessage("error", "First parameter missing: ".implode(" / ", $arr_protocol));
 }
 else {
 
@@ -28,6 +28,13 @@ else {
 	
 	$protocol=$argv[1];
 
+	if ($protocol=="kust2021") {
+		$protocol="kust";
+		$kust2021="_2021";
+	}
+	else{
+		$kust2021="";
+	}
 	$arrSpeciesNotFound=array();
 	$speciesNotFound=0;
 	$speciesFound=0;
@@ -126,9 +133,9 @@ else {
 			// LPAD(cast(LEAST(p01, p02, p03, p04, p05, p06, p07, p08, p09, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20) as text), 4, '0')
 			$qEvents="
 			select P.efternamn, P.fornamn, P.persnr, T.datum ,T.ruta AS sitename, T.yr, KS.start, KS.stopp
-			from totalkustfagel200 T
+			from totalkustfagel200".$kust2021." T
 			left join personer P on P.persnr = T.persnr 
-			left join kustfagel200_start_stopp KS on T.ruta=KS.ruta AND T.datum=KS.datum 
+			left join kustfagel200_start_stopp".$kust2021."	 KS on T.ruta=KS.ruta AND T.datum=KS.datum 
 			where T.ruta  IN ".$req_sites."  
 			AND T.art='000'
 			order by datum
@@ -296,8 +303,8 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 				break;
 			case "kust":
 				$qRecords="
-					select EL.arthela AS names, EL.latin as scientificname, i100m, ind, openw, T.art, T.datum
-					from totalkustfagel200 T, eurolist EL
+					select EL.arthela AS names, EL.latin as scientificname, i100m, ind, openw, T.art, T.datum, EL.taxon_rank
+					from totalkustfagel200".$kust2021." T, eurolist EL
 					where EL.art=T.art 
 					and T.ruta='".$rtEvents["sitename"]."'  
 					AND T.art<>'000'
@@ -460,7 +467,7 @@ select EL.arthela AS names, EL.latin as scientificname, T.art, T.datum, T.antal
 
 			$qDuckl="
 			select *
-			from kustfagel200_ejderungar KE
+			from kustfagel200_ejderungar".$kust2021." KE
 			where KE.ruta = '".$rtEvents["sitename"]."'
 			AND CAST(yr AS text)=LEFT('".$rtEvents["datum"]."',4)
 			AND persnr='".$rtEvents["persnr"]."'
@@ -1006,7 +1013,8 @@ select EL.arthela AS names, EL.latin as scientificname, T.art, T.datum, T.antal
 							"guid" : "'.$guid.'"
 						},
 						';
-			$data_field[$animalsDataField].='"individualCount" : '.$IC.'
+			$data_field[$animalsDataField].='"individualCount" : '.$IC.',
+							  "swedishRank": "'.$rtRecords["taxon_rank"].'"
 							},';
 
 
