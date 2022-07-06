@@ -45,7 +45,7 @@ else {
 			case "sommar":
 			case "vinter":
 
-				array_push($headers, "kartatx", "start", "senvin", "owner");
+				array_push($headers, "kartatx", "start", "senvin", "owner", "anonymizedId", "StaRegOSId", "StaRegPPId");
 				break;
 			case "iwc":
 				array_push($headers, "goose", "helcom_sub", "ln_karta", "ki", "ev", "area");
@@ -87,6 +87,9 @@ else {
 					$site["start"]=(isset($row->adminProperties->start) ? $row->adminProperties->start : "");
 					$site["senvin"]=(isset($row->adminProperties->senvin) ? $row->adminProperties->senvin : "");
 					$site["owner"]=(isset($row->owner) ? $row->owner : "");
+					$site["anonymizedId"]=(isset($row->adminProperties->anonymizedId) ? $row->adminProperties->anonymizedId : "");
+					$site["StnRegOSId"]=(isset($row->adminProperties->StnRegOSId) ? $row->adminProperties->StnRegOSId : "");
+					$site["StnRegPPId"]=(isset($row->adminProperties->StnRegPPId) ? $row->adminProperties->StnRegPPId : "");
 					break;
 
 				case "iwc":
