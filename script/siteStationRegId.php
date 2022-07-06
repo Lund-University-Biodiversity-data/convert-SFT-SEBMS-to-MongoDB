@@ -19,7 +19,7 @@ echo consoleMessage("info", "php script/siteStationRegId.php std");
 
 $tmpfname = "script/excel/StnRegId_vs_InternalSiteId_20220601.xlsx";
 
-$arr_protocol=array("std");
+$arr_protocol=array("std", "pkt");
 
 if (!isset($argv[1]) || !in_array(trim($argv[1]), $arr_protocol)) {
 	echo consoleMessage("error", "First parameter missing: ".implode("/", $arr_protocol));
@@ -56,10 +56,14 @@ else {
 			case "std":
 				$protocolDwC="SFTstd";
 				break;
-
+			case "pkt":
+				$protocolDwC="SFTpkt";
+				break;
 		}
 		// get all the sites
-		$arrSitesDetails=getArraySitesFromMongo($commonFields[$protocol]["projectId"], $server);
+		if ($protocol=="pkt") $projectId=$commonFields["punkt"]["projectId"];
+		else $projectId=$commonFields[$protocol]["projectId"];
+		$arrSitesDetails=getArraySitesFromMongo($projectId, $server);
 		$arrUniqueSites=array();
 
 		// get all the anonymizedId
