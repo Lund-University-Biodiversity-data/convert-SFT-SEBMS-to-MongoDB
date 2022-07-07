@@ -16,7 +16,7 @@ echo consoleMessage("info", "php script/createCentroidTopokartanObject.php");
 
 
 $debug=false;
-$collection="centroidTopokartan";
+$collection="internalCentroidTopokartan";
 
 
 $db_connection = pg_connect("host=".$DB["host"]." dbname=".$DB["database"]." user=".$DB["username"]." password=".$DB["password"])  or die("CONNECT:" . consoleMessage("error", pg_result_error()));
