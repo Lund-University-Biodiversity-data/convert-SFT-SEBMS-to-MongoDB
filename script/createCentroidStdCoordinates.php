@@ -12,16 +12,16 @@ require PATH_SHARED_FUNCTIONS."mongo-functions.php";
 echo consoleMessage("info", "Script starts");
 
 echo consoleMessage("info", "DEBUG example command :");
-echo consoleMessage("info", "example : php script/createCentroidTopokartanObject.php");
+echo consoleMessage("info", "example : php script/createCentroidStdCoordinates.php");
 
 
 $debug=false;
-$collection="internalCentroidTopokartan";
+$collection="internalCentroidStdCoordinates";
 
 
 $db_connection = pg_connect("host=".$DB["host"]." dbname=".$DB["database"]." user=".$DB["username"]." password=".$DB["password"])  or die("CONNECT:" . consoleMessage("error", pg_result_error()));
 
-$qSites='SELECT * from koordinater_mittpunkt_topokartan ';
+$qSites='SELECT * from standardrutter_koordinater ';
 $rSites = pg_query($db_connection, $qSites);
 if (!$rSites) die("QUERY:" . consoleMessage("error", pg_last_error()));
 
@@ -44,12 +44,20 @@ while ($rtSites = pg_fetch_array($rSites)) {
 	
 	$topokartan["karta"]=$rtSites["karta"];
 	$topokartan["kartatx"]=$rtSites["kartatx"];
-	$topokartan["rt90n"]=$rtSites["rt90n"];
-	$topokartan["rt90o"]=$rtSites["rt90o"];
-	$topokartan["wgs84_lat"]=$rtSites["wgs84_lat"];
-	$topokartan["wgs84_lon"]=$rtSites["wgs84_lon"];
-	$topokartan["sweref99_n"]=$rtSites["sweref99_n"];
-	$topokartan["sweref99_o"]=$rtSites["sweref99_o"];
+
+	$topokartan["mitt_rt90_n"]=$rtSites["mitt_rt90_n"];
+	$topokartan["mitt_rt90_o"]=$rtSites["mitt_rt90_o"];
+	$topokartan["p1_rt90_n"]=$rtSites["p1_rt90_n"];
+	$topokartan["p1_rt90_o"]=$rtSites["p1_rt90_o"];
+	$topokartan["mitt_wgs84_lat"]=$rtSites["mitt_wgs84_lat"];
+	$topokartan["mitt_wgs84_lon"]=$rtSites["mitt_wgs84_lon"];
+	$topokartan["p1_wgs84_lat"]=$rtSites["p1_wgs84_lat"];
+	$topokartan["p1_wgs84_lon"]=$rtSites["p1_wgs84_lon"];
+	$topokartan["p1_sweref99_n"]=$rtSites["p1_sweref99_n"];
+	$topokartan["p1_sweref99_o"]=$rtSites["p1_sweref99_o"];
+	$topokartan["mitt_sweref99_n"]=$rtSites["mitt_sweref99_n"];
+	$topokartan["mitt_sweref99_o"]=$rtSites["mitt_sweref99_o"];
+
 
 	$arrTopo[]=$topokartan;
 }
@@ -76,17 +84,3 @@ echo consoleMessage("info", "script ends");
 
 */
 
-
-
-/*
-	$topokartan["p1_rt90_o"]=$rtSites["p1_rt90_o"];
-
-	$topokartan["mitt_wgs84_lat"]=$rtSites["mitt_wgs84_lat"];
-	$topokartan["mitt_wgs84_lon"]=$rtSites["mitt_wgs84_lon"];
-	$topokartan["p1_wgs84_lat"]=$rtSites["p1_wgs84_lat"];
-	$topokartan["p1_wgs84_lon"]=$rtSites["p1_wgs84_lon"];
-	$topokartan["p1_sweref99_n"]=$rtSites["p1_sweref99_n"];
-	$topokartan["p1_sweref99_o"]=$rtSites["p1_sweref99_o"];
-	$topokartan["mitt_sweref99_n"]=$rtSites["mitt_sweref99_n"];
-	$topokartan["mitt_sweref99_o"]=$rtSites["mitt_sweref99_o"];
-	*/
