@@ -15,9 +15,9 @@ $mng = new MongoDB\Driver\Manager($mongoConnection[$server]); // Driver Object c
 
 
 echo consoleMessage("info", "Script starts.");
-echo consoleMessage("info", "php script/siteStationRegId.php std");
+echo consoleMessage("info", "example : php script/siteStationRegId.php std");
 
-$tmpfname = "script/excel/StnRegId_vs_InternalSiteId_20220601.xlsx";
+$tmpfname = "script/excel/StnRegId_vs_InternalSiteId_20220708.xlsx";
 
 $arr_protocol=array("std", "pkt");
 
