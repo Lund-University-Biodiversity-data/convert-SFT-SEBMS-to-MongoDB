@@ -203,14 +203,14 @@ else {
 								// to specify if the person is huvudinventerare (personId) or medinventerare (helperId)
 								if ($iLoop==1) {
 									$person["huvudinventerare"]="X";
-									$person["medinventerare"]="";
 									$person["huv-inv-lokal"][]=$output->siteID->adminProperties->internalSiteId;
+									$person["medinventerare"]="";
 									$person["med-inv-lokal"]=array();
 								}
 								else {
 									$person["huvudinventerare"]="";
-									$person["medinventerare"]="X";
 									$person["huv-inv-lokal"]=array();
+									$person["medinventerare"]="X";
 									$person["med-inv-lokal"][]=$output->siteID->adminProperties->internalSiteId;
 								}
 								$person[$output->name]=$output->name;
