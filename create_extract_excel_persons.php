@@ -67,6 +67,8 @@ else {
 
 		echo consoleMessage("info", "From ".($yrStart!="" ? $yrStart : "-empty-")." to ".($yrEnd!="" ? $yrEnd : "-empty-"));
 
+		$arrInternalSiteId["surveyors"]=array();
+		$arrInternalSiteId["helpers"]=array();
 
 		// 2 loops : one for the personId, the 2nd for the medinventerare (helperId)
 		for ($iLoop=1;$iLoop<=2;$iLoop++) {
@@ -100,9 +102,17 @@ else {
 				    	"pers.personId" => ['$exists'=> 1] // useless but if the match is empty it doesn't work
 	                	// will add later inthe code the hub=sft if protocol=all
 	                ]],
+                    ['$lookup'=>[
+					    'from'=>'site',
+					    'localField'=>'act.siteId',
+					    'foreignField'=>'siteId',
+					    'as'=>'siteID'
+					]],
+			        ['$unwind'=> '$siteID'],
 	                ['$project'=>[
 	                    "activityId" => 1,
 	                    "data.surveyDate" => 1,
+	                    "siteID.adminProperties.internalSiteId" => 1,
 	                    "pers.personId" => 1,
 	                    "name" => 1,
 				        "pers.internalPersonId" => 1,
@@ -145,7 +155,7 @@ else {
 
 	            foreach ($rtArray as $output) {
 	            	//if ($iLoop==2) echo $output->activityId.":".$output->data->surveyDate." => ".$output->pers[$iPers]->personId."\n";
-
+//print_r($output);
 	            	// get the date and fix it if needed with timezone
 	            	$eventDate=getEventDateAfterTimeZone($output->data->surveyDate);
 
@@ -194,10 +204,14 @@ else {
 								if ($iLoop==1) {
 									$person["huvudinventerare"]="X";
 									$person["medinventerare"]="";
+									$person["huv-inv-lokal"][]=$output->siteID->adminProperties->internalSiteId;
+									$person["med-inv-lokal"]=array();
 								}
 								else {
 									$person["huvudinventerare"]="";
 									$person["medinventerare"]="X";
+									$person["huv-inv-lokal"]=array();
+									$person["med-inv-lokal"][]=$output->siteID->adminProperties->internalSiteId;
 								}
 								$person[$output->name]=$output->name;
 
@@ -210,9 +224,11 @@ else {
 
 								if ($iLoop==1) {
 									$arrPersons[$output->pers[$iPers]->personId]["huvudinventerare"]="X";
+									$arrPersons[$output->pers[$iPers]->personId]["huv-inv-lokal"][]=$output->siteID->adminProperties->internalSiteId;
 								}
 								else {
 									$arrPersons[$output->pers[$iPers]->personId]["medinventerare"]="X";
+									$arrPersons[$output->pers[$iPers]->personId]["med-inv-lokal"][]=$output->siteID->adminProperties->internalSiteId;
 								}
 
 
@@ -227,7 +243,8 @@ else {
 
 	            		//echo $year. " refused => only from ".$yrStart." to ".$yrEnd."\n";
 	            	}
-	            	
+	            	//print_r($arrPersons);
+	            	//exit();
 	            }
 
 	        } catch(\Exception $e){
@@ -287,7 +304,9 @@ else {
 			$person["userId"]=(isset($row->userId) ? $row->userId : "");
 			$person["personId"]=$row->personId;
 			$person["huvudinventerare"]="?";
+			$person["huv-inv-lokal"]="?";
 			$person["medinventerare"]="?";
+			$person["med-inv-lokal"]="?";
 			$person["protocols"]=$protocol;
 
 			$arrPersons[]=$person;
@@ -303,11 +322,20 @@ else {
 
 	if ($fp = fopen($path_extract, 'w')) {
 
-		$headers=array("persnr", "fornamn", "efternamn", "sx", /*"birthDate", */"epost", "telhem", "telmobil", "address1", "address2", "postnr", "ort", "anonymizedId", "userId", "personId", "huvudinventerare", "medinventerare", "delprogram");
+		$headers=array("persnr", "fornamn", "efternamn", "sx", /*"birthDate", */"epost", "telhem", "telmobil", "address1", "address2", "postnr", "ort", "anonymizedId", "userId", "personId", "huvudinventerare", "huv-inv-lokal", "medinventerare", "med-inv-lokal", "delprogram");
 		fputcsv($fp, $headers, ";");
 
 
 		foreach($arrPersons as $person) {
+
+			if (isset($person["huv-inv-lokal"]) && is_array($person["huv-inv-lokal"])) {
+				$person["huv-inv-lokal"]=implode(",", $person["huv-inv-lokal"]);
+			}
+
+			if (isset($person["med-inv-lokal"]) && is_array($person["med-inv-lokal"])) {
+				$person["med-inv-lokal"]=implode(",", $person["med-inv-lokal"]);
+			}
+
 			fputcsv($fp, $person, ";");
 		}
 
