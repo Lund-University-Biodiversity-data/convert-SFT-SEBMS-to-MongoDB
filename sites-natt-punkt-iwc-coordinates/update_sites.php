@@ -4,6 +4,7 @@ $dataOrigin="scriptPostgres";
 
 require "lib/config.php";
 require "lib/functions.php";
+$server=DEFAULT_SERVER;
 require PATH_SHARED_FUNCTIONS."generic-functions.php";
 require PATH_SHARED_FUNCTIONS."mongo-functions.php";
 
@@ -193,7 +194,7 @@ else {
 
 	}*/
 
-	$mng = new MongoDB\Driver\Manager(); 
+	$mng = new MongoDB\Driver\Manager($mongoConnection[$server]); 
     if ($mng) echo consoleMessage("info", "Connection to mongoDb ok");
 
 	// get all the sites from project
@@ -360,7 +361,7 @@ else {
 		$unset[strlen($unset)-1]=' ';
 		$unset.='}});
 	';
-    	
+
     }
 
 	$cmdJs.=$unset;
