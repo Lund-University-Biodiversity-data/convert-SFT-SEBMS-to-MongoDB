@@ -110,7 +110,9 @@ else {
 					$site["area_m2"]=(isset($row->adminProperties->area_m2) ? $row->adminProperties->area_m2 : "");
 					$site["mitt_5x5_wgs84_lat"]=(isset($row->adminProperties->mitt_5x5_wgs84_lat) ? $row->adminProperties->mitt_5x5_wgs84_lat : "");
 					$site["mitt_5x5_wgs84_lon"]=(isset($row->adminProperties->mitt_5x5_wgs84_lon) ? $row->adminProperties->mitt_5x5_wgs84_lon : "");
-
+					$site["StnRegOSId"]=(isset($row->adminProperties->StnRegOSId) ? $row->adminProperties->StnRegOSId : "");
+					$site["StnRegPPId"]=(isset($row->adminProperties->StnRegPPId) ? $row->adminProperties->StnRegPPId : "");
+					break;
 
 				default: 
 					
