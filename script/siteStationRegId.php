@@ -17,7 +17,7 @@ $mng = new MongoDB\Driver\Manager($mongoConnection[$server]); // Driver Object c
 echo consoleMessage("info", "Script starts.");
 echo consoleMessage("info", "example : php script/siteStationRegId.php std");
 
-$tmpfname = "script/excel/StnRegId_vs_InternalSiteId_20220708.xlsx";
+$tmpfname = "script/excel/StnRegId_vs_InternalSiteId_20220922.xlsx";
 
 $arr_protocol=array("std", "pkt", "kust");
 
@@ -89,7 +89,7 @@ else {
 
 			echo consoleMessage("info", $nbMissing." missing anonymizedId in database"); 
 		}
-		
+
 		$firstRow=2;
 		$nbErrors=0;
 		$nbOk=0;
