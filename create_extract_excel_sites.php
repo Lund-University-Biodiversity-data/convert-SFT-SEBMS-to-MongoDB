@@ -51,6 +51,10 @@ else {
 				array_push($headers, "goose", "helcom_sub", "ln_karta", "ki", "ev", "area");
 				break;
 
+			case "kust":
+				array_push($headers, "area_m2", "mitt_5x5_wgs84_lat", "mitt_5x5_wgs84_lon");
+				break;
+
 			default: 
 				array_push($headers, "fjall104", "fjall142", "anonymizedId", "StaRegOSId", "StaRegPPId");
 				break;
@@ -100,7 +104,13 @@ else {
 					$site["ki"]=(isset($row->adminProperties->ki) ? $row->adminProperties->ki : "");
 					$site["ev"]=(isset($row->adminProperties->ev) ? $row->adminProperties->ev : "");
 					$site["area"]=(isset($row->adminProperties->area) ? $row->adminProperties->area : "");
-					break;
+					break;	
+				
+				case "kust":
+					$site["area_m2"]=(isset($row->adminProperties->area_m2) ? $row->adminProperties->area_m2 : "");
+					$site["mitt_5x5_wgs84_lat"]=(isset($row->adminProperties->mitt_5x5_wgs84_lat) ? $row->adminProperties->mitt_5x5_wgs84_lat : "");
+					$site["mitt_5x5_wgs84_lon"]=(isset($row->adminProperties->mitt_5x5_wgs84_lon) ? $row->adminProperties->mitt_5x5_wgs84_lon : "");
+
 
 				default: 
 					

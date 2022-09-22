@@ -362,9 +362,9 @@ else {
 		$unset.='}});
 	';
 
+		$cmdJs.=$unset;
     }
 
-	$cmdJs.=$unset;
 	//print_r($unset);
 
 	if ($fp = fopen($path, 'w')) {
