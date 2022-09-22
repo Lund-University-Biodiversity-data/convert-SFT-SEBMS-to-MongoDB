@@ -52,7 +52,7 @@ else {
 				break;
 
 			case "kust":
-				array_push($headers, "area_m2", "mitt_5x5_wgs84_lat", "mitt_5x5_wgs84_lon");
+				array_push($headers, "area_m2", "mitt_5x5_wgs84_lat", "mitt_5x5_wgs84_lon", "StaRegOSId", "StaRegPPId");
 				break;
 
 			default: 
