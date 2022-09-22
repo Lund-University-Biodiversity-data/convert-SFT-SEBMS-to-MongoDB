@@ -9,11 +9,9 @@ require PATH_SHARED_FUNCTIONS."mongo-functions.php";
 
 echo consoleMessage("info", "Script starts");
 
-echo consoleMessage("info", "DEBUG example command :");
-echo consoleMessage("info", "php update_sites.php std 2 debug");
+echo consoleMessage("info", "php sites-natt-punkt-iwc-coordinates/update_sites.php std 2 ");
 
 
-$debug=false;
 $collection="site";
 
 // parameters
@@ -43,12 +41,13 @@ else {
 	$filename_json='update_site_'.$database.'_'.$protocol.'_'.date("Y-m-d-His").'.js';
 	$path='dump_json_sft_sebms/'.$database.'/'.$protocol."/".$filename_json;
 
-	//common fields
-	$arrayFieldsRequired[]="internalSiteId";
-	$arrayFieldsRequired[]="lan";
+	$unsetAction=true;
 
 	switch ($protocol) {
 		case "std":
+
+			$arrayFieldsRequired[]="internalSiteId";
+			$arrayFieldsRequired[]="lan";
 			$arrayFieldsRequired[]="lsk";
 			$arrayFieldsRequired[]="bookingComment";
 			$arrayFieldsRequired[]="paperSurveySubmitted";
@@ -85,6 +84,8 @@ else {
 
 		case "sommar":
 		case "vinter":
+			$arrayFieldsRequired[]="internalSiteId";
+			$arrayFieldsRequired[]="lan";
 			$arrayFieldsRequired[]="kartaTx";
 			$arrayFieldsRequired[]="sevin";
 			$arrayFieldsRequired[]="start";
@@ -117,6 +118,8 @@ else {
 			break;
 
 		case "natt":
+			$arrayFieldsRequired[]="internalSiteId";
+			$arrayFieldsRequired[]="lan";
 			$arrayFieldsRequired[]="bookingComment";
 			$arrayFieldsRequired[]="paperSurveySubmitted";
 			break;
@@ -124,13 +127,19 @@ else {
 
 		case "kust":
 
-			$arrayFieldsRequired[]="bookingComment";
-			$arrayFieldsRequired[]="summarySurveySubmitted";
-			$arrayFieldsRequired[]="routetype";
+			// only the NEW fields
+			//$arrayFieldsRequired[]="internalSiteId";
+			//$arrayFieldsRequired[]="lan";
+			//$arrayFieldsRequired[]="bookingComment";
+			//$arrayFieldsRequired[]="summarySurveySubmitted";
+			//$arrayFieldsRequired[]="routetype";
+			$arrayFieldsRequired[]="area_m2";
+			$arrayFieldsRequired[]="mitt_5x5_wgs84_lat";
+			$arrayFieldsRequired[]="mitt_5x5_wgs84_lon";
 
 			$arrSitesPsql=array();
 
-			$qSites="select ruta, ruttyp, lan
+			$qSites="select ruta, ruttyp, lan, area_m2, mitt_5x5_wgs84_lat, mitt_5x5_wgs84_lon
 		         from
 		         kustfagel200_koordinater
 		         order by ruta
@@ -145,11 +154,18 @@ else {
 				foreach ($arrayFieldsRequired as $key) {
 					$arrSitesPsql[$rtSites["ruta"]][$key]="";
 				}
-				$arrSitesPsql[$rtSites["ruta"]]["lan"]=$rtSites["lan"];
-				$arrSitesPsql[$rtSites["ruta"]]["routetype"]=$rtSites["ruttyp"];
-				$arrSitesPsql[$rtSites["ruta"]]["internalSiteId"]=$rtSites["ruta"];
+				// only the NEW fields
+				//$arrSitesPsql[$rtSites["ruta"]]["lan"]=$rtSites["lan"];
+				//$arrSitesPsql[$rtSites["ruta"]]["routetype"]=$rtSites["ruttyp"];
+				//$arrSitesPsql[$rtSites["ruta"]]["internalSiteId"]=$rtSites["ruta"];
+				$arrSitesPsql[$rtSites["ruta"]]["area_m2"]=$rtSites["area_m2"];
+				$arrSitesPsql[$rtSites["ruta"]]["mitt_5x5_wgs84_lat"]=$rtSites["mitt_5x5_wgs84_lat"];
+				$arrSitesPsql[$rtSites["ruta"]]["mitt_5x5_wgs84_lon"]=$rtSites["mitt_5x5_wgs84_lon"];
 			}
 
+
+			//$unset=true;
+			$unsetAction=false;
 
 			break;
 
@@ -321,29 +337,31 @@ else {
 
     }
 
+    if ($unsetAction) {
+		// unset all the fields
+	    $unset='db.'.$collection.'.updateMany({"projects" : "'.$commonFields[$protocol]["projectId"].'"}, {$unset : {';
 
-	// unset all the fields
-    $unset='db.'.$collection.'.updateMany({"projects" : "'.$commonFields[$protocol]["projectId"].'"}, {$unset : {';
+		$unset.='"lan":1,';
+	    switch ($protocol) {
+			case "std":
+				$unset.='"lsk":1, "karta":1,';
 
-	$unset.='"lan":1,';
-    switch ($protocol) {
-		case "std":
-			$unset.='"lsk":1, "karta":1,';
+				break;
+			case "sommar":
+			case "vinter":
+			case "natt":
+				$unset.='"kartaTx":1,';
 
-			break;
-		case "sommar":
-		case "vinter":
-		case "natt":
-			$unset.='"kartaTx":1,';
+			case "kust":
+				$unset.=',';
+				break;	
 
-		case "kust":
-			$unset.=',';
-			break;	
-
-	}
-	$unset[strlen($unset)-1]=' ';
-	$unset.='}});
-';
+		}
+		$unset[strlen($unset)-1]=' ';
+		$unset.='}});
+	';
+    	
+    }
 
 	$cmdJs.=$unset;
 	//print_r($unset);
