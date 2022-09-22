@@ -19,7 +19,7 @@ echo consoleMessage("info", "example : php script/siteStationRegId.php std");
 
 $tmpfname = "script/excel/StnRegId_vs_InternalSiteId_20220708.xlsx";
 
-$arr_protocol=array("std", "pkt");
+$arr_protocol=array("std", "pkt", "kust");
 
 if (!isset($argv[1]) || !in_array(trim($argv[1]), $arr_protocol)) {
 	echo consoleMessage("error", "First parameter missing: ".implode("/", $arr_protocol));
@@ -59,6 +59,9 @@ else {
 			case "pkt":
 				$protocolDwC="SFTpkt";
 				break;
+			case "kust":
+				$protocolDwC="SFTkfr";
+				break;
 		}
 		// get all the sites
 		if ($protocol=="pkt") $projectId=$commonFields["punkt"]["projectId"];
@@ -66,17 +69,27 @@ else {
 		$arrSitesDetails=getArraySitesFromMongo($projectId, $server);
 		$arrUniqueSites=array();
 
-		// get all the anonymizedId
-		$arrAnonymizedIds=array();
-		foreach ($arrSitesDetails as $isId => $dataSite) {
-			if (!isset($dataSite["anonymizedId"]) || $dataSite["anonymizedId"]=="") {
-				echo consoleMessage("error", "No anonymizedId in database for site ".$isId);
-			}
-			else {
-				$arrAnonymizedIds[$dataSite["anonymizedId"]]=$isId;
-			}
-		}
 
+		// no anonymisezId for KFR
+		if ($protocol!="kust") {
+						
+			// get all the anonymizedId
+			$arrAnonymizedIds=array();
+			$nbMissing=0;
+
+			foreach ($arrSitesDetails as $isId => $dataSite) {
+				if (!isset($dataSite["anonymizedId"]) || $dataSite["anonymizedId"]=="") {
+					echo consoleMessage("error", "No anonymizedId in database for site ".$isId);
+					$nbMissing++;
+				}
+				else {
+					$arrAnonymizedIds[$dataSite["anonymizedId"]]=$isId;
+				}
+			}
+
+			echo consoleMessage("info", $nbMissing." missing anonymizedId in database"); 
+		}
+		
 		$firstRow=2;
 		$nbErrors=0;
 		$nbOk=0;
@@ -97,21 +110,26 @@ else {
 				if (trim($internalSiteId)=="") {
 					echo consoleMessage("warn", "No internalSiteId in file for site anonymizedId ".$anonymizedId);
 
-					if (!isset($arrAnonymizedIds[$anonymizedId]) || trim($arrAnonymizedIds[$anonymizedId])=="") {
-						echo consoleMessage("error", "No site in database matching this anonymisedId ".$anonymizedId);
-						$errorInternalSiteId=true;
-					}
-					else {
-						if (trim($internalSiteId)!="" && trim($internalSiteId)!=$arrAnonymizedIds[$anonymizedId]) {
-							echo consoleMessage("error", "internalSiteId are different in database and files for anonymizedId ".$anonymizedId. " (file) #".trim($internalSiteId)."# / (database) ".$arrAnonymizedIds[$anonymizedId]);
+
+					// no anonymisezId for KFR
+					if ($protocol!="kust") {
+
+						if (!isset($arrAnonymizedIds[$anonymizedId]) || trim($arrAnonymizedIds[$anonymizedId])=="") {
+							echo consoleMessage("error", "No site in database matching this anonymisedId ".$anonymizedId);
 							$errorInternalSiteId=true;
 						}
 						else {
-							// update the file
-							echo consoleMessage("info", "Update ".'E'.$iR." with ".$arrAnonymizedIds[$anonymizedId]);
+							if (trim($internalSiteId)!="" && trim($internalSiteId)!=$arrAnonymizedIds[$anonymizedId]) {
+								echo consoleMessage("error", "internalSiteId are different in database and files for anonymizedId ".$anonymizedId. " (file) #".trim($internalSiteId)."# / (database) ".$arrAnonymizedIds[$anonymizedId]);
+								$errorInternalSiteId=true;
+							}
+							else {
+								// update the file
+								echo consoleMessage("info", "Update ".'E'.$iR." with ".$arrAnonymizedIds[$anonymizedId]);
 
-							$worksheet->getCell('E'.$iR)->setValue($arrAnonymizedIds[$anonymizedId]);
-							$fileUpdated=true;
+								$worksheet->getCell('E'.$iR)->setValue($arrAnonymizedIds[$anonymizedId]);
+								$fileUpdated=true;
+							}
 						}
 					}
 
