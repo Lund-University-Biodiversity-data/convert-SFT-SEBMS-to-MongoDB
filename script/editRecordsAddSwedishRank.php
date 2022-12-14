@@ -64,16 +64,16 @@ foreach ($commonFields["listSpeciesId"] as $animals => $listId) {
 //print_r($array_species_guid[$animals]);
 }
 
-exit();
+//exit();
 
 
 // get all the sites
-$filter = ["status"=>"active"];
+$filter = ["status"=>"active", "data.observations.swedishRank" => ['$exists'=> false]];
 //$filter = ["dataOrigin" => "scriptSitePunktIntranet", "verificationStatus"=>"godkänd", "status"=>"active"];
 $options = [];
-/*$options = [
-   'limit' => 10000,
-]; */ 
+$options = [
+/*   'limit' => 1000, */
+];  
 $query = new MongoDB\Driver\Query($filter, $options); 
 
 $rows = $mng->executeQuery("ecodata.output", $query);
@@ -81,11 +81,11 @@ $rows = $mng->executeQuery("ecodata.output", $query);
 $nbSRmiss=0;
 $nbSRadd=0;
 $nbSRok=0;
+$nbEmptyObs=0;
+
 foreach ($rows as $row){
-
 	$animal="birds";
-	if (isset($row->data->observations)) {
-
+	if (isset($row->data->observations) && count($row->data->observations)!=0) {
     	foreach($row->data->observations as $obs) {
     		if (!isset($obs->swedishRank)) {
     			//echo "pas de swedishRank pour activityId#".$row->activityId."\n";
@@ -93,15 +93,16 @@ foreach ($rows as $row){
 
     			if (isset($obs->species->guid) && trim($obs->species->guid)!="") {
 	    			if (isset($array_species_guid[$animal][$obs->species->guid]) && trim($array_species_guid[$animal][$obs->species->guid]["rank"])!="") {
+	    				//echo $row->activityId."\n";
 
 	    				$bulk = new MongoDB\Driver\BulkWrite;
-					    //$filter = [];
-					    $filter = ['activityId' => $row->activityId, "data.observations.species.guid" => $obs->species->guid];
-					    //print_r($filter);
-					    $options =  ['$set' => ['data.observations.$.swedishRank' => $array_species_guid[$animal][$obs->species->guid]["rank"]]];
-					    $updateOptions = [];
-					    $bulk->update($filter, $options, $updateOptions); 
-					    $result = $mng->executeBulkWrite('ecodata.output', $bulk);
+						//$filter = [];
+						$filter = ['activityId' => $row->activityId, "data.observations.species.guid" => $obs->species->guid];
+						//print_r($filter);
+						$options =  ['$set' => ['data.observations.$.swedishRank' => $array_species_guid[$animal][$obs->species->guid]["rank"]]];
+						$updateOptions = [];
+						$bulk->update($filter, $options, $updateOptions); 
+						$result = $mng->executeBulkWrite('ecodata.output', $bulk);
 
 					    $nbSRadd++;
 
@@ -121,11 +122,13 @@ foreach ($rows as $row){
     	}
 	}
 	else {
-		echo consoleMessage("warn", "No observations  for ".$row->activityId);
+		//echo consoleMessage("warn", "No observations  for ".$row->activityId);
+		$nbEmptyObs++;
 	}
 }
 
 echo consoleMessage("info", $nbSRmiss." missing swedishRank.");
+echo consoleMessage("info", $nbEmptyObs." empty obs.");
 echo consoleMessage("info", $nbSRadd." added swedishRank.");
 echo consoleMessage("info", $nbSRok." ok swedishRank.");
 
