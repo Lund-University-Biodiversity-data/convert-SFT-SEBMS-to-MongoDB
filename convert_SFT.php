@@ -250,7 +250,7 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 		switch($protocol) {
 			case "std":
 				$qRecords="
-					select EL.arthela AS names, EL.latin as scientificname, p1, p2, p3, p4, p5, p6, p7, p8, l1, l2, l3, l4, l5, l6, l7, l8, TS.art, TS.datum, pkind, lind
+					select EL.arthela AS names, EL.latin as scientificname, p1, p2, p3, p4, p5, p6, p7, p8, l1, l2, l3, l4, l5, l6, l7, l8, TS.art, TS.datum, pkind, lind, EL.rank
 					from totalstandard TS, eurolist EL
 					where EL.art=TS.art 
 					and TS.karta='".$rtEvents["sitename"]."'  
@@ -263,7 +263,7 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 				break;
 			case "vinter":
 				$qRecords="
-					select EL.arthela AS names, EL.latin as scientificname, p01, p02, p03, p04, p05, p06, p07, p08, p09, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, pk, ind, TN.art, TN.datum
+					select EL.arthela AS names, EL.latin as scientificname, p01, p02, p03, p04, p05, p06, p07, p08, p09, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, pk, ind, TN.art, TN.datum, EL.rank
 					from punktrutter Pu, totalvinter_pkt TN, eurolist EL
 					where EL.art=TN.art 
 					AND TN.persnr=PU.persnr
@@ -277,7 +277,7 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 				break;
 			case "sommar":
 				$qRecords="
-					select EL.arthela AS names, EL.latin as scientificname, p01, p02, p03, p04, p05, p06, p07, p08, p09, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, pk, ind, TN.art, TN.datum
+					select EL.arthela AS names, EL.latin as scientificname, p01, p02, p03, p04, p05, p06, p07, p08, p09, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, pk, ind, TN.art, TN.datum, EL.rank
 					from punktrutter Pu, totalsommar_pkt TN, eurolist EL
 					where EL.art=TN.art 
 					AND TN.persnr=PU.persnr
@@ -291,7 +291,7 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 				break;
 			case "natt":
 				$qRecords="
-					select EL.arthela AS names, EL.latin as scientificname, p01, p02, p03, p04, p05, p06, p07, p08, p09, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, TN.art, TN.datum, TN.pt, TN.kull
+					select EL.arthela AS names, EL.latin as scientificname, p01, p02, p03, p04, p05, p06, p07, p08, p09, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, TN.art, TN.datum, TN.pt, TN.kull, EL.rank
 					from totalnatt TN, eurolist EL
 					where EL.art=TN.art 
 					and TN.kartatx='".$rtEvents["sitename"]."'  
@@ -303,7 +303,7 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 				break;
 			case "kust":
 				$qRecords="
-					select EL.arthela AS names, EL.latin as scientificname, i100m, ind, openw, T.art, T.datum, EL.taxon_rank
+					select EL.arthela AS names, EL.latin as scientificname, i100m, ind, openw, T.art, T.datum, EL.rank
 					from totalkustfagel200".$kust2021." T, eurolist EL
 					where EL.art=T.art 
 					and T.ruta='".$rtEvents["sitename"]."'  
@@ -1014,7 +1014,7 @@ select EL.arthela AS names, EL.latin as scientificname, T.art, T.datum, T.antal
 						},
 						';
 			$data_field[$animalsDataField].='"individualCount" : '.$IC.',
-							  "swedishRank": "'.$rtRecords["taxon_rank"].'"
+							  "swedishRank": "'.$rtRecords["rank"].'"
 							},';
 
 
