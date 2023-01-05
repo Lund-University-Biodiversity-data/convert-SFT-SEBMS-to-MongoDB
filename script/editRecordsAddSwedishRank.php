@@ -67,13 +67,14 @@ foreach ($commonFields["listSpeciesId"] as $animals => $listId) {
 //exit();
 
 
-// get all the sites
+// get all the output
 $filter = ["status"=>"active", "data.observations.swedishRank" => ['$exists'=> false]];
+$filter = ["status"=>"active", "data.observations.swedishRank" => "species"];
+//$filter = ["status"=>"active", "name" => "Kustfagelrutor", "dataOrigin" => "scriptPostgres"];
 //$filter = ["dataOrigin" => "scriptSitePunktIntranet", "verificationStatus"=>"godkänd", "status"=>"active"];
 $options = [];
-$options = [
-/*   'limit' => 1000, */
-];  
+/*$options = [
+   'limit' => 100, ];  */
 $query = new MongoDB\Driver\Query($filter, $options); 
 
 $rows = $mng->executeQuery("ecodata.output", $query);
@@ -87,7 +88,8 @@ foreach ($rows as $row){
 	$animal="birds";
 	if (isset($row->data->observations) && count($row->data->observations)!=0) {
     	foreach($row->data->observations as $obs) {
-    		if (!isset($obs->swedishRank)) {
+
+    		if (!isset($obs->swedishRank) || !is_numeric($obs->swedishRank)) {
     			//echo "pas de swedishRank pour activityId#".$row->activityId."\n";
     			$nbSRmiss++;
 
