@@ -17,7 +17,7 @@ $debug=false;
 
 // parameters
 // 1- protocol: std (standardrutterna) - natt (nattrutterna) - vinter (vinterrutterna) - sommar (sommarrutterna) - kust (kustfagelrutterna)
-$arr_protocol=array("std", "natt", "vinter", "sommar", "kust", "iwc", "kust2021");
+$arr_protocol=array("std", "natt", "vinter", "sommar", "kust", "iwc", "kust2021", "kust2022");
 
 if (!isset($argv[1]) || !in_array(trim($argv[1]), $arr_protocol)) {
 	echo consoleMessage("error", "First parameter missing: ".implode(" / ", $arr_protocol));
@@ -30,10 +30,12 @@ else {
 
 	if ($protocol=="kust2021") {
 		$protocol="kust";
-		$kust2021="_2021";
-	}
-	else{
-		$kust2021="";
+		$kustYEAR="_2021";
+	}elseif ($protocol=="kust2022") {
+		$protocol="kust";
+		$kustYEAR="_2022_temp";
+	}else{
+		$kustYEAR="";
 	}
 	$arrSpeciesNotFound=array();
 	$speciesNotFound=0;
@@ -133,9 +135,9 @@ else {
 			// LPAD(cast(LEAST(p01, p02, p03, p04, p05, p06, p07, p08, p09, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20) as text), 4, '0')
 			$qEvents="
 			select P.efternamn, P.fornamn, P.persnr, T.datum ,T.ruta AS sitename, T.yr, KS.start, KS.stopp
-			from totalkustfagel200".$kust2021." T
+			from totalkustfagel200".$kustYEAR." T
 			left join personer P on P.persnr = T.persnr 
-			left join kustfagel200_start_stopp".$kust2021."	 KS on T.ruta=KS.ruta AND T.datum=KS.datum 
+			left join kustfagel200_start_stopp".$kustYEAR."	 KS on T.ruta=KS.ruta AND T.datum=KS.datum 
 			where T.ruta  IN ".$req_sites."  
 			AND T.art='000'
 			order by datum
@@ -304,7 +306,7 @@ $siteInfo["decimalLongitude"]=66.93673750351373;
 			case "kust":
 				$qRecords="
 					select EL.arthela AS names, EL.latin as scientificname, i100m, ind, openw, T.art, T.datum, EL.rank
-					from totalkustfagel200".$kust2021." T, eurolist EL
+					from totalkustfagel200".$kustYEAR." T, eurolist EL
 					where EL.art=T.art 
 					and T.ruta='".$rtEvents["sitename"]."'  
 					AND T.art<>'000'
@@ -467,7 +469,7 @@ select EL.arthela AS names, EL.latin as scientificname, T.art, T.datum, T.antal
 
 			$qDuckl="
 			select *
-			from kustfagel200_ejderungar".$kust2021." KE
+			from kustfagel200_ejderungar".$kustYEAR." KE
 			where KE.ruta = '".$rtEvents["sitename"]."'
 			AND CAST(yr AS text)=LEFT('".$rtEvents["datum"]."',4)
 			AND persnr='".$rtEvents["persnr"]."'
