@@ -20,7 +20,7 @@ function getGenderCode($gender) {
 			return "F";
 			break;
 		case "annat":
-			return "annat";
+			return "X";
 			break;
 		default:
 			return "?";
