@@ -160,7 +160,8 @@ else {
 	            	$eventDate=getEventDateAfterTimeZone($output->data->surveyDate);
 
 	            	// get the year and fix it based on the protocol
-	            	$year=getYearFromSurveyDateAndProtocol($eventDate, $protocol);
+	            	// add true for nextYear param, to make sure the vinterpkt will have a +1
+	            	$year=getYearFromSurveyDateAndProtocol($eventDate, $protocol, true);
 
 	            	$okOutput=true;
 	            	if (is_numeric($yrStart) && $yrStart>$year) $okOutput=false;

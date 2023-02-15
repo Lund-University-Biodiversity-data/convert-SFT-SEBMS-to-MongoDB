@@ -11,8 +11,9 @@ require PATH_SHARED_FUNCTIONS."mongo-functions.php";
 
 echo consoleMessage("info", "Script starts");
 
-echo consoleMessage("info", "DEBUG example command :");
+echo consoleMessage("info", "DEBUG example commands :");
 echo consoleMessage("info", "php create_empty_sites.php natt totalnatt");
+echo consoleMessage("info", "php create_empty_sites.php natt list 16CSV#12GVF");
 
 
 $arr_protocol=array("natt", "punkt", "iwc");
