@@ -10,6 +10,13 @@ require PATH_SHARED_FUNCTIONS."mongo-functions.php";
 $server=DEFAULT_SERVER;
 $hub=SFT_HUB;
 
+
+$arrProjectActivityIdProtocol=array();
+foreach ($commonFields as $prot => $dataProtocol) {
+	if (isset($dataProtocol["projectActivityId"]))
+		$arrProjectActivityIdProtocol[$dataProtocol["projectActivityId"]]=$prot;
+}
+
 function getGenderCode($gender) {
 
 	switch($gender) {
@@ -129,7 +136,9 @@ else {
 				        "pers.town" => 1,
 				        "pers.anonymizedId" => 1,
 				        "pers.userId" => 1,
-	                ]]
+				        "act.projectActivityId" => 1,
+	                ]],
+	       			/*['$limit' => 1000]*/
 	            ],
 	            'cursor' => new stdClass,
 	        ];
@@ -159,9 +168,21 @@ else {
 	            	// get the date and fix it if needed with timezone
 	            	$eventDate=getEventDateAfterTimeZone($output->data->surveyDate);
 
+	            	if ($protocol=="all") {
+	            		if (isset($arrProjectActivityIdProtocol[$output->act[0]->projectActivityId])) {
+		            		$protocolOutput=$arrProjectActivityIdProtocol[$output->act[0]->projectActivityId];
+	            		}
+	            		else {
+	            			echo consoleMessage("error", "No projectActivityId for ".$output->act[0]->projectActivityId);
+	            		}
+	            	}
+	            	else{
+	            		$protocolOutput=$protocol;
+	            	}
+
 	            	// get the year and fix it based on the protocol
 	            	// add true for nextYear param, to make sure the vinterpkt will have a +1
-	            	$year=getYearFromSurveyDateAndProtocol($eventDate, $protocol, true);
+	            	$year=getYearFromSurveyDateAndProtocol($eventDate, $protocolOutput, true);
 
 	            	$okOutput=true;
 	            	if (is_numeric($yrStart) && $yrStart>$year) $okOutput=false;
