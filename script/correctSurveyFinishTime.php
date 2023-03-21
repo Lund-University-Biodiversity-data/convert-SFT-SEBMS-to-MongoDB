@@ -82,7 +82,7 @@ else {
           $finish_time=addTimeToFinish($finish_time, 35);
           //echo consoleMessage("info", "finishtime +35 : ".$finish_time);
           //echo consoleMessage("info", "in output so far ".$row->data->surveyFinishTime);
-echo $row->data->surveyFinishTime.",".$finish_time.",".$row->activityId."\n";
+echo $row->data->surveyDate.",".$row->data->surveyFinishTime.",".$finish_time.",".$row->activityId."\n";
         }
         else {
           echo consoleMessage("error", "Wrong format (missing minute/time or non-numerical values) for surveyFinishTime for outputId : ".$row->outputId);
