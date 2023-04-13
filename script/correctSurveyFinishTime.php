@@ -12,26 +12,37 @@ $mng = new MongoDB\Driver\Manager($mongoConnection[$server]); // Driver Object c
 
 
 echo consoleMessage("info", "Script starts.");
-echo consoleMessage("info", "php script/correctSurveyFinishTime.php std ");
+echo consoleMessage("info", "php script/correctSurveyFinishTime.php std excel [exec]");
 echo consoleMessage("info", "Change the finish time for all the historical surveys");
 
 
 $arr_protocol=array("std");
+$arr_mode=array("excel", "postgres");
 
 if (!isset($argv[1]) || !in_array(trim($argv[1]), $arr_protocol)) {
 	echo consoleMessage("error", "First parameter missing: ".implode("/", $arr_protocol));
 }
 else {
 
-	$protocol=$argv[1];
+  if (!isset($argv[2]) || !in_array(trim($argv[2]), $arr_mode)) {
+    echo consoleMessage("error", "Second parameter missing: ".implode("/", $arr_mode));
+  }
+  else {
+    $protocol=$argv[1];
+    $mode=$argv[2];
 
-	// get all the output
-    $filter = ["dataOrigin" => "scriptExcel","name" => "Standardrutt"];
+    if ($mode=="excel") $dataOrigin="scriptExcel";
+    if ($mode=="postgres") $dataOrigin="scriptPostgres";
+
+    $savelogcsv="";
+    $json="";
+  	// get all the output
+    $filter = ["dataOrigin" => $dataOrigin,"name" => "Standardrutt"];
     $options = [];
     $query = new MongoDB\Driver\Query($filter, $options); 
 
     $rows = $mng->executeQuery("ecodata.output", $query);
-
+    
     $nbOutput=0;
     $nbTimeFixed=0;
     foreach ($rows as $row){
@@ -52,37 +63,50 @@ else {
           $finish_time=0;
           $timeOfObservation=array();
 
+          $time999=true; // to find the old times with only 999 in it
+
           foreach ($row->data->timeOfObservation[0] as $key => $val) {
-            
-            if ($val!="0" && $val!="" && $val!=0) {
-              $val=intval($val);
+            //echo $key."-".$val."\n";
+            if ($val != 999) {
+              $time999=false;
 
-              if ($val<0 || $val>2400) {
-                $consoleTxt.=consoleMessage("error", "time value for ".$key." must be between 0 and 2400 for outputId ".$row->outputId);
+              if ($val!="0" && $val!="" && $val!=0) {
+                $val=intval($val);
+
+                if ($val<0 || $val>2400) {
+                  $consoleTxt.=consoleMessage("error", "time value for ".$key." must be between 0 and 2400 for outputId ".$row->outputId);
+                }
+                if ($val<$start_time)
+                  $start_time=$val;
+
+                // add 24 hours to the night tmes, to help comparing
+                if ($protocol=="natt" && $val<1200)
+                  $val+=2400;
+
+                if ($val>$finish_time)
+                  $finish_time=$val;
+
+                if ($val>2400) $val-=2400;
               }
-              if ($val<$start_time)
-                $start_time=$val;
-
-              // add 24 hours to the night tmes, to help comparing
-              if ($val<1200)
-                $val+=2400;
-
-              if ($val>$finish_time)
-                $finish_time=$val;
-
-              if ($val>2400) $val-=2400;
             }
 
           }
-          if ($start_time>2400) $start_time-=2400;
-          if ($finish_time>2400) $finish_time-=2400;
-          
-          //echo consoleMessage("info", "finishtime found : ".$finish_time);
+          if ($time999) {
+            $start_time=0;
+            $finish_time=0;
+          }
+          else {
+            if ($start_time>2400) $start_time-=2400;
+            if ($finish_time>2400) $finish_time-=2400;
+            
+            //echo consoleMessage("info", "finishtime found : ".$finish_time);
 
-          $finish_time=addTimeToFinish($finish_time, 35);
-          //echo consoleMessage("info", "finishtime +35 : ".$finish_time);
-          //echo consoleMessage("info", "in output so far ".$row->data->surveyFinishTime);
-echo $row->data->surveyDate.",".$row->data->surveyFinishTime.",".$finish_time.",".$row->activityId."\n";
+            $finish_time=addTimeToFinish($finish_time, 35);
+          }
+          $finish_time_converted=convertTime($finish_time, "24H");
+
+          $savelogcsv.=$row->activityId.",".$row->data->surveyDate.",".$row->data->surveyFinishTime.",".$finish_time.",".$finish_time_converted."\n";
+          $json.='db.output.update({"activityId":"'.$row->activityId.'"},{"$set":{"data.surveyFinishTime":"'.$finish_time_converted.'"}});'."\n";
         }
         else {
           echo consoleMessage("error", "Wrong format (missing minute/time or non-numerical values) for surveyFinishTime for outputId : ".$row->outputId);
@@ -95,25 +119,35 @@ echo $row->data->surveyDate.",".$row->data->surveyFinishTime.",".$finish_time.",
       }
       //echo $row->data->surveyFinishTime;
     	$nbOutput++;
-	}
+  	}
 
-	echo consoleMessage("info", $nbOutput." output(s) with surveyFinishTime to be fixed.");
+  	echo consoleMessage("info", $nbOutput." output(s) with surveyFinishTime to be fixed in dataorigin:".$dataOrigin);
 
-/*
-	$bulk = new MongoDB\Driver\BulkWrite;
+    if ($savelogcsv!="") {
+      $path= "script/json/".date("Y-m-d_His")."_correctSurveyFinishTime_".$mode."_savelogcsv.csv";
+      if ($fp = fopen($path, 'w')) {
+        fwrite($fp, $savelogcsv);
+        echo consoleMessage("info", "File savelogcsv write in ".$path);
 
-    $filter = [
-    	'internalPersonId' => $internalPersonId
-    ];
+        fclose($fp);
+      }
+      else echo consoleMessage("error", "can't create file ".$path);
+    }
 
-    $options =  ['$set' => [
-    	'anonymizedId' => $anonymizedId
-    ]];
+    if ($json!="") {
+      $path= "script/json/".date("Y-m-d_His")."_correctSurveyFinishTime_".$mode.".json";
+      if ($fp = fopen($path, 'w')) {
+        fwrite($fp, $json);
+        echo consoleMessage("info", "File json write in ".$path);
 
-    $updateOptions = ['multi' => false];
-    $bulk->update($filter, $options, $updateOptions); 
-    $result = $mng->executeBulkWrite('ecodata.person', $bulk);
-*/
+        fclose($fp);
+        echo consoleMessage("info", "Comand to run it :");
+        echo "mongo ecodata < ".$path."\n";
+      }
+      else echo consoleMessage("error", "can't create file ".$path);
+    }
+
+  }
 }
 
 echo consoleMessage("info", "script ends.");
