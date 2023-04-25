@@ -21,7 +21,8 @@ $commonFields["licence"]="https://creativecommons.org/publicdomain/zero/1.0/";
 
 $mongoConnection["TEST"]="mongodb://localhost";
 $mongoConnection["DEV"]="mongodb://canmove-dev.ekol.lu.se";
-$mongoConnection["PROD"]="mongodb://89.45.234.73";
+$IP_PROD="xx.xx.xx.xx";
+$mongoConnection["PROD"]="mongodb://".$IP_PROD;
 
 switch ($database) {
 	case "SFT":
