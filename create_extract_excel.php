@@ -160,7 +160,7 @@ else {
 
 	/**************************** connection to mongoDB   ***/
     $mng = new MongoDB\Driver\Manager($mongoConnection[$server]); // Driver Object created
-    if (count($mng->getServers())==1) echo consoleMessage("info", "Connection to mongoDb ok");
+    if ($mng) echo consoleMessage("info", "Connection to mongoDb ok");
     else echo consoleMessage("error", "No connection to mongoDb");
     
     $filter = ['projects' => $commonFields[$protocol]["projectId"]];

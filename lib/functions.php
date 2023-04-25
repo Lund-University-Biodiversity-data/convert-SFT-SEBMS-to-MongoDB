@@ -140,7 +140,7 @@ function getArrayPersonsFromMongo ($projectId = null) {
     $array_persons=array();
     
     $mng = new MongoDB\Driver\Manager($mongoConnection["url"]); // Driver Object created
-    if (count($mng->getServers())==1) echo consoleMessage("info", "Connection to mongoDb ok");
+    if ($mng) echo consoleMessage("info", "Connection to mongoDb ok");
     else echo consoleMessage("error", "No connection to mongoDb");
     
     $filter = [];
@@ -181,7 +181,7 @@ function getArraySitesFromMongo ($protocol, $projectId) {
     $array_sites=array();
     
     $mng = new MongoDB\Driver\Manager($mongoConnection["url"]); // Driver Object created
-    if (count($mng->getServers())==1) echo consoleMessage("info", "Connection to mongoDb ok");
+    if ($mng) echo consoleMessage("info", "Connection to mongoDb ok");
     else echo consoleMessage("error", "No connection to mongoDb");
 
     //$filter = [];
