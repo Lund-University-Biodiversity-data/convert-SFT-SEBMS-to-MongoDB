@@ -57,7 +57,8 @@ else {
 	$array_sites_req=array();
 
     $mng = new MongoDB\Driver\Manager(); // Driver Object created
-    if ($mng) echo consoleMessage("info", "Connection to mongoDb ok");
+    if (count($mng->getServers())==1) echo consoleMessage("info", "Connection to mongoDb ok");
+    else echo consoleMessage("error", "No connection to mongoDb");
 
 
 	foreach($array_sites as $indexSite => $data) {

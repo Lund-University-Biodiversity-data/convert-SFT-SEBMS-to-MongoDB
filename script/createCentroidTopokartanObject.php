@@ -27,8 +27,8 @@ if (!$rSites) die("QUERY:" . consoleMessage("error", pg_last_error()));
 
 
 $mng = new MongoDB\Driver\Manager($mongoConnection[$server]); // Driver Object created
-
-if ($mng) echo consoleMessage("info", "Connection to mongoDb ok");
+if (count($mng->getServers())==1) echo consoleMessage("info", "Connection to mongoDb ok");
+else echo consoleMessage("error", "No connection to mongoDb");
 
 
 $cmdJs="";
