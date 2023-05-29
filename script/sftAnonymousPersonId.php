@@ -15,7 +15,7 @@ $mng = new MongoDB\Driver\Manager($mongoConnection[$server]); // Driver Object c
 
 
 echo consoleMessage("info", "Script starts.");
-echo consoleMessage("info", "php script/sftAnonymousPersonId.php std [exec]");
+echo consoleMessage("info", "php script/sftAnonymousPersonId.php sft [exec]");
 echo consoleMessage("info", "first try without exec to check if everything is ok");
 
 $tmpfname = "script/excel/sft_anonymized_persons.xlsx";
@@ -39,10 +39,10 @@ function addAnonymizedPersonIdInDb($mng, $internalPersonId, $anonymizedId) {
 
 }
 
-$arr_protocol=array("std");
+$arr_hub=array("sft");
 
-if (!isset($argv[1]) || !in_array(trim($argv[1]), $arr_protocol)) {
-	echo consoleMessage("error", "First parameter missing: ".implode("/", $arr_protocol));
+if (!isset($argv[1]) || !in_array(trim($argv[1]), $arr_hub)) {
+	echo consoleMessage("error", "First parameter missing: ".implode("/", $arr_hub));
 }
 else {
 
@@ -51,7 +51,7 @@ else {
 	}
 	else $exec=false;
 
-	$protocol=$argv[1];
+	$hub=$argv[1];
 
 
     $filter = [
@@ -75,7 +75,7 @@ else {
 		// get all the persons from sft
 
     $filter = [
-    	"hub" => "sft",
+    	"hub" => $hub,
     	'$or' => [
     		['anonymizedId' => ""],
     		['anonymizedId' => [ '$exists' => false ]]
