@@ -7,6 +7,8 @@ require dirname(__FILE__)."/../lib/functions.php";
 require PATH_SHARED_FUNCTIONS."generic-functions.php";
 require PATH_SHARED_FUNCTIONS."mongo-functions.php";
 
+
+// sudo apt-get install php-mongodb
 $mng = new MongoDB\Driver\Manager($mongoConnection[$server]); // Driver Object created
 
 

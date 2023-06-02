@@ -7,6 +7,7 @@ require dirname(__FILE__)."/../lib/functions.php";
 require PATH_SHARED_FUNCTIONS."generic-functions.php";
 require PATH_SHARED_FUNCTIONS."mongo-functions.php";
 
+// sudo apt-get install php-mongodb
 $mng = new MongoDB\Driver\Manager($mongoConnection[$server]); // Driver Object created
 
 
@@ -33,7 +34,7 @@ function addAnonymizedSiteIdInDb($mng, $siteId, $anonymizedId) {
 
 }
 
-$arr_protocol=array("std", "punkt", "kust");
+$arr_protocol=array("std", "punkt");
 
 if (!isset($argv[1]) || !in_array(trim($argv[1]), $arr_protocol)) {
 	echo consoleMessage("error", "First parameter missing: ".implode("/", $arr_protocol));
