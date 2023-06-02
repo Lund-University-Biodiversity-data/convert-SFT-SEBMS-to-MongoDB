@@ -18,14 +18,12 @@ echo consoleMessage("info", "Script starts.");
 echo consoleMessage("info", "php script/sftAnonymousPersonId.php sft [exec]");
 echo consoleMessage("info", "first try without exec to check if everything is ok");
 
-$tmpfname = "script/excel/sft_anonymized_persons.xlsx";
-
-function addAnonymizedPersonIdInDb($mng, $internalPersonId, $anonymizedId) {
+function addAnonymizedPersonIdInDb($mng, $personId, $anonymizedId) {
 
 	$bulk = new MongoDB\Driver\BulkWrite;
 
     $filter = [
-    	'internalPersonId' => $internalPersonId
+    	'personId' => $personId
     ];
 
     $options =  ['$set' => [
@@ -53,6 +51,7 @@ else {
 
 	$hub=$argv[1];
 
+	$nbEdited=0;
 
     $filter = [
     	
@@ -65,7 +64,7 @@ else {
 
 	$rows = $mng->executeQuery("ecodata.person", $query);
 	foreach ($rows as $row){
-		echo "MAX:".$row->anonymizedId;
+		//echo "MAX:".$row->anonymizedId;
 		$maxAnonymizedId=$row->anonymizedId;
 	}
 	echo consoleMessage("info", $maxAnonymizedId." is the maxAnonymizedId.");
@@ -74,13 +73,14 @@ else {
 
 		// get all the persons from sft
 
-    $filter = [
-    	"hub" => $hub,
-    	'$or' => [
-    		['anonymizedId' => ""],
-    		['anonymizedId' => [ '$exists' => false ]]
-    	]
-    ];
+	    $filter = [
+	    	"hub" => $hub,
+	    	'$or' => [
+	    		['anonymizedId' => ""],
+	    		['anonymizedId' => [ '$exists' => false ]]
+	    	]
+	    ];
+
 		$options = [];
 		$query = new MongoDB\Driver\Query($filter, $options); 
 
@@ -91,12 +91,15 @@ else {
 			$newAnonymizedId++;
 			echo consoleMessage("info", "New anonymizedId is ".$newAnonymizedId." for ".$row->firstName." ".$row->lastName);
 
-			if ($exec && $row->internalPersonId!="") {
-				addAnonymizedPersonIdInDb($mng, $row->internalPersonId, $newAnonymizedId);
+			if ($exec && $row->personId!="") {
+				addAnonymizedPersonIdInDb($mng, $row->personId, $newAnonymizedId);
+				$nbEdited++;
 			}
 
 
 		}
+
+		echo consoleMessage("info", $nbEdited." person(s) edited in the database for hub ".$hub);
 
 	}
 }

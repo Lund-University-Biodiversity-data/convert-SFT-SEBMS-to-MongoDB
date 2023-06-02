@@ -15,145 +15,96 @@ $mng = new MongoDB\Driver\Manager($mongoConnection[$server]); // Driver Object c
 
 
 echo consoleMessage("info", "Script starts.");
-echo consoleMessage("info", "php script/sftAnonymousSiteId.php std");
+echo consoleMessage("info", "php script/sftAnonymousSiteId.php std [exec]");
+echo consoleMessage("info", "first try without exec to check if everything is ok");
 
-$tmpfname = "script/excel/sft_anonymized_sites.xlsx";
+function addAnonymizedSiteIdInDb($mng, $siteId, $anonymizedId) {
 
-$arr_protocol=array("std", "pkt");
+	$bulk = new MongoDB\Driver\BulkWrite;
+
+    $filter = [
+    	'siteId' => $siteId
+    ];
+
+    $options =  ['$set' => [
+    	'adminProperties.anonymizedId' => $anonymizedId
+    ]];
+
+    $updateOptions = ['multi' => false];
+    $bulk->update($filter, $options, $updateOptions); 
+    $result = $mng->executeBulkWrite('ecodata.site', $bulk);
+
+
+}
+
+$arr_protocol=array("std", "punkt");
 
 if (!isset($argv[1]) || !in_array(trim($argv[1]), $arr_protocol)) {
 	echo consoleMessage("error", "First parameter missing: ".implode("/", $arr_protocol));
 }
 else {
 
+	if (isset($argv[2]) && $argv[2]=="exec") {
+		$exec=true;
+	}
+	else $exec=false;
+
 	$protocol=$argv[1];
 
-	try {
+	$nbEdited=0;
 
-		$fileRefused=false;
-		$inputFileType = \PhpOffice\PhpSpreadsheet\IOFactory::identify($tmpfname);
-		//$consoleTxt.=consoleMessage("info", "Excel type ".$inputFileType);
-		$excelObj = \PhpOffice\PhpSpreadsheet\IOFactory::createReader($inputFileType);
-		$excelObj->setReadDataOnly(true);
-		$spreadsheet = $excelObj->load($tmpfname);
-		$worksheet = $spreadsheet->getSheetByName($protocol);
-		
+	$projectId=$commonFields[$protocol]["projectId"];
+
+    $filter = [
+    	"projects" => $projectId
+    ];
+	$options = [
+		'sort' => [ "adminProperties.anonymizedId" => -1 ],
+		'limit' => 1
+	];
+	$query = new MongoDB\Driver\Query($filter, $options); 
+
+	$rows = $mng->executeQuery("ecodata.site", $query);
+	foreach ($rows as $row){
+		echo "MAX:".$row->adminProperties->anonymizedId;
+		$maxAnonymizedId=$row->adminProperties->anonymizedId;
 	}
-	catch (\Exception $exception) {
-		$fileRefused=true;
-		echo consoleMessage("error", "Caught exception : ".$exception->getMessage());
-		echo consoleMessage("error", "can't read Excel file ".$tmpfname);
-	}
+	echo consoleMessage("info", $maxAnonymizedId." is the maxAnonymizedId for project ".$projectId);
+
+	if (is_numeric($maxAnonymizedId)) {
+
+		// get all the sites for sft projects
 
 
-	if (!$fileRefused) {
+	    $filter = [
+	    	"projects" => $projectId,
+	        "verificationStatus" => "godkänd",
+	        '$or' => [
+	            ["adminProperties.anonymizedId" => ['$exists' => false]],
+	            ["adminProperties.anonymizedId" => ""],
+	    	]
+	    ];
+		$options = [];
+		$query = new MongoDB\Driver\Query($filter, $options); 
 
+		$rows = $mng->executeQuery("ecodata.site", $query);
 
-		// 1- read the excel file, add the anonymizedId to the database
-		echo consoleMessage("info", "1- read the excel file, add the anonymizedId to the database");
+		$newAnonymizedId=$maxAnonymizedId;
+		foreach ($rows as $row){
+			$newAnonymizedId++;
+			echo consoleMessage("info", "New anonymizedId is ".$newAnonymizedId." for ".$row->name);
 
-		// get all the sites
-		if ($protocol=="pkt") $projectId=$commonFields["punkt"]["projectId"];
-		else $projectId=$commonFields[$protocol]["projectId"];
-		$arrSitesDetails=getArraySitesFromMongo($projectId, $server);
-		$arrUniqueIds=array();
-		$arrUniqueSites=array();
-
-		$firstRow=2;
-		$nbErrors=0;
-		$nbOk=0;
-
-		for ($iR=$firstRow;$worksheet->getCell('A'.$iR)->getValue()!=""; $iR++) {
-
-			switch ($protocol) {
-				case "pkt":
-					$colInternalSiteId="D";
-					$colIAnonymizedId="E";
-					break;
-				case "std":
-				default:
-					$colInternalSiteId="A";
-					$colIAnonymizedId="B";
-					break;
+			if ($exec && $row->siteId!="") {
+				addAnonymizedSiteIdInDb($mng, $row->siteId, $newAnonymizedId);
+				$nbEdited++;
 			}
-			$internalSiteId=$worksheet->getCell($colInternalSiteId.$iR)->getValue();
-			$anonymizedId=$worksheet->getCell($colIAnonymizedId.$iR)->getValue();
-			
-			if (in_array($anonymizedId, $arrUniqueIds)) {
-				echo consoleMessage("error", "DOUBLON for anonymizedId ".$anonymizedId.", already set to another route");
-				$nbErrors++;
-			} else {
-				$arrUniqueIds[]=$anonymizedId;
-				$arrUniqueSites[]=$internalSiteId;
-
-				if (!isset($arrSitesDetails[$internalSiteId])) {
-					echo consoleMessage("error", "No site data for ".$internalSiteId);
-					$nbErrors++;
-				}
-				else {
-				    $filter = [
-				    	'adminProperties.internalSiteId' => $internalSiteId
-				    ];
-					$options = [];
-					$query = new MongoDB\Driver\Query($filter, $options); 
-
-					$rows = $mng->executeQuery("ecodata.site", $query);
-					$rowsToArray = $rows->toArray();
-
-					if (count($rowsToArray)==1) {
-
-						if (isset($arrSitesDetails[$internalSiteId]["anonymizedId"]) && $arrSitesDetails[$internalSiteId]["anonymizedId"]!="" && $arrSitesDetails[$internalSiteId]["anonymizedId"]!=$anonymizedId) {
-							echo consoleMessage("error", "anonymizedId already set for ".$internalSiteId.". Value in DDB : ".$arrSitesDetails[$internalSiteId]["anonymizedId"].". Value to set : ".$anonymizedId);
-							$nbErrors++;
-						}
-						else {
-						
-							$bulk = new MongoDB\Driver\BulkWrite;
-
-						    $options =  ['$set' => [
-						    	'adminProperties.anonymizedId' => $anonymizedId
-						    ]];
-
-						    $updateOptions = ['multi' => false];
-						    $bulk->update($filter, $options, $updateOptions); 
-						    $result = $mng->executeBulkWrite('ecodata.site', $bulk);
-
-						    $nbOk++;
-						}
-					}
-					else {
-						echo consoleMessage("error", count($rowsToArray)." row(s) for ".$internalSiteId);
-						$nbErrors++;
-					}
-				}
-
-			}
-
-			if ($iR%100==0) echo consoleMessage("info", $iR." line(s) processed");
 
 
 		}
-		echo consoleMessage("info", $nbOk." line(s) OK.");
-		echo consoleMessage("info", $nbErrors." line(s) ERRORED.");
 
-
-		echo consoleMessage("info", "2- check if sites have not been found in the file");
-
-		echo consoleMessage("info", count($arrSitesDetails)." site(s) in the database for protocol ".$protocol);
-		echo consoleMessage("info", count($arrUniqueSites)." site(s) in the file");
-
-		foreach($arrSitesDetails as $iSI => $dataSite) {
-			if (!in_array($iSI, $arrUniqueSites)) {
-				echo consoleMessage("error", $iSI." from database is not present in the excel file");
-
-			}
-		}
-
-
-		echo consoleMessage("info", "script ends after ".$iR." line(s) processed");
+		echo consoleMessage("info", $nbEdited." site(s) edited in the database for project ".$projectId);
 
 	}
-
 }
 
 echo consoleMessage("info", "script ends.");
