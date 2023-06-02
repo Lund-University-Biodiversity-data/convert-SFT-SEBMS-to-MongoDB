@@ -37,7 +37,7 @@ function addAnonymizedSiteIdInDb($mng, $siteId, $anonymizedId) {
 
 }
 
-$arr_protocol=array("std", "punkt");
+$arr_protocol=array("std", "punkt", "kust");
 
 if (!isset($argv[1]) || !in_array(trim($argv[1]), $arr_protocol)) {
 	echo consoleMessage("error", "First parameter missing: ".implode("/", $arr_protocol));
@@ -51,6 +51,7 @@ else {
 
 	$protocol=$argv[1];
 
+	$maxAnonymizedId=0;
 	$nbEdited=0;
 
 	$projectId=$commonFields[$protocol]["projectId"];
@@ -66,15 +67,16 @@ else {
 
 	$rows = $mng->executeQuery("ecodata.site", $query);
 	foreach ($rows as $row){
-		echo "MAX:".$row->adminProperties->anonymizedId;
-		$maxAnonymizedId=$row->adminProperties->anonymizedId;
+		if (isset($row->adminProperties->anonymizedId)) {
+			//echo "MAX:".$row->adminProperties->anonymizedId;
+			$maxAnonymizedId=$row->adminProperties->anonymizedId;
+		}
 	}
 	echo consoleMessage("info", $maxAnonymizedId." is the maxAnonymizedId for project ".$projectId);
 
 	if (is_numeric($maxAnonymizedId)) {
 
 		// get all the sites for sft projects
-
 
 	    $filter = [
 	    	"projects" => $projectId,
