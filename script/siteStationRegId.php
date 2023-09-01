@@ -15,7 +15,7 @@ $mng = new MongoDB\Driver\Manager($mongoConnection[$server]); // Driver Object c
 
 
 echo consoleMessage("info", "Script starts.");
-echo consoleMessage("info", "example : php script/siteStationRegId.php std fullcheck");
+echo consoleMessage("info", "example : php script/siteStationRegId.php std forcechange");
 
 //$tmpfname = "script/excel/StnRegId_vs_InternalSiteId_20220922.xlsx";
 $tmpfname = "script/excel/StnRegId_vs_InternalSiteId_spkt_20230901.xlsx";
@@ -140,10 +140,9 @@ else {
 
 
 					$arrUniqueSites[]=$internalSiteId;
-if ($internalSiteId=="120509-1-02"){
-	echo "os:".$arrSitesDetails[$internalSiteId]["StnRegOSId"]."\n";
-	echo "pp:".$arrSitesDetails[$internalSiteId]["StnRegPPId"]."\n";
-}
+
+					$okEdit=true;
+
 					if ((isset($arrSitesDetails[$internalSiteId]["StnRegOSId"]) 
 						&& $arrSitesDetails[$internalSiteId]["StnRegOSId"]!=""
 						&& $arrSitesDetails[$internalSiteId]["StnRegOSId"]!=$osId
@@ -151,10 +150,20 @@ if ($internalSiteId=="120509-1-02"){
 						&& $arrSitesDetails[$internalSiteId]["StnRegPPId"]!=""
 						&& $arrSitesDetails[$internalSiteId]["StnRegPPId"]!=$ppId
 					)) {
-						echo consoleMessage("error", "StnRegPPId or StnRegOSId already set for ".$internalSiteId.". Value in DDB : ".$arrSitesDetails[$internalSiteId]["StnRegPPId"]."/".$arrSitesDetails[$internalSiteId]["StnRegOSId"].". Values to set : ".$ppId."/".$osId);
-						$nbErrors++;
+
+						if ($mode=="forcechange") {
+							echo consoleMessage("warn", "StnRegPPId or StnRegOSId already set for ".$internalSiteId.". Value in DDB : ".$arrSitesDetails[$internalSiteId]["StnRegPPId"]."/".$arrSitesDetails[$internalSiteId]["StnRegOSId"].". Values to set : ".$ppId."/".$osId);
+						}
+						else {
+							echo consoleMessage("error", "StnRegPPId or StnRegOSId already set for ".$internalSiteId.". Value in DDB : ".$arrSitesDetails[$internalSiteId]["StnRegPPId"]."/".$arrSitesDetails[$internalSiteId]["StnRegOSId"].". Values to set : ".$ppId."/".$osId);
+
+
+							$nbErrors++;
+							$okEdit=false;
+						}
 					}
-					else {
+
+					if ($okEdit) {
 
 						//echo consoleMessage("info", "StnRegPPId or StnRegOSId values to set : ".$ppId."/".$osId." for internalsiteId :".$internalSiteId);
 
@@ -175,6 +184,7 @@ if ($internalSiteId=="120509-1-02"){
 					    
 					    $nbOk++;
 					}
+				
 
 				}
 				else {
