@@ -15,9 +15,10 @@ $mng = new MongoDB\Driver\Manager($mongoConnection[$server]); // Driver Object c
 
 
 echo consoleMessage("info", "Script starts.");
-echo consoleMessage("info", "example : php script/siteStationRegId.php std");
+echo consoleMessage("info", "example : php script/siteStationRegId.php std fullcheck");
 
-$tmpfname = "script/excel/StnRegId_vs_InternalSiteId_20220922.xlsx";
+//$tmpfname = "script/excel/StnRegId_vs_InternalSiteId_20220922.xlsx";
+$tmpfname = "script/excel/StnRegId_vs_InternalSiteId_spkt_20230901.xlsx";
 
 $arr_protocol=array("std", "pkt", "kust");
 
@@ -27,6 +28,7 @@ if (!isset($argv[1]) || !in_array(trim($argv[1]), $arr_protocol)) {
 else {
 
 	$protocol=$argv[1];
+	$mode=(isset($argv[2]) ? $argv[2] : "");
 
 	try {
 
@@ -68,7 +70,6 @@ else {
 		else $projectId=$commonFields[$protocol]["projectId"];
 		$arrSitesDetails=getArraySitesFromMongo($projectId, $server);
 		$arrUniqueSites=array();
-
 
 		// no anonymisezId for KFR
 		if ($protocol!="kust") {
@@ -115,7 +116,7 @@ else {
 					if ($protocol!="kust") {
 
 						if (!isset($arrAnonymizedIds[$anonymizedId]) || trim($arrAnonymizedIds[$anonymizedId])=="") {
-							echo consoleMessage("error", "No site in database matching this anonymisedId ".$anonymizedId);
+							echo consoleMessage("error", "No site in database matching this anonymizedId ".$anonymizedId);
 							$errorInternalSiteId=true;
 						}
 						else {
@@ -139,7 +140,10 @@ else {
 
 
 					$arrUniqueSites[]=$internalSiteId;
-
+if ($internalSiteId=="120509-1-02"){
+	echo "os:".$arrSitesDetails[$internalSiteId]["StnRegOSId"]."\n";
+	echo "pp:".$arrSitesDetails[$internalSiteId]["StnRegPPId"]."\n";
+}
 					if ((isset($arrSitesDetails[$internalSiteId]["StnRegOSId"]) 
 						&& $arrSitesDetails[$internalSiteId]["StnRegOSId"]!=""
 						&& $arrSitesDetails[$internalSiteId]["StnRegOSId"]!=$osId
@@ -152,7 +156,7 @@ else {
 					}
 					else {
 
-						//echo consoleMessage("info", "StnRegPPId or StnRegOSId values to set : ".$ppId."/".$osId);
+						//echo consoleMessage("info", "StnRegPPId or StnRegOSId values to set : ".$ppId."/".$osId." for internalsiteId :".$internalSiteId);
 
 						$filter = [
 				    		'adminProperties.internalSiteId' => $internalSiteId
@@ -164,7 +168,6 @@ else {
 					    	'adminProperties.StnRegPPId' => $ppId,
 					    	'adminProperties.StnRegOSId' => $osId,
 					    ]];
-
 					    $updateOptions = ['multi' => false];
 					    $bulk->update($filter, $options, $updateOptions); 
 					    $result = $mng->executeBulkWrite('ecodata.site', $bulk);
@@ -196,17 +199,19 @@ else {
 		echo consoleMessage("info", $nbOk." line(s) OK.");
 		echo consoleMessage("info", $nbErrors." line(s) ERRORED.");
 
-		
-		echo consoleMessage("info", "2- check if sites have not been found in the file");
+		if ($mode=="fullcheck") {
+			echo consoleMessage("info", "2- check if sites have not been found in the file");
 
-		echo consoleMessage("info", count($arrSitesDetails)." site(s) in the database for protocol ".$protocol);
-		echo consoleMessage("info", count($arrUniqueSites)." site(s) in the file");
+			echo consoleMessage("info", count($arrSitesDetails)." site(s) in the database for protocol ".$protocol);
+			echo consoleMessage("info", count($arrUniqueSites)." site(s) in the file");
 
-		foreach($arrSitesDetails as $iSI => $dataSite) {
-			if (!in_array($iSI, $arrUniqueSites)) {
-				echo consoleMessage("error", $iSI." from database is not present in the excel file");
+			foreach($arrSitesDetails as $iSI => $dataSite) {
+				if (!in_array($iSI, $arrUniqueSites)) {
+					echo consoleMessage("error", $iSI." from database is not present in the excel file");
 
+				}
 			}
+
 		}
 
 
