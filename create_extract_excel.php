@@ -140,7 +140,7 @@ else {
 			break;
         case "iwc":
 
-            $headers=array("persnr", "site", "datum", "yr", "verificationStatus", "art", "period", "metod", "antal", "komm", "activityIdMongo");
+            $headers=array("persnr", "site", "datum", "yr", "verificationStatus", "art", "period", "metod", "antal", "ice", "komm", "activityIdMongo");
             $nbPts=1;
             break;
 	}
@@ -425,6 +425,7 @@ else {
                     $line["period"]=$output->data->period;
                     $line["metod"]=$output->data->observedFrom;
                     $line["antal"]="";
+                    $line["ice"]=$output->data->istäcke;
                     $line["komm"]=$output->data->eventRemarks;
 
                     break;
