@@ -12,7 +12,7 @@ $mng = new MongoDB\Driver\Manager($mongoConnection[$server]); // Driver Object c
 
 
 foreach ($commonFields["listSpeciesId"] as $animals => $listId) {
-	$url="https://lists.biodiversitydata.se/ws/speciesListItems/".$commonFields["listSpeciesId"][$animals]."?includeKVP=true";
+	$url="https://lists.biodiversitydata.se/ws/speciesListItems/".$commonFields["listSpeciesId"][$animals]."?includeKVP=true&max=1000";
 	$obj = json_decode(file_get_contents($url), true);
 
 	foreach($obj as $sp) {

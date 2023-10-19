@@ -28,7 +28,7 @@ if (isset($argv[2]) && $argv[2]=="debug") $debug=true;
 elseif (isset($argv[2]) && $argv[2]=="exec") $exec=true;
 
 foreach ($commonFields["listSpeciesId"] as $animals => $listId) {
-    $url="https://lists.biodiversitydata.se/ws/speciesListItems/".$commonFields["listSpeciesId"][$animals]."?includeKVP=true";
+    $url="https://lists.biodiversitydata.se/ws/speciesListItems/".$commonFields["listSpeciesId"][$animals]."?includeKVP=true&max=1000";
     $obj = json_decode(file_get_contents($url), true);
 
     foreach($obj as $sp) {

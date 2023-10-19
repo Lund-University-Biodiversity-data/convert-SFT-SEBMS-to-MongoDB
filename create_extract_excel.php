@@ -50,7 +50,7 @@ else {
     foreach ($commonFields["listSpeciesId"] as $animals => $listId) {
 
 
-        $url="https://lists.biodiversitydata.se/ws/speciesListItems/".$commonFields["listSpeciesId"][$animals]."?includeKVP=true";
+        $url="https://lists.biodiversitydata.se/ws/speciesListItems/".$commonFields["listSpeciesId"][$animals]."?includeKVP=true&max=1000";
         $obj = json_decode(file_get_contents($url), true);
 
         echo consoleMessage("info", "reading species list ".$url);
@@ -103,6 +103,7 @@ else {
         }
         echo consoleMessage("info", "Species list ".$commonFields["listSpeciesId"][$animals]." obtained for ".$animals.". ".count($obj)." elements");
     }
+
 	switch($protocol) {
 		case "std":
 			$nbPts=8;
@@ -598,7 +599,7 @@ else {
                                     $art="ERROR";
                                     //var_dump($obs);
 
-                                    echo consoleMessage("error", "No ART for ".$animals." / ".$obs->species->guid." / ".$obs->species->scientificName);
+                                    echo consoleMessage("error", "NNNo ART for ".$animals." / ".$obs->species->guid." / ".$obs->species->scientificName);
                                 }
                                 else {
                                     $art=str_pad($array_species_art[$animals][$obs->species->scientificName], 3, "0", STR_PAD_LEFT);

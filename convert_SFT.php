@@ -176,7 +176,7 @@ else {
 	$array_species_guid=array();
 	// GET the list of species
 	foreach ($commonFields["listSpeciesId"] as $animals => $listId) {
-		$url="https://lists.biodiversitydata.se/ws/speciesListItems/".$commonFields["listSpeciesId"][$animals]."?includeKVP=true";
+		$url="https://lists.biodiversitydata.se/ws/speciesListItems/".$commonFields["listSpeciesId"][$animals]."?includeKVP=true&max=1000";
 		$obj = json_decode(file_get_contents($url), true);
 
 		foreach($obj as $sp) {
@@ -428,7 +428,7 @@ select EL.arthela AS names, EL.latin as scientificname, T.art, T.datum, T.antal
 					$observedFrom="båt";
 					break;	
 				case "F":
-					$observedFrom="flygg";
+					$observedFrom="flyg";
 					break;
 				case "X":
 					$observedFrom="X";
