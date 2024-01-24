@@ -16,6 +16,33 @@ if (!isset($argv[1]) || !in_array(trim($argv[1]), $arr_protocol)) {
 }
 else {
 
+
+/* check the number of sites in one projectActivity
+
+db.projectActivity.aggregate([
+      {
+        '$match':{
+          name:"Vinterpunktrutt"
+        }
+      },
+      {
+        '$addFields': {
+          'size': {
+            '$size': '$sites'
+          }
+        }
+      }, {
+        '$group': {
+          '_id': null, 
+          'sites_count': {
+            '$sum': '$size'
+          }
+        }
+      }
+    ])
+
+
+  */
 	$protocol=$argv[1];
 	$projectId = $commonFields[$protocol]["projectId"];
 
