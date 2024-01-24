@@ -25,7 +25,7 @@ $arrSitesDetails=getArraySitesFromMongo($commonFields[$protocol]["projectId"], $
 echo consoleMessage("info", "1- Get all sites for protocol ".$protocol);
 echo consoleMessage("info", count($arrSitesDetails)." site(s).");
 
-$tmpfname = "script/excel/Punktruttskoordinater_240121_1.xlsx";
+$tmpfname = "script/excel/Punktruttskoordinater_240121_2.xlsx";
 
 try {
 
@@ -153,7 +153,6 @@ if (!$fileRefused) {
 	if ($nbErrors==0 && isset($argv[1]) && $argv[1]=="exec") {
 		$nbAdd=0;
 		foreach($arrFinalJson as $mongoSiteId => $dataCoord) {
-
 
 			$bulk = new MongoDB\Driver\BulkWrite;
 			$filter = [
