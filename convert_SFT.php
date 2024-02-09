@@ -17,7 +17,7 @@ $debug=false;
 
 // parameters
 // 1- protocol: std (standardrutterna) - natt (nattrutterna) - vinter (vinterrutterna) - sommar (sommarrutterna) - kust (kustfagelrutterna)
-$arr_protocol=array("std", "natt", "vinter", "sommar", "kust", "iwc", "kust2021", "kust2022");
+$arr_protocol=array("std", "natt", "vinter", "sommar", "kust", "iwc", "kust2021", "kust2022", "kust2023");
 
 if (!isset($argv[1]) || !in_array(trim($argv[1]), $arr_protocol)) {
 	echo consoleMessage("error", "First parameter missing: ".implode(" / ", $arr_protocol));
@@ -34,6 +34,10 @@ else {
 	}elseif ($protocol=="kust2022") {
 		$protocol="kust";
 		$kustYEAR="_2022_temp";
+	}elseif ($protocol=="kust2023") {
+		$protocol="kust";
+		$kustYEAR="_2023_temp";
+
 	}else{
 		$kustYEAR="";
 	}
@@ -226,8 +230,6 @@ else {
 	';
 	$arr_json_person='[
 	';
-	$nbLines=0;
-
 	
 	$tabHelperMatch=array();
 
@@ -352,9 +354,6 @@ select EL.arthela AS names, EL.latin as scientificname, T.art, T.datum, T.antal
 		if (!$rRecords) die("QUERY:" . consoleMessage("error", pg_last_error()));
 		$nbRecords=pg_num_rows($rRecords);
 		
-		$nbLines++;
-		if ($nbLines%100==0) echo number_format($nbLines, 0, ".", " ")." ĺines\n";
-
 		$activityId=generate_uniqId_format("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx");
 		$eventID=$activityId;
 		$outputId=generate_uniqId_format("xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx");
@@ -1242,7 +1241,8 @@ select EL.arthela AS names, EL.latin as scientificname, T.art, T.datum, T.antal
 		$filename_json='postgres_json_'.$database.'_'.$protocol.'_'.$typeO.'s_'.date("Y-m-d-His").'.json';
 		$path='dump_json_sft_sebms/'.$database.'/'.$protocol."/".$filename_json;
 		//echo 'db.'.$typeO.'.remove({"dateCreated" : {$gte: new ISODate("'.date("Y-m-d").'T01:15:31Z")}})'."\n";
-		echo 'mongoimport --db ecodata --collection '.$typeO.' --jsonArray --file '.$path."\n";
+		// maybe add --legacy if it does not work with more recent versions of mongo ?
+		echo 'mongoimport --db ecodata --collection '.$typeO.' --jsonArray --file '.$path." --legacy\n";
 		//$json = json_encode($arr_rt, JSON_UNESCAPED_SLASHES); 
 		if ($fp = fopen($path, 'w')) {
 			fwrite($fp, $json);
@@ -1259,12 +1259,12 @@ select EL.arthela AS names, EL.latin as scientificname, T.art, T.datum, T.antal
 	echo consoleMessage("info", "Species ratio found in the species lists : ".$speciesFound." / ".($speciesFound+$speciesNotFound)." = ".number_format($ratioSpecies*100, 2)."%");
 
 	if ($ratioSpecies!=1) {
-		echo consoleMessage("info", "Species not found :");
+		echo consoleMessage("warning", "Species not found :");
 		var_dump($arrSpeciesNotFound);
 	}
 
 	echo "scp dump_json_sft_sebms/".$database."/".$protocol."/postgres_json_* radar@canmove-dev.ekol.lu.se:/home/radar/convert-SFT-SEBMS-to-MongoDB/dump_json_sft_sebms/".$database."/".$protocol."/\n";
-	echo "scp dump_json_sft_sebms/".$database."/".$protocol."/postgres_json_* ubuntu@89.45.234.73:/home/ubuntu/convert-SFT-SEBMS-to-MongoDB/dump_json_sft_sebms/".$database."/".$protocol."/\n";
+	echo "scp dump_json_sft_sebms/".$database."/".$protocol."/postgres_json_* ubuntu@192.121.208.80:/home/ubuntu/convert-SFT-SEBMS-to-MongoDB/dump_json_sft_sebms/".$database."/".$protocol."/\n";
 
 	echo consoleMessage("info", "Script ends");
 
