@@ -391,7 +391,7 @@ else {
 				fclose($fp);
 
 				echo "scp ".$path_json_result." radar@canmove-dev.ekol.lu.se:/home/radar/convert-SFT-SEBMS-to-MongoDB/sites-natt-punkt-iwc-coordinates/json/\n";
-				echo "scp ".$path_json_result." ubuntu@89.45.234.73:/home/ubuntu/convert-SFT-SEBMS-to-MongoDB/sites-natt-punkt-iwc-coordinates/json/\n";
+				echo "scp ".$path_json_result." ubuntu@".$IP_PROD.":/home/ubuntu/convert-SFT-SEBMS-to-MongoDB/sites-natt-punkt-iwc-coordinates/json/\n";
 				echo 'mongoimport --db ecodata --collection site --jsonArray --file '.$path_json_result."\n";
 
 

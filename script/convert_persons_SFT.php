@@ -139,7 +139,7 @@ if ($fp = fopen($path, 'w')) {
 }
 else echo consoleMessage("error", "can't create file ".$path);
 
-echo "scp dump_json_sft_sebms/".$database."/persons/postgres_json_* ubuntu@89.45.234.73:/home/ubuntu/convert-SFT-SEBMS-to-MongoDB/dump_json_sft_sebms/".$database."/persons/\n";
+echo "scp dump_json_sft_sebms/".$database."/persons/postgres_json_* ubuntu@".$IP_PROD.":/home/ubuntu/convert-SFT-SEBMS-to-MongoDB/dump_json_sft_sebms/".$database."/persons/\n";
 
 echo consoleMessage("info", "Script ends");
 ?>

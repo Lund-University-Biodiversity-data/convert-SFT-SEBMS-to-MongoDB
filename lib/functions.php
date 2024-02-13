@@ -1,7 +1,7 @@
 <?php
 
 
-function getHelpers($db_connection, $protocol, $sitename, $datum, $persnr) {
+function getHelpers($db_connection, $protocol, $sitename, $datum, $persnr, $kustYEAR="") {
 
     switch($protocol) {
         case "iwc":
@@ -9,7 +9,7 @@ function getHelpers($db_connection, $protocol, $sitename, $datum, $persnr) {
             $sitefield="site";
             break;
         case "kust":
-            $table="kustfagel200_medobs";
+            $table="kustfagel200_medobs".$kustYEAR;
             $sitefield="ruta";
             break;
 

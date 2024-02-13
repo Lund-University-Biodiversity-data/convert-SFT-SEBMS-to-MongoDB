@@ -37,6 +37,7 @@ else {
 	}elseif ($protocol=="kust2023") {
 		$protocol="kust";
 		$kustYEAR="_2023_temp";
+		echo consoleMessage("info", "CHECK IF MEDBOS ARE OK !!! WE HAD FORGOTTEN THEM THE PAST YEARS. The function getHelpers should make it work now");
 
 	}else{
 		$kustYEAR="";
@@ -398,7 +399,7 @@ select EL.arthela AS names, EL.latin as scientificname, T.art, T.datum, T.antal
 			$eventRemarks.=$rtEvents["komm"];
 
 			//$helpers=getHelpers($db_connection, $protocol, $rtEvents["sitename"], $rtEvents["datum"], $rtEvents["persnr"]);
-			$helpersArr=getHelpers($db_connection, $protocol, $rtEvents["sitename"], $rtEvents["datum"], $rtEvents["persnr"]);
+			$helpersArr=getHelpers($db_connection, $protocol, $rtEvents["sitename"], $rtEvents["datum"], $rtEvents["persnr"], (isset($kustYEAR) ? $kustYEAR : ""));
 
 			$helpers= "[ ";
 			$helperIds=array();
@@ -1264,7 +1265,7 @@ select EL.arthela AS names, EL.latin as scientificname, T.art, T.datum, T.antal
 	}
 
 	echo "scp dump_json_sft_sebms/".$database."/".$protocol."/postgres_json_* radar@canmove-dev.ekol.lu.se:/home/radar/convert-SFT-SEBMS-to-MongoDB/dump_json_sft_sebms/".$database."/".$protocol."/\n";
-	echo "scp dump_json_sft_sebms/".$database."/".$protocol."/postgres_json_* ubuntu@192.121.208.80:/home/ubuntu/convert-SFT-SEBMS-to-MongoDB/dump_json_sft_sebms/".$database."/".$protocol."/\n";
+	echo "scp dump_json_sft_sebms/".$database."/".$protocol."/postgres_json_* ubuntu@".$IP_PROD.":/home/ubuntu/convert-SFT-SEBMS-to-MongoDB/dump_json_sft_sebms/".$database."/".$protocol."/\n";
 
 	echo consoleMessage("info", "Script ends");
 

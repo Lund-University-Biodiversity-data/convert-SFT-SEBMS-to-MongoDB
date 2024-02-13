@@ -378,7 +378,7 @@ else {
 
 		$scp='scp '.$path.' radar@canmove-dev.ekol.lu.se:/home/radar/convert-SFT-SEBMS-to-MongoDB/'.$path;
 		echo consoleMessage("info", "Command scp DEV : ".$scp);
-		$scp='scp '.$path.' ubuntu@89.45.234.73:/home/ubuntu/convert-SFT-SEBMS-to-MongoDB/'.$path;
+		$scp='scp '.$path.' ubuntu@'.$IP_PROD.':/home/ubuntu/convert-SFT-SEBMS-to-MongoDB/'.$path;
 		echo consoleMessage("info", "Command scp PROD : ".$scp);
 	}
 	else echo consoleMessage("error", "can't create file ".$path);
