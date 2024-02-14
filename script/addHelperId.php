@@ -6,7 +6,7 @@ require dirname(__FILE__)."/../lib/functions.php";
 require PATH_SHARED_FUNCTIONS."generic-functions.php";
 
 echo consoleMessage("info", "Script starts.");
-echo consoleMessage("info", "php script/addHelperId.php kust");
+echo consoleMessage("info", "php script/addHelperId.php kust [exec]");
 
 $mng = new MongoDB\Driver\Manager($mongoConnection[$server]); // Driver Object created
 
@@ -60,6 +60,7 @@ else {
 	       ]],
 	       ['$match'=>[
 	           'status'=> 'active',
+	           'act.verificationStatus' => "approved",
 	           'act.projectId'=> $commonFields[$protocol]["projectId"],
 	           'data.helpers.helper' => [ '$exists' => true ],
 	       ]],

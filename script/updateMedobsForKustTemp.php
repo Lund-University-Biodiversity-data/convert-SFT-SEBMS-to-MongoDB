@@ -1,5 +1,20 @@
 <?php
 
+
+/*****
+
+READ THIS !!
+
+script created to import the information from the temporary table medbos_202X_temp to mongo
+BECAUSE it was not working from the 1st time with convert_SFT
+NOW it should be fixed in convert_SFT, so no need to use this script for 2024
+
+But the script addHelperId is still needed !! (to add the helper Id in the activity) if you use updateMedobsForKustTemp
+
+
+****/
+
+
 $database="SFT";
 $dataOrigin="scriptPostgres";
 
@@ -13,7 +28,6 @@ echo consoleMessage("info", "Script starts");
 
 echo consoleMessage("info", "DEBUG example command :");
 echo consoleMessage("info", "php updateMedobsForKustTemp.php 2022");
-
 
 $debug=false;
 $collection="site";
@@ -65,33 +79,35 @@ else {
 
 			// check if the helpers are already set
 			if (($row->data->helpers)!="" && count($row->data->helpers)>0) {
-	    		echo consoleMessage("warning", "helpers field is not empty : ".count($row->data->helpers)." row(s)" );
-	    		print_r($row->data->helpers);
+	    		echo consoleMessage("warning", "helpers field is not empty : ".count($row->data->helpers)." row(s) => not updated. https://biocollect.biodiversitydata.se/sft/bioActivity/index/".$row->activityId );
+	    		//print_r($row->data->helpers);
 
 			}
 
+			else {
+	    		echo consoleMessage("info", pg_num_rows($rMedobs)." line(s) to add for this output  https://biocollect.biodiversitydata.se/sft/bioActivity/index/".$row->activityId);
 
-    		echo consoleMessage("info", pg_num_rows($rMedobs)." line(s) for this output");
+	    		$helpers= "[ ";
+				while ($rtMedobs = pg_fetch_array($rMedobs)) {
+					$person=getPersonFromInternalId ($rtMedobs["persnr"], $server);
 
-    		$helpers= "[ ";
-			while ($rtMedobs = pg_fetch_array($rMedobs)) {
-				$person=getPersonFromInternalId ($rtMedobs["persnr"], $server);
+					$helpers.= '
+			                {"helper" : "'.$person["firstName"].' '.$person["lastName"].'"},';
+					//$helpers[$rtMedobs["persnr"]]=$person["firstName"].' '.$rtHelpers["lastName"]
+				}
 
-				$helpers.= '
-		                {"helper" : "'.$person["firstName"].' '.$person["lastName"].'"},';
-				//$helpers[$rtMedobs["persnr"]]=$person["firstName"].' '.$rtHelpers["lastName"]
+				$helpers[strlen($helpers)-1]=' ';
+			    $helpers.= "]";
+
+
+			    $cmd='db.output.update({activityId:"'.$row->activityId.'"}, {$set:{
+			    	"data.helpers":'.$helpers.'
+			    }})';
+
+			    //echo $cmd; 
+			    $cmdHelpers[]=$cmd;
 			}
 
-			$helpers[strlen($helpers)-1]=' ';
-		    $helpers.= "]";
-
-
-		    $cmd='db.output.update({activityId:"'.$row->activityId.'"}, {$set:{
-		    	"data.helpers":'.$helpers.'
-		    }})';
-
-		    //echo $cmd; 
-		    $cmdHelpers[]=$cmd;
 		}
 
 	}
@@ -113,6 +129,9 @@ else {
 		echo consoleMessage("info", "Command scp DEV : ".$scp);
 		$scp='scp '.$path.' ubuntu@'.$IP_PROD.':/home/ubuntu/convert-SFT-SEBMS-to-MongoDB/'.$path;
 		echo consoleMessage("info", "Command scp PROD : ".$scp);
+
+
+		echo consoleMessage("warning", "DON'T FORGET TO RUN THE SCRIPT addHelperId AS WELL to add the personId fields in the activity table");
 	}
 	else echo consoleMessage("error", "can't create file ".$path);
 
