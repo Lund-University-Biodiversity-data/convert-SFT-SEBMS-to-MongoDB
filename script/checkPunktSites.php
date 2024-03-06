@@ -1,4 +1,6 @@
 <?php
+// script that checks if the vinter sites are in the summer list, and vice-versa
+// can fix the problem by adding the exec parameter
 $database="SFT";
 require dirname(__FILE__)."/../lib/config.php";
 $server=DEFAULT_SERVER;
