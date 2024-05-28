@@ -108,7 +108,7 @@ else {
 		case "std":
 			$nbPts=8;
 
-            $headers=array("persnr", "karta", "datum", "yr", "verificationStatus", "art", "p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "l1", "l2", "l3", "l4", "l5", "l6", "l7", "l8", "pkind", "lind", "activityIdMongo");
+            $headers=array("persnr", "karta", "datum", "yr", "verificationStatus", "art", "p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "l1", "l2", "l3", "l4", "l5", "l6", "l7", "l8", "pkind", "lind", "BCSurveyStartTime", "BCSurveyFinishTime", "activityIdMongo");
 
 			break;
 		case "vinter":
@@ -377,6 +377,9 @@ else {
 
                     $line["pkind"]="";
                     $line["lind"]="";
+                    $line["BCSurveyStartTime"]=$output->data->surveyStartTime;
+                    $line["BCSurveyFinishTime"]=$output->data->surveyFinishTime;
+                    $line["lind"]="";
 
                     break;
 
@@ -492,6 +495,8 @@ else {
 
                     $line["pkind"]="";
                     $line["lind"]="";
+                    $line["BCSurveyStartTime"]="";
+                    $line["BCSurveyFinishTime"]="";
 
 
                     fputcsv($fp, $line, ";");
