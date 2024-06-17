@@ -467,7 +467,6 @@ else {
                     break;
             }
             $line["activityIdMongo"]=$output->activityId;
-            $line["scientifName_BC"]=$sn_BC;
 
             fputcsv($fp, $line, ";");
 
@@ -661,7 +660,8 @@ else {
                     }
 
                     $line["art"]=$art;
-
+                    $line["scientifName_BC"]=$sn_BC;
+                    
                     switch ($protocol) {
                         case "std":
                             for ($iP=1;$iP<=$nbPts;$iP++) {
