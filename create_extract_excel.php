@@ -619,7 +619,7 @@ else {
                             break;
                         case "amphibians":
                             if (!isset($obs->speciesAmphibians->guid) || !isset($array_species_art[$animals][$obs->speciesAmphibians->guid])) {
-                                $art="ERROR";
+                                $art="ERROR[".$obs->species->scientificName."]";
                                 echo consoleMessage("error", "No ART for ".$animals." / ".$obs->speciesAmphibians->guid);
                             }
                             else {
@@ -628,7 +628,7 @@ else {
                             break;
                         case "mammals":
                             if (!isset($obs->speciesMammals->guid) || !isset($array_species_art[$animals][$obs->speciesMammals->guid])) {
-                                $art="ERROR";
+                                $art="ERROR[".$obs->species->scientificName."]";
                                 echo consoleMessage("error", "No ART for  ".$animals." / ".$obs->speciesMammals->guid);
                             }
                             else {
@@ -637,7 +637,7 @@ else {
                             break;
                         case "mammalsOnRoad":
                             if (!isset($obs->speciesMammalsOnRoad->guid) || !isset($array_species_art[$animals][$obs->speciesMammalsOnRoad->guid])) {
-                                $art="ERROR";
+                                $art="ERROR[".$obs->species->scientificName."]";
                                 echo consoleMessage("error", "No ART for  ".$animals." / ".$obs->speciesMammalsOnRoad->guid);
                             }
                             else {
@@ -646,7 +646,7 @@ else {
                             break;
                         case "owls":
                             if (!isset($obs->speciesYoungOwl->guid) || !isset($array_species_art[$animals][$obs->speciesYoungOwl->guid])) {
-                                $art="ERROR";
+                                $art="ERROR[".$obs->species->scientificName."]";
                                 echo consoleMessage("error", "No ART for  ".$animals." / ".$obs->speciesYoungOwl->guid);
                             }
                             else {
