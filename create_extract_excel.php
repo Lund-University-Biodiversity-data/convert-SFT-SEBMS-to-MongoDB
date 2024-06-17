@@ -108,27 +108,27 @@ else {
 		case "std":
 			$nbPts=8;
 
-            $headers=array("persnr", "karta", "datum", "yr", "verificationStatus", "art", "p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "l1", "l2", "l3", "l4", "l5", "l6", "l7", "l8", "pkind", "lind", "BCSurveyStartTime", "BCSurveyFinishTime", "activityIdMongo");
+            $headers=array("persnr", "karta", "datum", "yr", "verificationStatus", "art", "p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "l1", "l2", "l3", "l4", "l5", "l6", "l7", "l8", "pkind", "lind", "BCSurveyStartTime", "BCSurveyFinishTime", "activityIdMongo", "scientifName_BC");
 
 			break;
 		case "vinter":
 			$nbPts=20;
 
-            $headers=array("persnr", "rnr", "datum", "yr", "verificationStatus", "art", "per", "p01", "p02", "p03", "p04", "p05", "p06", "p07", "p08", "p09", "p10", "p11", "p12", "p13", "p14", "p15", "p16", "p17", "p18", "p19", "p20", "pk", "ind", "activityIdMongo", "activityIdMongo");
+            $headers=array("persnr", "rnr", "datum", "yr", "verificationStatus", "art", "per", "p01", "p02", "p03", "p04", "p05", "p06", "p07", "p08", "p09", "p10", "p11", "p12", "p13", "p14", "p15", "p16", "p17", "p18", "p19", "p20", "pk", "ind", "activityIdMongo", "activityIdMongo", "scientifName_BC");
 
 
 			break;
         case "sommar":
             $nbPts=20;
 
-            $headers=array("persnr", "rnr", "datum", "yr", "verificationStatus", "art", "p01", "p02", "p03", "p04", "p05", "p06", "p07", "p08", "p09", "p10", "p11", "p12", "p13", "p14", "p15", "p16", "p17", "p18", "p19", "p20", "pk", "ind", "activityIdMongo", "activityIdMongo");
+            $headers=array("persnr", "rnr", "datum", "yr", "verificationStatus", "art", "p01", "p02", "p03", "p04", "p05", "p06", "p07", "p08", "p09", "p10", "p11", "p12", "p13", "p14", "p15", "p16", "p17", "p18", "p19", "p20", "pk", "ind", "activityIdMongo", "activityIdMongo", "scientifName_BC");
 
 
             break;
 		case "natt":
 			$nbPts=20;
 
-            $headers=array("persnr", "kartatx", "per", "datum", "yr", "verificationStatus", "art", "kull", "pt", "p01", "p02", "p03", "p04", "p05", "p06", "p07", "p08", "p09", "p10", "p11", "p12", "p13", "p14", "p15", "p16", "p17", "p18", "p19", "p20", "pk", "ind", "activityIdMongo");
+            $headers=array("persnr", "kartatx", "per", "datum", "yr", "verificationStatus", "art", "kull", "pt", "p01", "p02", "p03", "p04", "p05", "p06", "p07", "p08", "p09", "p10", "p11", "p12", "p13", "p14", "p15", "p16", "p17", "p18", "p19", "p20", "pk", "ind", "activityIdMongo", "scientifName_BC");
 
             $commonFields["listSpeciesId"]["mammalsOnRoad"]=$commonFields["listSpeciesId"]["mammals"];
             $array_species_art["mammalsOnRoad"]=$array_species_art["mammals"];
@@ -136,12 +136,12 @@ else {
 			break;
 		case "kust":
 
-            $headers=array("persnr", "ruta", "datum", "yr", "verificationStatus", "art", "i100m", "openw", "ind", "surveyStartTime", "surveyFinishTime", "pulliCounted", "pulliCount", "pulliSize", "activityIdMongo");
+            $headers=array("persnr", "ruta", "datum", "yr", "verificationStatus", "art", "i100m", "openw", "ind", "surveyStartTime", "surveyFinishTime", "pulliCounted", "pulliCount", "pulliSize", "activityIdMongo", "scientifName_BC");
 			$nbPts=1;
 			break;
         case "iwc":
 
-            $headers=array("persnr", "site", "datum", "yr", "verificationStatus", "art", "period", "metod", "antal", "ice", "komm", "activityIdMongo");
+            $headers=array("persnr", "site", "datum", "yr", "verificationStatus", "art", "period", "metod", "antal", "ice", "komm", "activityIdMongo", "scientifName_BC");
             $nbPts=1;
             break;
 	}
@@ -467,6 +467,7 @@ else {
                     break;
             }
             $line["activityIdMongo"]=$output->activityId;
+            $line["scientifName_BC"]=$sn_BC;
 
             fputcsv($fp, $line, ";");
 
@@ -597,11 +598,15 @@ else {
 
                 foreach ($tabData as $obs) {
 
+
+                    $sn_BC="";
+                    if (isset($obs->species->scientificName)) $sn_BC=$obs->species->scientificName;
+
                     switch($animals) {
                         case "birds":
                             if (!isset($obs->species->guid) || !isset($array_species_art[$animals][$obs->species->guid])) {
                                 if (!isset($obs->species->scientificName) || !isset($array_species_art[$animals][$obs->species->scientificName])) {
-                                    $art="ERROR[".$obs->species->scientificName."]";
+                                    $art="ERROR";
                                     //var_dump($obs);
 
                                     echo consoleMessage("error", "NNNo ART for ".$animals." / ".$obs->species->guid." / ".$obs->species->scientificName);
@@ -619,7 +624,7 @@ else {
                             break;
                         case "amphibians":
                             if (!isset($obs->speciesAmphibians->guid) || !isset($array_species_art[$animals][$obs->speciesAmphibians->guid])) {
-                                $art="ERROR[".$obs->species->scientificName."]";
+                                $art="ERROR";
                                 echo consoleMessage("error", "No ART for ".$animals." / ".$obs->speciesAmphibians->guid);
                             }
                             else {
@@ -628,7 +633,7 @@ else {
                             break;
                         case "mammals":
                             if (!isset($obs->speciesMammals->guid) || !isset($array_species_art[$animals][$obs->speciesMammals->guid])) {
-                                $art="ERROR[".$obs->species->scientificName."]";
+                                $art="ERROR";
                                 echo consoleMessage("error", "No ART for  ".$animals." / ".$obs->speciesMammals->guid);
                             }
                             else {
@@ -637,7 +642,7 @@ else {
                             break;
                         case "mammalsOnRoad":
                             if (!isset($obs->speciesMammalsOnRoad->guid) || !isset($array_species_art[$animals][$obs->speciesMammalsOnRoad->guid])) {
-                                $art="ERROR[".$obs->species->scientificName."]";
+                                $art="ERROR";
                                 echo consoleMessage("error", "No ART for  ".$animals." / ".$obs->speciesMammalsOnRoad->guid);
                             }
                             else {
@@ -646,7 +651,7 @@ else {
                             break;
                         case "owls":
                             if (!isset($obs->speciesYoungOwl->guid) || !isset($array_species_art[$animals][$obs->speciesYoungOwl->guid])) {
-                                $art="ERROR[".$obs->species->scientificName."]";
+                                $art="ERROR";
                                 echo consoleMessage("error", "No ART for  ".$animals." / ".$obs->speciesYoungOwl->guid);
                             }
                             else {
