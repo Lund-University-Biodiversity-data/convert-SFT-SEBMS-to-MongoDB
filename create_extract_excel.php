@@ -601,7 +601,7 @@ else {
                         case "birds":
                             if (!isset($obs->species->guid) || !isset($array_species_art[$animals][$obs->species->guid])) {
                                 if (!isset($obs->species->scientificName) || !isset($array_species_art[$animals][$obs->species->scientificName])) {
-                                    $art="ERROR";
+                                    $art="ERROR[".$obs->species->scientificName."]";
                                     //var_dump($obs);
 
                                     echo consoleMessage("error", "NNNo ART for ".$animals." / ".$obs->species->guid." / ".$obs->species->scientificName);
