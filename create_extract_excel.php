@@ -599,10 +599,11 @@ else {
 
 
                     $sn_BC="";
-                    if (isset($obs->species->scientificName)) $sn_BC=$obs->species->scientificName;
 
                     switch($animals) {
                         case "birds":
+                            if (isset($obs->species->scientificName)) $sn_BC=$obs->species->scientificName;
+
                             if (!isset($obs->species->guid) || !isset($array_species_art[$animals][$obs->species->guid])) {
                                 if (!isset($obs->species->scientificName) || !isset($array_species_art[$animals][$obs->species->scientificName])) {
                                     $art="ERROR";
@@ -622,6 +623,8 @@ else {
 
                             break;
                         case "amphibians":
+                            if (isset($obs->speciesAmphibians->scientificName)) $sn_BC=$obs->speciesAmphibians->scientificName;
+
                             if (!isset($obs->speciesAmphibians->guid) || !isset($array_species_art[$animals][$obs->speciesAmphibians->guid])) {
                                 $art="ERROR";
                                 echo consoleMessage("error", "No ART for ".$animals." / ".$obs->speciesAmphibians->guid);
@@ -631,6 +634,8 @@ else {
                             }
                             break;
                         case "mammals":
+                            if (isset($obs->speciesMammals->scientificName)) $sn_BC=$obs->speciesMammals->scientificName;
+
                             if (!isset($obs->speciesMammals->guid) || !isset($array_species_art[$animals][$obs->speciesMammals->guid])) {
                                 $art="ERROR";
                                 echo consoleMessage("error", "No ART for  ".$animals." / ".$obs->speciesMammals->guid);
@@ -640,6 +645,8 @@ else {
                             }
                             break;
                         case "mammalsOnRoad":
+                            if (isset($obs->speciesMammalsOnRoad->scientificName)) $sn_BC=$obs->speciesMammalsOnRoad->scientificName;
+
                             if (!isset($obs->speciesMammalsOnRoad->guid) || !isset($array_species_art[$animals][$obs->speciesMammalsOnRoad->guid])) {
                                 $art="ERROR";
                                 echo consoleMessage("error", "No ART for  ".$animals." / ".$obs->speciesMammalsOnRoad->guid);
@@ -649,6 +656,8 @@ else {
                             }
                             break;
                         case "owls":
+                            if (isset($obs->speciesYoungOwl->scientificName)) $sn_BC=$obs->speciesYoungOwl->scientificName;
+
                             if (!isset($obs->speciesYoungOwl->guid) || !isset($array_species_art[$animals][$obs->speciesYoungOwl->guid])) {
                                 $art="ERROR";
                                 echo consoleMessage("error", "No ART for  ".$animals." / ".$obs->speciesYoungOwl->guid);
