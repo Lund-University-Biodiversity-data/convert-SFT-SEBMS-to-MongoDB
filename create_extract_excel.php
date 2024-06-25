@@ -612,7 +612,7 @@ else {
                                     $art="ERROR";
                                     //var_dump($obs);
 
-                                    echo consoleMessage("error", "NNNo ART for ".$animals." / ".$obs->species->guid." / ".$obs->species->scientificName);
+                                    echo consoleMessage("error", "NNNo ART for ".$animals." / ".$obs->species->guid." / ".$obs->species->scientificName. " in activity ".$output->activityId);
                                 }
                                 else {
                                     $art=str_pad($array_species_art[$animals][$obs->species->scientificName], 3, "0", STR_PAD_LEFT);
@@ -632,7 +632,7 @@ else {
 
                             if (!isset($obs->speciesAmphibians->guid) || !isset($array_species_art[$animals][$obs->speciesAmphibians->guid])) {
                                 $art="ERROR";
-                                echo consoleMessage("error", "No ART for ".$animals." / ".$obs->speciesAmphibians->guid);
+                                echo consoleMessage("error", "No ART for ".$animals." / ".$obs->speciesAmphibians->guid. " in activity ".$output->activityId);
                             }
                             else {
                                 $art=str_pad($array_species_art[$animals][$obs->speciesAmphibians->guid], 3, "0", STR_PAD_LEFT);
@@ -645,7 +645,7 @@ else {
 
                             if (!isset($obs->speciesMammals->guid) || !isset($array_species_art[$animals][$obs->speciesMammals->guid])) {
                                 $art="ERROR";
-                                echo consoleMessage("error", "No ART for  ".$animals." / ".$obs->speciesMammals->guid);
+                                echo consoleMessage("error", "No ART for  ".$animals." / ".$obs->speciesMammals->guid. " in activity ".$output->activityId);
                             }
                             else {
                                 $art=str_pad($array_species_art[$animals][$obs->speciesMammals->guid], 3, "0", STR_PAD_LEFT);
@@ -658,7 +658,7 @@ else {
 
                             if (!isset($obs->speciesMammalsOnRoad->guid) || !isset($array_species_art[$animals][$obs->speciesMammalsOnRoad->guid])) {
                                 $art="ERROR";
-                                echo consoleMessage("error", "No ART for  ".$animals." / ".$obs->speciesMammalsOnRoad->guid);
+                                echo consoleMessage("error", "No ART for  ".$animals." / ".$obs->speciesMammalsOnRoad->guid. " in activity ".$output->activityId);
                             }
                             else {
                                 $art=str_pad($array_species_art[$animals][$obs->speciesMammalsOnRoad->guid], 3, "0", STR_PAD_LEFT);
@@ -671,7 +671,7 @@ else {
 
                             if (!isset($obs->speciesYoungOwl->guid) || !isset($array_species_art[$animals][$obs->speciesYoungOwl->guid])) {
                                 $art="ERROR";
-                                echo consoleMessage("error", "No ART for  ".$animals." / ".$obs->speciesYoungOwl->guid);
+                                echo consoleMessage("error", "No ART for  ".$animals." / ".$obs->speciesYoungOwl->guid. " in activity ".$output->activityId);
                             }
                             else {
                                 $art=str_pad($array_species_art[$animals][$obs->speciesYoungOwl->guid], 3, "0", STR_PAD_LEFT);
