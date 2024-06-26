@@ -108,27 +108,27 @@ else {
 		case "std":
 			$nbPts=8;
 
-            $headers=array("persnr", "karta", "datum", "yr", "verificationStatus", "art", "p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "l1", "l2", "l3", "l4", "l5", "l6", "l7", "l8", "pkind", "lind", "BCSurveyStartTime", "BCSurveyFinishTime", "activityIdMongo", "scientificName_BC", "name_BC", "commonname_BC");
+            $headers=array("persnr", "karta", "datum", "yr", "verificationStatus", "art", "p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "l1", "l2", "l3", "l4", "l5", "l6", "l7", "l8", "pkind", "lind", "BCSurveyStartTime", "BCSurveyFinishTime", "activityIdMongo", "scientificName_BC", "name_BC");
 
 			break;
 		case "vinter":
 			$nbPts=20;
 
-            $headers=array("persnr", "rnr", "datum", "yr", "verificationStatus", "art", "per", "p01", "p02", "p03", "p04", "p05", "p06", "p07", "p08", "p09", "p10", "p11", "p12", "p13", "p14", "p15", "p16", "p17", "p18", "p19", "p20", "pk", "ind", "activityIdMongo", "scientificName_BC", "name_BC", "commonname_BC");
+            $headers=array("persnr", "rnr", "datum", "yr", "verificationStatus", "art", "per", "p01", "p02", "p03", "p04", "p05", "p06", "p07", "p08", "p09", "p10", "p11", "p12", "p13", "p14", "p15", "p16", "p17", "p18", "p19", "p20", "pk", "ind", "activityIdMongo", "scientificName_BC", "name_BC");
 
 
 			break;
         case "sommar":
             $nbPts=20;
 
-            $headers=array("persnr", "rnr", "datum", "yr", "verificationStatus", "art", "p01", "p02", "p03", "p04", "p05", "p06", "p07", "p08", "p09", "p10", "p11", "p12", "p13", "p14", "p15", "p16", "p17", "p18", "p19", "p20", "pk", "ind", "activityIdMongo", "scientificName_BC", "name_BC", "commonname_BC");
+            $headers=array("persnr", "rnr", "datum", "yr", "verificationStatus", "art", "p01", "p02", "p03", "p04", "p05", "p06", "p07", "p08", "p09", "p10", "p11", "p12", "p13", "p14", "p15", "p16", "p17", "p18", "p19", "p20", "pk", "ind", "activityIdMongo", "scientificName_BC", "name_BC");
 
 
             break;
 		case "natt":
 			$nbPts=20;
 
-            $headers=array("persnr", "kartatx", "per", "datum", "yr", "verificationStatus", "art", "kull", "pt", "p01", "p02", "p03", "p04", "p05", "p06", "p07", "p08", "p09", "p10", "p11", "p12", "p13", "p14", "p15", "p16", "p17", "p18", "p19", "p20", "pk", "ind", "activityIdMongo", "scientificName_BC", "name_BC", "commonname_BC");
+            $headers=array("persnr", "kartatx", "per", "datum", "yr", "verificationStatus", "art", "kull", "pt", "p01", "p02", "p03", "p04", "p05", "p06", "p07", "p08", "p09", "p10", "p11", "p12", "p13", "p14", "p15", "p16", "p17", "p18", "p19", "p20", "pk", "ind", "activityIdMongo", "scientificName_BC", "name_BC");
 
             $commonFields["listSpeciesId"]["mammalsOnRoad"]=$commonFields["listSpeciesId"]["mammals"];
             $array_species_art["mammalsOnRoad"]=$array_species_art["mammals"];
@@ -136,12 +136,12 @@ else {
 			break;
 		case "kust":
 
-            $headers=array("persnr", "ruta", "datum", "yr", "verificationStatus", "art", "i100m", "openw", "ind", "surveyStartTime", "surveyFinishTime", "pulliCounted", "pulliCount", "pulliSize", "activityIdMongo", "scientificName_BC", "name_BC", "commonname_BC");
+            $headers=array("persnr", "ruta", "datum", "yr", "verificationStatus", "art", "i100m", "openw", "ind", "surveyStartTime", "surveyFinishTime", "pulliCounted", "pulliCount", "pulliSize", "activityIdMongo", "scientificName_BC", "name_BC");
 			$nbPts=1;
 			break;
         case "iwc":
 
-            $headers=array("persnr", "site", "datum", "yr", "verificationStatus", "art", "period", "metod", "antal", "ice", "komm", "activityIdMongo", "scientificName_BC", "name_BC", "commonname_BC");
+            $headers=array("persnr", "site", "datum", "yr", "verificationStatus", "art", "period", "metod", "antal", "ice", "komm", "activityIdMongo", "scientificName_BC", "name_BC");
             $nbPts=1;
             break;
 	}
@@ -600,12 +600,13 @@ else {
 
                     $sn_BC="";
                     $name_BC="";
+                    //$commonname_BC="";
 
                     switch($animals) {
                         case "birds":
                             if (isset($obs->species->scientificName)) $sn_BC=$obs->species->scientificName;
                             if (isset($obs->species->name)) $name_BC=$obs->species->name;
-                            if (isset($obs->species->commonName)) $commonname_BC=$obs->species->commonName;
+                            //if (isset($obs->species->commonName)) $commonname_BC=$obs->species->commonName;
 
                             if (!isset($obs->species->guid) || !isset($array_species_art[$animals][$obs->species->guid])) {
                                 if (!isset($obs->species->scientificName) || !isset($array_species_art[$animals][$obs->species->scientificName])) {
@@ -628,7 +629,7 @@ else {
                         case "amphibians":
                             if (isset($obs->speciesAmphibians->scientificName)) $sn_BC=$obs->speciesAmphibians->scientificName;
                             if (isset($obs->speciesAmphibians->name)) $name_BC=$obs->speciesAmphibians->name;
-                            if (isset($obs->speciesAmphibians->commonName)) $commonname_BC=$obs->speciesAmphibians->commonName;
+                            //if (isset($obs->speciesAmphibians->commonName)) $commonname_BC=$obs->speciesAmphibians->commonName;
 
                             if (!isset($obs->speciesAmphibians->guid) || !isset($array_species_art[$animals][$obs->speciesAmphibians->guid])) {
                                 $art="ERROR";
@@ -641,7 +642,7 @@ else {
                         case "mammals":
                             if (isset($obs->speciesMammals->scientificName)) $sn_BC=$obs->speciesMammals->scientificName;
                             if (isset($obs->speciesMammals->name)) $name_BC=$obs->speciesMammals->name;
-                            if (isset($obs->speciesMammals->commonName)) $commonname_BC=$obs->speciesMammals->commonName;
+                            //if (isset($obs->speciesMammals->commonName)) $commonname_BC=$obs->speciesMammals->commonName;
 
                             if (!isset($obs->speciesMammals->guid) || !isset($array_species_art[$animals][$obs->speciesMammals->guid])) {
                                 $art="ERROR";
@@ -654,7 +655,7 @@ else {
                         case "mammalsOnRoad":
                             if (isset($obs->speciesMammalsOnRoad->scientificName)) $sn_BC=$obs->speciesMammalsOnRoad->scientificName;
                             if (isset($obs->speciesMammalsOnRoad->name)) $name_BC=$obs->speciesMammalsOnRoad->name;
-                            if (isset($obs->speciesMammalsOnRoad->commonName)) $commonname_BC=$obs->speciesMammalsOnRoad->commonName;
+                            //if (isset($obs->speciesMammalsOnRoad->commonName)) $commonname_BC=$obs->speciesMammalsOnRoad->commonName;
 
                             if (!isset($obs->speciesMammalsOnRoad->guid) || !isset($array_species_art[$animals][$obs->speciesMammalsOnRoad->guid])) {
                                 $art="ERROR";
@@ -667,7 +668,7 @@ else {
                         case "owls":
                             if (isset($obs->speciesYoungOwl->scientificName)) $sn_BC=$obs->speciesYoungOwl->scientificName;
                             if (isset($obs->speciesYoungOwl->name)) $name_BC=$obs->speciesYoungOwl->name;
-                            if (isset($obs->speciesYoungOwl->commonName)) $commonname_BC=$obs->speciesYoungOwl->commonName;
+                            //if (isset($obs->speciesYoungOwl->commonName)) $commonname_BC=$obs->speciesYoungOwl->commonName;
 
                             if (!isset($obs->speciesYoungOwl->guid) || !isset($array_species_art[$animals][$obs->speciesYoungOwl->guid])) {
                                 $art="ERROR";
@@ -682,7 +683,7 @@ else {
                     $line["art"]=$art;
                     $line["scientificName_BC"]=$sn_BC;
                     $line["name_BC"]=$name_BC;
-                    $line["commonname_BC"]=$commonname_BC;
+                    //$line["commonname_BC"]=$commonname_BC;
                     
                     switch ($protocol) {
                         case "std":
