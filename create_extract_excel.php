@@ -44,12 +44,17 @@ else {
 		echo consoleMessage("info", "DEBUG mode");
 	}
 
-    $array_species_guid=array();
+    //$array_species_guid=array();
     $array_species_art=array();
+
+    
     // GET the list of species
     foreach ($commonFields["listSpeciesId"] as $animals => $listId) {
 
 
+        $array_species_art[$animals]=getListSpeciesFromModule(null, $listId, "guid");
+
+        /*
         $url="https://lists.biodiversitydata.se/ws/speciesListItems/".$commonFields["listSpeciesId"][$animals]."?includeKVP=true&max=1000";
         $obj = json_decode(file_get_contents($url), true);
 
@@ -91,18 +96,15 @@ else {
                 // fix : add the name as well, in case the lsid change during time
                 $array_species_art[$animals][$sp["name"]]=$art;
             }
-            /*
-            if (isset($sp["kvpValues"][0]["key"]) && $sp["kvpValues"][0]["key"]=="art") {
-                $art=$sp["kvpValues"][0]["value"];
-                $array_species_art[$animals][$sp["lsid"]]=$art;
-            }
-            else {
-                echo consoleMessage("error", "No ART for ".$sp["name"]);
-            }
-            */
         }
         echo consoleMessage("info", "Species list ".$commonFields["listSpeciesId"][$animals]." obtained for ".$animals.". ".count($obj)." elements");
+        */
+        echo consoleMessage("info", "Species list ".$commonFields["listSpeciesId"][$animals]." obtained for ".$animals.". ".count($array_species_art[$animals])." elements");
+
+        print_r($array_species_art[$animals]); //exit();
     }
+    
+
 
 	switch($protocol) {
 		case "std":
@@ -608,21 +610,21 @@ else {
                             if (isset($obs->species->name)) $name_BC=$obs->species->name;
                             //if (isset($obs->species->commonName)) $commonname_BC=$obs->species->commonName;
 
-                            if (!isset($obs->species->guid) || !isset($array_species_art[$animals][$obs->species->guid])) {
-                                if (!isset($obs->species->scientificName) || !isset($array_species_art[$animals][$obs->species->scientificName])) {
+                            if (!isset($obs->species->guid) || !isset($array_species_art[$animals][$obs->species->guid]["art"])) {
+                                if (!isset($obs->species->scientificName) || !isset($array_species_art[$animals][$obs->species->scientificName]["art"])) {
                                     $art="ERROR";
                                     //var_dump($obs);
 
                                     echo consoleMessage("error", "NNNo ART for ".$animals." / ".$obs->species->guid." / ".$obs->species->scientificName. " in activity ".$output->activityId);
                                 }
                                 else {
-                                    $art=str_pad($array_species_art[$animals][$obs->species->scientificName], 3, "0", STR_PAD_LEFT);
+                                    $art=str_pad($array_species_art[$animals][$obs->species->scientificName]["art"], 3, "0", STR_PAD_LEFT);
                                     //echo $obs->species->scientificName." => ".$art."\n";
                                 }
                                 
                             }
                             else {
-                                $art=str_pad($array_species_art[$animals][$obs->species->guid], 3, "0", STR_PAD_LEFT);
+                                $art=str_pad($array_species_art[$animals][$obs->species->guid]["art"], 3, "0", STR_PAD_LEFT);
                             }
 
                             break;
@@ -631,12 +633,12 @@ else {
                             if (isset($obs->speciesAmphibians->name)) $name_BC=$obs->speciesAmphibians->name;
                             //if (isset($obs->speciesAmphibians->commonName)) $commonname_BC=$obs->speciesAmphibians->commonName;
 
-                            if (!isset($obs->speciesAmphibians->guid) || !isset($array_species_art[$animals][$obs->speciesAmphibians->guid])) {
+                            if (!isset($obs->speciesAmphibians->guid) || !isset($array_species_art[$animals][$obs->speciesAmphibians->guid]["art"])) {
                                 $art="ERROR";
                                 echo consoleMessage("error", "No ART for ".$animals." / ".$obs->speciesAmphibians->guid. " in activity ".$output->activityId);
                             }
                             else {
-                                $art=str_pad($array_species_art[$animals][$obs->speciesAmphibians->guid], 3, "0", STR_PAD_LEFT);
+                                $art=str_pad($array_species_art[$animals][$obs->speciesAmphibians->guid]["art"], 3, "0", STR_PAD_LEFT);
                             }
                             break;
                         case "mammals":
@@ -644,12 +646,12 @@ else {
                             if (isset($obs->speciesMammals->name)) $name_BC=$obs->speciesMammals->name;
                             //if (isset($obs->speciesMammals->commonName)) $commonname_BC=$obs->speciesMammals->commonName;
 
-                            if (!isset($obs->speciesMammals->guid) || !isset($array_species_art[$animals][$obs->speciesMammals->guid])) {
+                            if (!isset($obs->speciesMammals->guid) || !isset($array_species_art[$animals][$obs->speciesMammals->guid]["art"])) {
                                 $art="ERROR";
                                 echo consoleMessage("error", "No ART for  ".$animals." / ".$obs->speciesMammals->guid. " in activity ".$output->activityId);
                             }
                             else {
-                                $art=str_pad($array_species_art[$animals][$obs->speciesMammals->guid], 3, "0", STR_PAD_LEFT);
+                                $art=str_pad($array_species_art[$animals][$obs->speciesMammals->guid]["art"], 3, "0", STR_PAD_LEFT);
                             }
                             break;
                         case "mammalsOnRoad":
@@ -657,12 +659,12 @@ else {
                             if (isset($obs->speciesMammalsOnRoad->name)) $name_BC=$obs->speciesMammalsOnRoad->name;
                             //if (isset($obs->speciesMammalsOnRoad->commonName)) $commonname_BC=$obs->speciesMammalsOnRoad->commonName;
 
-                            if (!isset($obs->speciesMammalsOnRoad->guid) || !isset($array_species_art[$animals][$obs->speciesMammalsOnRoad->guid])) {
+                            if (!isset($obs->speciesMammalsOnRoad->guid) || !isset($array_species_art[$animals][$obs->speciesMammalsOnRoad->guid]["art"])) {
                                 $art="ERROR";
                                 echo consoleMessage("error", "No ART for  ".$animals." / ".$obs->speciesMammalsOnRoad->guid. " in activity ".$output->activityId);
                             }
                             else {
-                                $art=str_pad($array_species_art[$animals][$obs->speciesMammalsOnRoad->guid], 3, "0", STR_PAD_LEFT);
+                                $art=str_pad($array_species_art[$animals][$obs->speciesMammalsOnRoad->guid]["art"], 3, "0", STR_PAD_LEFT);
                             }
                             break;
                         case "owls":
@@ -670,12 +672,12 @@ else {
                             if (isset($obs->speciesYoungOwl->name)) $name_BC=$obs->speciesYoungOwl->name;
                             //if (isset($obs->speciesYoungOwl->commonName)) $commonname_BC=$obs->speciesYoungOwl->commonName;
 
-                            if (!isset($obs->speciesYoungOwl->guid) || !isset($array_species_art[$animals][$obs->speciesYoungOwl->guid])) {
+                            if (!isset($obs->speciesYoungOwl->guid) || !isset($array_species_art[$animals][$obs->speciesYoungOwl->guid]["art"])) {
                                 $art="ERROR";
                                 echo consoleMessage("error", "No ART for  ".$animals." / ".$obs->speciesYoungOwl->guid. " in activity ".$output->activityId);
                             }
                             else {
-                                $art=str_pad($array_species_art[$animals][$obs->speciesYoungOwl->guid], 3, "0", STR_PAD_LEFT);
+                                $art=str_pad($array_species_art[$animals][$obs->speciesYoungOwl->guid]["art"], 3, "0", STR_PAD_LEFT);
                             }
                             break;
                     }
