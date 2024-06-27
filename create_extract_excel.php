@@ -44,9 +44,7 @@ else {
 		echo consoleMessage("info", "DEBUG mode");
 	}
 
-    //$array_species_guid=array();
     $array_species_art=array();
-
     
     // GET the list of species
     foreach ($commonFields["listSpeciesId"] as $animals => $listId) {
@@ -54,54 +52,8 @@ else {
 
         $array_species_art[$animals]=getListSpeciesFromModule(null, $listId, "guid");
 
-        /*
-        $url="https://lists.biodiversitydata.se/ws/speciesListItems/".$commonFields["listSpeciesId"][$animals]."?includeKVP=true&max=1000";
-        $obj = json_decode(file_get_contents($url), true);
-
-        echo consoleMessage("info", "reading species list ".$url);
-
-        // for the punktrutter, we gather owls and birds
-        if (($protocol=="vinter" || $protocol=="sommar") && $animals=="owls") {
-            $animals="birds";
-        } 
-
-        foreach($obj as $sp) {
-
-            // if no-lsid, use the species name instead 
-            if (trim($sp["lsid"])=="") {
-                $indexSp=$sp["name"];
-                echo consoleMessage("warning", "No lsid/guid for ".$sp["name"]." use name instead (".$indexSp.")");
-            }
-            else {
-                $indexSp=$sp["lsid"];
-            }
-
-            $art="";
-
-            foreach($sp["kvpValues"] as $iSp => $eltSp) {
-
-                if (isset($eltSp["key"]) && $eltSp["key"]=="art") {
-                    $art=$eltSp["value"];
-                    $art=str_pad($art, 3, '0', STR_PAD_LEFT);
-                }
-            }
-
-            if ($art=="") {
-                echo consoleMessage("error", "No art for ".$sp["name"]."/".$sp["lsid"]);
-                $art="-";
-            }
-            else {
-                $array_species_art[$animals][$indexSp]=$art;
-
-                // fix : add the name as well, in case the lsid change during time
-                $array_species_art[$animals][$sp["name"]]=$art;
-            }
-        }
-        echo consoleMessage("info", "Species list ".$commonFields["listSpeciesId"][$animals]." obtained for ".$animals.". ".count($obj)." elements");
-        */
         echo consoleMessage("info", "Species list ".$commonFields["listSpeciesId"][$animals]." obtained for ".$animals.". ".count($array_species_art[$animals])." elements");
 
-        print_r($array_species_art[$animals]); //exit();
     }
     
 
