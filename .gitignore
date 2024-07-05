@@ -9,3 +9,6 @@ lib/*.txt
 composer.lock
 composer.json
 old/
+script/excel/*.xls*
+script/excel/*.log
+sites-natt-punkt-iwc-coordinates/*.xls

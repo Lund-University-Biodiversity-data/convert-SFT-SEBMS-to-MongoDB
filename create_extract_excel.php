@@ -518,6 +518,8 @@ else {
                                 $line["i100m"]="";
                                 $line["openw"]="";
                                 $line["ind"]=1;
+                                $line["scientificName_BC"]="";
+                                $line["name_BC"]="";
 
                                 foreach ($tabMammals as $mam) {
                                     switch ($mam) {
