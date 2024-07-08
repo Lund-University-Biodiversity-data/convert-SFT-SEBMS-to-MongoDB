@@ -18,7 +18,8 @@ echo consoleMessage("info", "Script starts.");
 echo consoleMessage("info", "example : php script/siteStationRegId.php std forcechange");
 
 //$tmpfname = "script/excel/StnRegId_vs_InternalSiteId_20220922.xlsx";
-$tmpfname = "script/excel/StnRegId_vs_InternalSiteId_spkt_20230901.xlsx";
+//$tmpfname = "script/excel/StnRegId_vs_InternalSiteId_spkt_20230901.xlsx";
+$tmpfname = "script/excel/StnRegId_vs_InternalSiteId_spkt_20240708.xlsx";
 
 $arr_protocol=array("std", "pkt", "kust");
 
@@ -137,7 +138,6 @@ else {
 				}
 
 				if (!$errorInternalSiteId) {
-
 
 					$arrUniqueSites[]=$internalSiteId;
 
