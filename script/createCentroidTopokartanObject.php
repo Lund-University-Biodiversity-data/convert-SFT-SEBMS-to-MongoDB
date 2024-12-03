@@ -9,75 +9,155 @@ require "lib/functions.php";
 require PATH_SHARED_FUNCTIONS."generic-functions.php";
 require PATH_SHARED_FUNCTIONS."mongo-functions.php";
 
+require 'vendor/autoload.php';
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+
 echo consoleMessage("info", "Script starts");
 
 echo consoleMessage("info", "DEBUG example command :");
-echo consoleMessage("info", "example : php script/createCentroidTopokartanObject.php");
-
+echo consoleMessage("info", "specify the source : file (to be located in the excel folder) or db (sql)");
+echo consoleMessage("info", "example : php script/createCentroidTopokartanObject.php file");
 
 $debug=false;
 $collection="internalCentroidTopokartan";
 
-
-$db_connection = pg_connect("host=".$DB["host"]." dbname=".$DB["database"]." user=".$DB["username"]." password=".$DB["password"])  or die("CONNECT:" . consoleMessage("error", pg_result_error()));
-
-$qSites='SELECT * from koordinater_mittpunkt_topokartan ';
-$rSites = pg_query($db_connection, $qSites);
-if (!$rSites) die("QUERY:" . consoleMessage("error", pg_last_error()));
-
-
-$mng = new MongoDB\Driver\Manager($mongoConnection[$server]); // Driver Object created
-if ($mng) echo consoleMessage("info", "Connection to mongoDb ok");
-else echo consoleMessage("error", "No connection to mongoDb");
-
-
-$cmdJs="";
-
-$arrTopo=array();
-$incId=0;
-while ($rtSites = pg_fetch_array($rSites)) {
-
-	//$topokartan=$rtSites;
-	$incId++;
-
-	$topokartan["id"]=$incId;
-	
-	$topokartan["karta"]=$rtSites["karta"];
-	$topokartan["kartatx"]=$rtSites["kartatx"];
-	$topokartan["rt90n"]=$rtSites["rt90n"];
-	$topokartan["rt90o"]=$rtSites["rt90o"];
-	$topokartan["wgs84_lat"]=$rtSites["wgs84_lat"];
-	$topokartan["wgs84_lon"]=$rtSites["wgs84_lon"];
-	$topokartan["sweref99_n"]=$rtSites["sweref99_n"];
-	$topokartan["sweref99_o"]=$rtSites["sweref99_o"];
-
-	$arrTopo[]=$topokartan;
-}
-
 $nbadd=0;
-foreach ($arrTopo as $topo) {
-	$bulk = new MongoDB\Driver\BulkWrite;
-	$_id1 = $bulk->insert($topo);
 
-	$result = $mng->executeBulkWrite('ecodata.'.$collection, $bulk);
+$arr_source=array("file", "db");
+if (!isset($argv[1]) || !in_array(trim($argv[1]), $arr_source)) {
+	echo consoleMessage("error", "First parameter SOURCE missing: ".implode("/", $arr_source));
+}
+else {
 
-	if ($result->getInsertedCount()==1) $nbadd++;
+	$source=$argv[1];
+	$arrTopo=array();
+
+	if ($source=="db") {
+
+		$db_connection = pg_connect("host=".$DB["host"]." dbname=".$DB["database"]." user=".$DB["username"]." password=".$DB["password"])  or die("CONNECT:" . consoleMessage("error", pg_result_error()));
+
+		$qSites='SELECT * from koordinater_mittpunkt_topokartan ';
+		$rSites = pg_query($db_connection, $qSites);
+		if (!$rSites) die("QUERY:" . consoleMessage("error", pg_last_error()));
+
+		$cmdJs="";
+
+		$incId=0;
+		while ($rtSites = pg_fetch_array($rSites)) {
+
+			//$topokartan=$rtSites;
+			$topokartan=array();
+
+			$incId++;
+
+			$topokartan["id"]=$incId;
+			
+			$topokartan["karta"]=$rtSites["karta"];
+			$topokartan["kartatx"]=$rtSites["kartatx"];
+			$topokartan["rt90n"]=$rtSites["rt90n"];
+			$topokartan["rt90o"]=$rtSites["rt90o"];
+			$topokartan["wgs84_lat"]=$rtSites["wgs84_lat"];
+			$topokartan["wgs84_lon"]=$rtSites["wgs84_lon"];
+			$topokartan["sweref99_n"]=$rtSites["sweref99_n"];
+			$topokartan["sweref99_o"]=$rtSites["sweref99_o"];
+
+			$arrTopo[]=$topokartan;
+		}
+
+	}
+	elseif ($source=="file") {
+		$pathfile="script/excel/Punktrutter_LänKommun_20241203.xlsx";
+
+		$fileRefused=false;
+		$inputFileType = \PhpOffice\PhpSpreadsheet\IOFactory::identify($pathfile);
+		//$consoleTxt.=consoleMessage("info", "Excel type ".$inputFileType);
+		$excelObj = \PhpOffice\PhpSpreadsheet\IOFactory::createReader($inputFileType);
+		$excelObj->setReadDataOnly(true);
+		$spreadsheet = $excelObj->load($pathfile);
+		$excelObjWriter = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, $inputFileType);
+
+		$worksheet = $spreadsheet->getSheet(0);
+
+		$firstRow=2;
+
+		for ($iR=$firstRow;$worksheet->getCell('A'.$iR)->getValue()!=""; $iR++) {
+			//echo $worksheet->getCell('A'.$iR)->getValue()."\n";
+			$topokartan=array();
+
+			$topokartan["id"]=$iR-1;
+			
+			$topokartan["karta"]=$worksheet->getCell('A'.$iR)->getValue();
+			$topokartan["kartatx"]=$worksheet->getCell('B'.$iR)->getValue();
+			$topokartan["rt90n"]=$worksheet->getCell('C'.$iR)->getValue();
+			$topokartan["rt90o"]=$worksheet->getCell('D'.$iR)->getValue();
+			$topokartan["wgs84_lat"]=$worksheet->getCell('E'.$iR)->getValue();
+			$topokartan["wgs84_lon"]=$worksheet->getCell('F'.$iR)->getValue();
+			$topokartan["wgs84_lat_full"]=$worksheet->getCell('G'.$iR)->getValue();
+			$topokartan["wgs84_lon_full"]=$worksheet->getCell('H'.$iR)->getValue();
+			$topokartan["sweref99_n"]=$worksheet->getCell('I'.$iR)->getValue();
+			$topokartan["sweref99_o"]=$worksheet->getCell('J'.$iR)->getValue();
+			$topokartan["sweref99_n_full"]=$worksheet->getCell('K'.$iR)->getValue();
+			$topokartan["sweref99_o_full"]=$worksheet->getCell('L'.$iR)->getValue();
+			$topokartan["county"]=$worksheet->getCell('M'.$iR)->getValue();
+
+			$arrTopo[]=$topokartan;
+		}
+	}
 	else {
-		print_r($topo);
-		echo consoleMessage("error", "can't add object");
-		exit;
+		echo consoleMessage("error", "wrong source option");
+	}
+
+	if (count($arrTopo)>0) {
+		$mng = new MongoDB\Driver\Manager($mongoConnection[$server]); // Driver Object created
+		if ($mng) echo consoleMessage("info", "Connection to mongoDb ok");
+		else echo consoleMessage("error", "No connection to mongoDb");
+
+
+		try {
+			// Create a Command Instance
+			$dropCollection = new MongoDB\Driver\Command(["drop" => $collection]);
+
+			// Execute the command on the database
+			$cursor = $mng->executeCommand("ecodata", $dropCollection);
+
+			echo consoleMessage("info", $collection." deleted !");
+		} catch (MongoDB\Driver\Exception\Exception $e) {	   
+			echo consoleMessage("warn", "Collection not existing ? Exception:", $e->getMessage());
+		}
+
+		foreach ($arrTopo as $topo) {
+			$bulk = new MongoDB\Driver\BulkWrite;
+			$_id1 = $bulk->insert($topo);
+
+			$result = $mng->executeBulkWrite('ecodata.'.$collection, $bulk);
+
+			if ($result->getInsertedCount()==1) $nbadd++;
+			else {
+				print_r($topo);
+				echo consoleMessage("error", "can't add object");
+				exit;
+			}
+		}
 	}
 }
 
-
 echo consoleMessage("info", $nbadd." object(s) topokartan added to ".$collection);
 echo consoleMessage("info", "script ends");
-/*
-
-*/
 
 
-
+echo "mongodump -d ecodata -c internalCentroidTopokartan --gzip\n";
+echo "tar cvzf internalCentroidTopokartan.tar.gz dump/ecodata/\n";
+echo "scp internalCentroidTopokartan.tar.gz ubuntu@192.121.208.80:/home/ubuntu/\n";
+echo "rm -Rf dump/\n";
+echo "ssh-ecodata4\n";
+echo "tar xvf internalCentroidTopokartan.tar.gz\n";
+echo "cd dump/ecodata/\n";
+echo "gzip -d *.gz\n";
+echo "mongo ecodata\n";
+echo "db.internalCentroidTopokartan.drop()\n";
+echo "exit\n";
+echo "cd ..\n";
+echo "mongorestore -d ecodata ecodata/\n";
 /*
 	$topokartan["p1_rt90_o"]=$rtSites["p1_rt90_o"];
 
