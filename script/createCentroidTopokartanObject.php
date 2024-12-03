@@ -158,6 +158,7 @@ echo "db.internalCentroidTopokartan.drop()\n";
 echo "exit\n";
 echo "cd ..\n";
 echo "mongorestore -d ecodata ecodata/\n";
+echo "rm -Rf ecodata/\n";
 /*
 	$topokartan["p1_rt90_o"]=$rtSites["p1_rt90_o"];
 
