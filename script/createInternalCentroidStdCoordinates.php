@@ -12,7 +12,7 @@ require PATH_SHARED_FUNCTIONS."mongo-functions.php";
 echo consoleMessage("info", "Script starts");
 
 echo consoleMessage("info", "DEBUG example command :");
-echo consoleMessage("info", "example : php script/createCentroidStdCoordinates.php");
+echo consoleMessage("info", "example : php script/createInternalCentroidStdCoordinates.php");
 
 
 $debug=false;

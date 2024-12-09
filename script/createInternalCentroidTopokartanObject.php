@@ -16,7 +16,7 @@ echo consoleMessage("info", "Script starts");
 
 echo consoleMessage("info", "DEBUG example command :");
 echo consoleMessage("info", "specify the source : file (to be located in the excel folder) or db (sql)");
-echo consoleMessage("info", "example : php script/createCentroidTopokartanObject.php file");
+echo consoleMessage("info", "example : php script/createInternalCentroidTopokartanObject.php file");
 
 $debug=false;
 $collection="internalCentroidTopokartan";
@@ -90,14 +90,27 @@ else {
 			$topokartan["kartatx"]=$worksheet->getCell('B'.$iR)->getValue();
 			$topokartan["rt90n"]=$worksheet->getCell('C'.$iR)->getValue();
 			$topokartan["rt90o"]=$worksheet->getCell('D'.$iR)->getValue();
-			$topokartan["wgs84_lat"]=$worksheet->getCell('E'.$iR)->getValue();
-			$topokartan["wgs84_lon"]=$worksheet->getCell('F'.$iR)->getValue();
-			$topokartan["wgs84_lat_full"]=$worksheet->getCell('G'.$iR)->getValue();
-			$topokartan["wgs84_lon_full"]=$worksheet->getCell('H'.$iR)->getValue();
-			$topokartan["sweref99_n"]=$worksheet->getCell('I'.$iR)->getValue();
-			$topokartan["sweref99_o"]=$worksheet->getCell('J'.$iR)->getValue();
-			$topokartan["sweref99_n_full"]=$worksheet->getCell('K'.$iR)->getValue();
-			$topokartan["sweref99_o_full"]=$worksheet->getCell('L'.$iR)->getValue();
+
+			if (trim($worksheet->getCell('E'.$iR)->getValue())!="" && trim($worksheet->getCell('E'.$iR)->getValue())!=0) 
+				$topokartan["wgs84_lat"]=$worksheet->getCell('E'.$iR)->getValue();
+			else
+				$topokartan["wgs84_lat"]=number_format($worksheet->getCell('G'.$iR)->getValue(), 5, ".", "");
+
+			if (trim($worksheet->getCell('F'.$iR)->getValue())!="" && trim($worksheet->getCell('F'.$iR)->getValue())!=0)
+				$topokartan["wgs84_lon"]=$worksheet->getCell('F'.$iR)->getValue();
+			else
+				$topokartan["wgs84_lon"]=number_format($worksheet->getCell('H'.$iR)->getValue(), 5, ".", "");	
+
+			if (trim($worksheet->getCell('I'.$iR)->getValue())!="" && trim($worksheet->getCell('I'.$iR)->getValue())!=0)
+				$topokartan["sweref99_n"]=$worksheet->getCell('I'.$iR)->getValue();
+			else
+				$topokartan["sweref99_n"]=intval(number_format($worksheet->getCell('K'.$iR)->getValue(), 0, ".", ""));	
+
+			if (trim($worksheet->getCell('J'.$iR)->getValue())!="" && trim($worksheet->getCell('J'.$iR)->getValue())!=0)
+				$topokartan["sweref99_o"]=$worksheet->getCell('J'.$iR)->getValue();
+			else
+				$topokartan["sweref99_o"]=intval(number_format($worksheet->getCell('L'.$iR)->getValue(), 0, ".", ""));
+
 			$topokartan["county"]=$worksheet->getCell('M'.$iR)->getValue();
 
 			$arrTopo[]=$topokartan;
@@ -144,21 +157,23 @@ else {
 echo consoleMessage("info", $nbadd." object(s) topokartan added to ".$collection);
 echo consoleMessage("info", "script ends");
 
+if (isset($arrTopo) && count($arrTopo)>0) {
 
-echo "mongodump -d ecodata -c internalCentroidTopokartan --gzip\n";
-echo "tar cvzf internalCentroidTopokartan.tar.gz dump/ecodata/\n";
-echo "scp internalCentroidTopokartan.tar.gz ubuntu@192.121.208.80:/home/ubuntu/\n";
-echo "rm -Rf dump/\n";
-echo "ssh-ecodata4\n";
-echo "tar xvf internalCentroidTopokartan.tar.gz\n";
-echo "cd dump/ecodata/\n";
-echo "gzip -d *.gz\n";
-echo "mongo ecodata\n";
-echo "db.internalCentroidTopokartan.drop()\n";
-echo "exit\n";
-echo "cd ..\n";
-echo "mongorestore -d ecodata ecodata/\n";
-echo "rm -Rf ecodata/\n";
+	echo "mongodump -d ecodata -c internalCentroidTopokartan --gzip\n";
+	echo "tar cvzf internalCentroidTopokartan.tar.gz dump/ecodata/\n";
+	echo "scp internalCentroidTopokartan.tar.gz ubuntu@192.121.208.80:/home/ubuntu/\n";
+	echo "rm -Rf dump/\n";
+	echo "ssh-ecodata4\n";
+	echo "tar xvf internalCentroidTopokartan.tar.gz\n";
+	echo "cd dump/ecodata/\n";
+	echo "gzip -d *.gz\n";
+	echo "mongo ecodata\n";
+	echo "db.internalCentroidTopokartan.drop()\n";
+	echo "exit\n";
+	echo "cd ..\n";
+	echo "mongorestore -d ecodata ecodata/\n";
+	echo "rm -Rf ecodata/\n";
+}
 /*
 	$topokartan["p1_rt90_o"]=$rtSites["p1_rt90_o"];
 
