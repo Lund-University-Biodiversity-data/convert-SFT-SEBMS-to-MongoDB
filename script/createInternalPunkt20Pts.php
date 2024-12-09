@@ -16,10 +16,10 @@ echo consoleMessage("info", "Script starts");
 
 echo consoleMessage("info", "DEBUG example command :");
 echo consoleMessage("info", "specify the source : file (to be located in the excel folder) or db (sql)");
-echo consoleMessage("info", "example : php script/createInternalSTD20pts.php file");
+echo consoleMessage("info", "example : php script/createInternalPunkt20pts.php file");
 
 $debug=false;
-$collection="internalSTD20Pts";
+$collection="internalPunkt20Pts";
 
 $nbadd=0;
 
@@ -110,16 +110,16 @@ echo consoleMessage("info", $nbadd." object(s) topokartan added to ".$collection
 echo consoleMessage("info", "script ends");
 
 if (isset($arrPoints) && count($arrPoints)>0) {
-	echo "mongodump -d ecodata -c internalSTD20Pts --gzip\n";
-	echo "tar cvzf internalSTD20Pts.tar.gz dump/ecodata/\n";
-	echo "scp internalSTD20Pts.tar.gz ubuntu@192.121.208.80:/home/ubuntu/\n";
+	echo "mongodump -d ecodata -c internalPunkt20Pts --gzip\n";
+	echo "tar cvzf internalPunkt20Pts.tar.gz dump/ecodata/\n";
+	echo "scp internalPunkt20Pts.tar.gz ubuntu@192.121.208.80:/home/ubuntu/\n";
 	echo "rm -Rf dump/\n";
 	echo "ssh-ecodata4\n";
-	echo "tar xvf internalSTD20Pts.tar.gz\n";
+	echo "tar xvf internalPunkt20Pts.tar.gz\n";
 	echo "cd dump/ecodata/\n";
 	echo "gzip -d *.gz\n";
 	echo "mongo ecodata\n";
-	echo "db.internalSTD20Pts.drop()\n";
+	echo "db.internalPunkt20Pts.drop()\n";
 	echo "exit\n";
 	echo "cd ..\n";
 	echo "mongorestore -d ecodata ecodata/\n";
