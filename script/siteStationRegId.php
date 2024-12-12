@@ -19,9 +19,10 @@ echo consoleMessage("info", "example : php script/siteStationRegId.php std force
 
 //$tmpfname = "script/excel/StnRegId_vs_InternalSiteId_20220922.xlsx";
 //$tmpfname = "script/excel/StnRegId_vs_InternalSiteId_spkt_20230901.xlsx";
-$tmpfname = "script/excel/StnRegId_vs_InternalSiteId_spkt_20240708.xlsx";
+//$tmpfname = "script/excel/StnRegId_vs_InternalSiteId_spkt_20240708.xlsx";
+$tmpfname = "script/excel/StnRegId_vs_InternalSiteId_20241211_ssi.xlsx";
 
-$arr_protocol=array("std", "pkt", "kust");
+$arr_protocol=array("std", "pkt", "kust", "iwc");
 
 if (!isset($argv[1]) || !in_array(trim($argv[1]), $arr_protocol)) {
 	echo consoleMessage("error", "First parameter missing: ".implode("/", $arr_protocol));
@@ -65,6 +66,9 @@ else {
 			case "kust":
 				$protocolDwC="SFTkfr";
 				break;
+			case "iwc":
+				$protocolDwC="SFTssi";
+				break;
 		}
 		// get all the sites
 		if ($protocol=="pkt") $projectId=$commonFields["punkt"]["projectId"];
@@ -72,7 +76,7 @@ else {
 		$arrSitesDetails=getArraySitesFromMongo($projectId, $server);
 		$arrUniqueSites=array();
 
-		// no anonymisezId for KFR
+		// no anonymizedId for KFR
 		if ($protocol!="kust") {
 						
 			// get all the anonymizedId
@@ -114,7 +118,7 @@ else {
 
 
 					// no anonymisezId for KFR
-					if ($protocol!="kust") {
+					if ($protocol!="kust" && $protocol!="iwc") {
 
 						if (!isset($arrAnonymizedIds[$anonymizedId]) || trim($arrAnonymizedIds[$anonymizedId])=="") {
 							echo consoleMessage("error", "No site in database matching this anonymizedId ".$anonymizedId);

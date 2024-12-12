@@ -64,7 +64,6 @@ else {
 			$pointData["StnRegOSId"]=$worksheet->getCell('H'.$iR)->getValue();
 			$pointData["StnRegPPId"]=$worksheet->getCell('I'.$iR)->getValue();
 
-
 			$arrPoints[]=$pointData;
 		}
 	}
