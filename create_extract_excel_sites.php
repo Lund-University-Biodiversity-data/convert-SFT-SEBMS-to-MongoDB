@@ -38,25 +38,25 @@ else {
 
 	if ($fp = fopen($path_extract, 'w')) {
 
-		$headers=array("siteId", "name", "internalSiteId", "routetype", "lan", "lsk", "verificationStatus", "bookingComment", "paperSurveySubmitted", "summarySurveySubmitted", "bookedBy", "decimalLatitude", "decimalLongitude");
+		$headers=array("siteId", "name", "internalSiteId", "routetype", "lan", "lsk", "verificationStatus", "bookingComment", "paperSurveySubmitted", "summarySurveySubmitted", "bookedBy", "decimalLatitude", "decimalLongitude", "StnRegOSId", "StnRegPPId");
 
 		switch ($protocol) {
 
 			case "sommar":
 			case "vinter":
 
-				array_push($headers, "kartatx", "start", "senvin", "owner", "anonymizedId", "StaRegOSId", "StaRegPPId");
+				array_push($headers, "kartatx", "start", "senvin", "owner", "anonymizedId");
 				break;
 			case "iwc":
 				array_push($headers, "goose", "helcom_sub", "ln_karta", "ki", "ev", "area");
 				break;
 
 			case "kust":
-				array_push($headers, "area_m2", "mitt_5x5_wgs84_lat", "mitt_5x5_wgs84_lon", "StaRegOSId", "StaRegPPId");
+				array_push($headers, "area_m2", "mitt_5x5_wgs84_lat", "mitt_5x5_wgs84_lon");
 				break;
 
 			default: 
-				array_push($headers, "fjall104", "fjall142", "anonymizedId", "StaRegOSId", "StaRegPPId");
+				array_push($headers, "fjall104", "fjall142", "anonymizedId");
 				break;
 		}
 		fputcsv($fp, $headers, ";");
@@ -81,6 +81,8 @@ else {
 			$site["bookedBy"]=(isset($row->bookedBy) ? $row->bookedBy : "");
 			$site["decimalLatitude"]=(isset($row->extent->geometry->decimalLatitude) ? $row->extent->geometry->decimalLatitude : "");
 			$site["decimalLongitude"]=(isset($row->extent->geometry->decimalLongitude) ? $row->extent->geometry->decimalLongitude : "");
+			$site["StnRegOSId"]=(isset($row->adminProperties->StnRegOSId) ? $row->adminProperties->StnRegOSId : "");
+			$site["StnRegPPId"]=(isset($row->adminProperties->StnRegPPId) ? $row->adminProperties->StnRegPPId : "");
 
 			switch ($protocol) {
 
@@ -92,8 +94,7 @@ else {
 					$site["senvin"]=(isset($row->adminProperties->senvin) ? $row->adminProperties->senvin : "");
 					$site["owner"]=(isset($row->owner) ? $row->owner : "");
 					$site["anonymizedId"]=(isset($row->adminProperties->anonymizedId) ? $row->adminProperties->anonymizedId : "");
-					$site["StnRegOSId"]=(isset($row->adminProperties->StnRegOSId) ? $row->adminProperties->StnRegOSId : "");
-					$site["StnRegPPId"]=(isset($row->adminProperties->StnRegPPId) ? $row->adminProperties->StnRegPPId : "");
+
 					break;
 
 				case "iwc":
@@ -110,8 +111,6 @@ else {
 					$site["area_m2"]=(isset($row->adminProperties->area_m2) ? $row->adminProperties->area_m2 : "");
 					$site["mitt_5x5_wgs84_lat"]=(isset($row->adminProperties->mitt_5x5_wgs84_lat) ? $row->adminProperties->mitt_5x5_wgs84_lat : "");
 					$site["mitt_5x5_wgs84_lon"]=(isset($row->adminProperties->mitt_5x5_wgs84_lon) ? $row->adminProperties->mitt_5x5_wgs84_lon : "");
-					$site["StnRegOSId"]=(isset($row->adminProperties->StnRegOSId) ? $row->adminProperties->StnRegOSId : "");
-					$site["StnRegPPId"]=(isset($row->adminProperties->StnRegPPId) ? $row->adminProperties->StnRegPPId : "");
 					break;
 
 				default: 
@@ -119,8 +118,6 @@ else {
 					$site["fjall104"]=(isset($row->adminProperties->fjall104) ? $row->adminProperties->fjall104 : "");
 					$site["fjall142"]=(isset($row->adminProperties->fjall142) ? $row->adminProperties->fjall142 : "");
 					$site["anonymizedId"]=(isset($row->adminProperties->anonymizedId) ? $row->adminProperties->anonymizedId : "");
-					$site["StnRegOSId"]=(isset($row->adminProperties->StnRegOSId) ? $row->adminProperties->StnRegOSId : "");
-					$site["StnRegPPId"]=(isset($row->adminProperties->StnRegPPId) ? $row->adminProperties->StnRegPPId : "");
 					break;
 			}
 

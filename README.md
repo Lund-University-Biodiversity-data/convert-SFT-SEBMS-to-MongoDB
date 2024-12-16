@@ -4,11 +4,14 @@ convert-SFT-SEBMS-database-to-MongoDB
 **Convert data from PostgreSQL database to MongoDB JSON objects**
 
 **Requirements**
- - PHP 7 or greater
+ - PHP 7 or greater (tested with 8.4 recently)
  - PSQL 
  - MongoDB
 ```
 sudo apt-get install php-mongodb
+sudo apt-get install php8.4-zip
+sudo apt-get install php8.4-mbstring
+sudo apt-get install php8.4-xml
 ```
 
 **Install**
