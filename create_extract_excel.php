@@ -283,11 +283,28 @@ else {
                     // NO BREAK HERE !!
                     */
                 case "sommar":
+
+                    // the site code can now contain a '+' for the surveyors born in 2000+
+
                     $explodeSite=explode("-", $array_sites_mongo[$output->data->location]);
-                    if (count($explodeSite)!=3)
-                        echo consoleMessage("error", "ERROR - number of elements in internalSiteId ".count($explodeSite)." - ".$array_sites_mongo[$output->data->location]." - LocationId in output is : ".$output->data->location);
-                    $line["persnr"]=$explodeSite[0]."-".$explodeSite[1];
-                    $line["rnr"]=$explodeSite[2];
+                    if (count($explodeSite)!=3) {
+
+                        if (strpos($array_sites_mongo[$output->data->location], "+") === false)
+                            echo consoleMessage("error", "number of elements in internalSiteId => ".count($explodeSite)." - ".$array_sites_mongo[$output->data->location]." - LocationId in output is : ".$output->data->location);
+                        else {
+                            if (count($explodeSite)==2) {
+                                echo consoleMessage("warning", "internalSiteId with + ".$array_sites_mongo[$output->data->location]);
+                                $line["persnr"]=$explodeSite[0];
+                                $line["rnr"]=$explodeSite[1];
+                            }
+                            else {
+                                echo consoleMessage("error", "number of elements in internalSiteId => ".count($explodeSite)." - ".$array_sites_mongo[$output->data->location]." - LocationId in output is : ".$output->data->location);
+                            }
+                        }
+                    } else {
+                        $line["persnr"]=$explodeSite[0]."-".$explodeSite[1];
+                        $line["rnr"]=$explodeSite[2];
+                    }
 
                    
                     
