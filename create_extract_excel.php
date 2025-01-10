@@ -293,7 +293,6 @@ else {
                             echo consoleMessage("error", "number of elements in internalSiteId => ".count($explodeSite)." - ".$array_sites_mongo[$output->data->location]." - LocationId in output is : ".$output->data->location);
                         else {
                             if (count($explodeSite)==2) {
-                                echo consoleMessage("warning", "internalSiteId with + ".$array_sites_mongo[$output->data->location]);
                                 $line["persnr"]=$explodeSite[0];
                                 $line["rnr"]=$explodeSite[1];
                             }
