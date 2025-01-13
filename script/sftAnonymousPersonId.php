@@ -87,7 +87,7 @@ else {
 		$newAnonymizedId=$maxAnonymizedId;
 		foreach ($rows as $row){
 			$newAnonymizedId++;
-			echo consoleMessage("info", "New anonymizedId is ".$newAnonymizedId." for ".$row->firstName." ".$row->lastName);
+			echo consoleMessage("info", "New anonymizedId is ".$newAnonymizedId." for ".$row->firstName." (".$row->dateCreated->toDateTime()->format('r').")");
 
 			if ($exec && $row->personId!="") {
 				addAnonymizedPersonIdInDb($mng, $row->personId, $newAnonymizedId);
