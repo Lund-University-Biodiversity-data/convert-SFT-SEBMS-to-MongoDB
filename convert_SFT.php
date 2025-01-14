@@ -17,7 +17,7 @@ $debug=false;
 
 // parameters
 // 1- protocol: std (standardrutterna) - natt (nattrutterna) - vinter (vinterrutterna) - sommar (sommarrutterna) - kust (kustfagelrutterna)
-$arr_protocol=array("std", "natt", "vinter", "sommar", "kust", "iwc", "kust2021", "kust2022", "kust2023");
+$arr_protocol=array("std", "natt", "vinter", "sommar", "kust", "iwc", "kust2021", "kust2022", "kust2023", "kust2024");
 
 if (!isset($argv[1]) || !in_array(trim($argv[1]), $arr_protocol)) {
 	echo consoleMessage("error", "First parameter missing: ".implode(" / ", $arr_protocol));
@@ -39,8 +39,13 @@ else {
 		$kustYEAR="_2023_temp";
 		echo consoleMessage("info", "CHECK IF MEDBOS ARE OK !!! WE HAD FORGOTTEN THEM THE PAST YEARS. The function getHelpers should make it work now");
 
+	}elseif ($protocol=="kust2024") {
+		$protocol="kust";
+		$kustYEAR="_2024_temp";
+		echo consoleMessage("info", "CHECK IF MEDBOS ARE OK !!! WE HAD FORGOTTEN THEM THE PAST YEARS. The function getHelpers should make it work now");
+
 	}else{
-		$kustYEAR="";
+			$kustYEAR="";
 	}
 	$arrSpeciesNotFound=array();
 	$speciesNotFound=0;
