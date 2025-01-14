@@ -34,7 +34,7 @@ $collection="site";
 
 // parameters
 // 1- protocol: std (standardrutterna) - natt (nattrutterna) - vinter (vinterrutterna) - sommar (sommarrutterna) - kust (kustfagelrutterna)
-$arr_year=array(2021,2022,2023);
+$arr_year=array(2021,2022,2023,2024);
 
 if (!isset($argv[1]) || !in_array(trim($argv[1]), $arr_year)) {
 	echo consoleMessage("error", "First parameter missing: ".implode("/", $arr_year));
