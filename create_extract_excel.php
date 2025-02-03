@@ -82,7 +82,7 @@ else {
 		case "natt":
 			$nbPts=20;
 
-            $headers=array("persnr", "kartatx", "per", "datum", "yr", "verificationStatus", "art", "kull", "pt", "p01", "p02", "p03", "p04", "p05", "p06", "p07", "p08", "p09", "p10", "p11", "p12", "p13", "p14", "p15", "p16", "p17", "p18", "p19", "p20", "pk", "ind", "activityIdMongo", "scientificName_BC", "name_BC");
+            $headers=array("persnr", "kartatx", "lokalnamn", "per", "datum", "yr", "verificationStatus", "art", "kull", "pt", "p01", "p02", "p03", "p04", "p05", "p06", "p07", "p08", "p09", "p10", "p11", "p12", "p13", "p14", "p15", "p16", "p17", "p18", "p19", "p20", "pk", "ind", "activityIdMongo", "scientificName_BC", "name_BC");
 
             $commonFields["listSpeciesId"]["mammalsOnRoad"]=$commonFields["listSpeciesId"]["mammals"];
             $array_species_art["mammalsOnRoad"]=$array_species_art["mammals"];
@@ -245,7 +245,7 @@ else {
             }
             $line["persnr"]=$arrPerson[$arrActivityDetails[$output->activityId]["personId"]];
             if (!isset($array_sites_mongo[$output->data->location])) {
-                 echo consoleMessage("error", "No site with ID ".$output->data->location);
+                 echo consoleMessage("error", "No site with ID ".$output->data->location." for activity ".$output->activityId);
             }
 
             switch ($protocol) {
@@ -254,6 +254,7 @@ else {
                     break;
                 case "natt":
                     $line["kartatx"]=$array_sites_mongo[$output->data->location];
+                    $line["lokalnamn"]=$array_sites[$array_sites_mongo[$output->data->location]]["name"];
                     $line["period"]=$output->data->period;
                     break;
                 case "kust":
