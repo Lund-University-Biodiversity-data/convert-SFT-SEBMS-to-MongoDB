@@ -253,7 +253,8 @@ else {
                     $line["karta"]=$array_sites_mongo[$output->data->location];
                     break;
                 case "natt":
-                    $line["kartatx"]=$array_sites_mongo[$output->data->location];
+                    // we remove the _2 in case it exists (case of duplicates)
+                    $line["kartatx"]=str_replace("_2", "", $array_sites_mongo[$output->data->location]);
                     $line["lokalnamn"]=$array_sites[$array_sites_mongo[$output->data->location]]["name"];
                     $line["period"]=$output->data->period;
                     break;
