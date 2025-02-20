@@ -9,7 +9,7 @@ require PATH_SHARED_FUNCTIONS."generic-functions.php";
 require PATH_SHARED_FUNCTIONS."mongo-functions.php";
 
 echo consoleMessage("info", "Script starts.");
-echo consoleMessage("info", "php script/checkPunktSites.php sommar");
+echo consoleMessage("info", "php script/checkPunktSitesEcodataProjectActivity.php sommar [exec]");
 
 $arr_protocol=array("sommar", "vinter");
 
