@@ -21,7 +21,8 @@ echo consoleMessage("info", "example : php script/siteStationRegId.php std force
 //$tmpfname = "script/excel/StnRegId_vs_InternalSiteId_spkt_20230901.xlsx";
 //$tmpfname = "script/excel/StnRegId_vs_InternalSiteId_spkt_20240708.xlsx";
 //$tmpfname = "script/excel/StnRegId_vs_InternalSiteId_20241211_ssi.xlsx";
-$tmpfname = "script/excel/StnRegId_vs_InternalSiteId_spkt_20250704.xlsx";
+//$tmpfname = "script/excel/StnRegId_vs_InternalSiteId_spkt_20250704.xlsx";
+$tmpfname = "script/excel/StnRegId_vs_InternalSiteId_20250708_ssi.xlsx";
 
 $arr_protocol=array("std", "pkt", "kust", "iwc");
 
