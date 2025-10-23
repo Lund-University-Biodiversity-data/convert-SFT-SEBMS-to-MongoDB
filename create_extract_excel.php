@@ -49,13 +49,14 @@ else {
     // GET the list of species
     foreach ($commonFields["listSpeciesId"] as $animals => $listId) {
 
-
-        $array_species_art[$animals]=getListSpeciesFromModule(null, $listId, "guid");
+        // get the list array, by excluding the aggregates (if not, all the aggregates are gathered in 212Aves)
+        $array_species_art[$animals]=getListSpeciesFromModule(null, $listId, "guid", true);
 
         echo consoleMessage("info", "Species list ".$commonFields["listSpeciesId"][$animals]." obtained for ".$animals.". ".count($array_species_art[$animals])." elements");
 
     }
     
+    //print_r($array_species_art["birds"]);exit();
 
 
 	switch($protocol) {
@@ -582,12 +583,19 @@ else {
                             if (isset($obs->species->name)) $name_BC=$obs->species->name;
                             //if (isset($obs->species->commonName)) $commonname_BC=$obs->species->commonName;
 
-                            if (!isset($obs->species->guid) || !isset($array_species_art[$animals][$obs->species->guid]["art"])) {
+                            // for the species refenreced as 212 (Aves) we use the SN instead
+                            $indexGuid=$obs->species->guid;
+                            if (intval($obs->species->guid)==212) {
+                                echo consoleMessage("info", "Guid 212 found, replaced by SN ".$sn_BC." in activity ".$output->activityId);
+                                $indexGuid=$sn_BC;
+                            }   
+
+                            if (!isset($obs->species->guid) || !isset($array_species_art[$animals][$indexGuid]["art"])) {
                                 if (!isset($obs->species->scientificName) || !isset($array_species_art[$animals][$obs->species->scientificName]["art"])) {
                                     $art="ERROR";
                                     //var_dump($obs);
 
-                                    echo consoleMessage("error", "NNNo ART for ".$animals." / ".$obs->species->guid." / ".$obs->species->scientificName. " in activity ".$output->activityId);
+                                    echo consoleMessage("error", "No ART for ".$animals." / ".$indexGuid." / ".$obs->species->scientificName. " in activity ".$output->activityId);
                                 }
                                 else {
                                     $art=str_pad($array_species_art[$animals][$obs->species->scientificName]["art"], 3, "0", STR_PAD_LEFT);
@@ -596,7 +604,7 @@ else {
                                 
                             }
                             else {
-                                $art=str_pad($array_species_art[$animals][$obs->species->guid]["art"], 3, "0", STR_PAD_LEFT);
+                                $art=str_pad($array_species_art[$animals][$indexGuid]["art"], 3, "0", STR_PAD_LEFT);
                             }
 
                             break;
@@ -614,6 +622,15 @@ else {
                             }
                             break;
                         case "mammals":
+
+/*
+                            // checkboxes for the mammals in Kustfåglar
+                            if ($protocol=="kust") {
+                                echo consoleMessage("error", "KUUUUUUUUUUUST");
+                                echo "kust";
+                                print_r($obs->speciesMammals);
+                            }
+*/
                             if (isset($obs->speciesMammals->scientificName)) $sn_BC=$obs->speciesMammals->scientificName;
                             if (isset($obs->speciesMammals->name)) $name_BC=$obs->speciesMammals->name;
                             //if (isset($obs->speciesMammals->commonName)) $commonname_BC=$obs->speciesMammals->commonName;
