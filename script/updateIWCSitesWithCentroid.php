@@ -49,7 +49,7 @@ if (count($rowsSitesArr)>0) {
     			)
     		),
     		"type" => "",
-    		"transectPartId" => generateUuid(),
+    		"transectPartId" => generate_uniqId_format(),
     	]);
     	//print_r($transectParts);
 
