@@ -46,12 +46,15 @@ if (count($rowsSitesArr)>0) {
     			"coordinates" => array(
     				$site->extent->geometry->decimalLongitude,
     				$site->extent->geometry->decimalLatitude,
-    			)
+    			),
+    			"decimalLongitude" => $site->extent->geometry->decimalLongitude,
+    			"decimalLatitude" => $site->extent->geometry->decimalLatitude,
+    			"type" => "Point"
     		),
     		"type" => "",
     		"transectPartId" => generate_uniqId_format(),
     	]);
-    	//print_r($transectParts);
+    	print_r($transectParts);
 
     	if (isset($argv[1]) && $argv[1]=="exec") {
 			$bulk = new MongoDB\Driver\BulkWrite;
