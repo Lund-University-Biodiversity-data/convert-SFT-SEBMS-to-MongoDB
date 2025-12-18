@@ -21,8 +21,7 @@ $filter = [
 	"projects"=> $projectId,
 	"transectParts" => [], 
 	"verificationStatus"=>"godkänd", 
-	"status"=>"active",
-	"siteId" => "9946cdaa-7745-0b78-8631-108e351c8e7f"
+	"status"=>"active"
 ];
 $options = [];
 $query = new MongoDB\Driver\Query($filter, $options); 
@@ -54,7 +53,7 @@ if (count($rowsSitesArr)>0) {
     		"type" => "",
     		"transectPartId" => generate_uniqId_format(),
     	]);
-    	print_r($transectParts);
+    	//print_r($transectParts);
 
     	if (isset($argv[1]) && $argv[1]=="exec") {
 			$bulk = new MongoDB\Driver\BulkWrite;
@@ -66,7 +65,7 @@ if (count($rowsSitesArr)>0) {
 		    $bulk->update($filter, $options, $updateOptions); 
 		    $result = $mng->executeBulkWrite('ecodata.site', $bulk);
     		
-    		echo "updated :".$site->siteId;
+			echo consoleMessage("info", $site->siteId." updated.");
 
 		    $nbUpdate++;
     	}
