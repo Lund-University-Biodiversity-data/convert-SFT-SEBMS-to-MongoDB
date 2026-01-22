@@ -35,7 +35,7 @@ mongo ecodata < script/stats_rows_mongo.js
  - clean all the activities and records associated to a project
  - remove the output without any activityId linked to it
 ```
-php script/cleanMongo.php SEBMS-slinga 
+php script/cleanMongo.php SFT-natt 
 php script/cleanMongo.php clean 
 ```
 Options : "SEBMS-punktlokal", "SEBMS-slinga", "SFT-std", "SFT-natt", "SFT-vinter", "SFT-sommar"
