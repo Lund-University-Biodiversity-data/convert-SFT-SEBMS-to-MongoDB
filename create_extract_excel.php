@@ -585,7 +585,7 @@ else {
 
                             // for the species refenreced as 212 (Aves) we use the SN instead
                             $indexGuid=$obs->species->guid;
-                            if (intval($obs->species->guid)==212) {
+                            if (intval($indexGuid)==212) {
                                 echo consoleMessage("info", "Guid 212 found, replaced by SN ".$sn_BC." in activity ".$output->activityId);
                                 $indexGuid=$sn_BC;
                             }   
@@ -608,19 +608,28 @@ else {
                             }
 
                             break;
+
                         case "amphibians":
                             if (isset($obs->speciesAmphibians->scientificName)) $sn_BC=$obs->speciesAmphibians->scientificName;
                             if (isset($obs->speciesAmphibians->name)) $name_BC=$obs->speciesAmphibians->name;
                             //if (isset($obs->speciesAmphibians->commonName)) $commonname_BC=$obs->speciesAmphibians->commonName;
 
-                            if (!isset($obs->speciesAmphibians->guid) || !isset($array_species_art[$animals][$obs->speciesAmphibians->guid]["art"])) {
+                            // for the species refenreced as 131 (Amphibian) we use the SN instead
+                            $indexGuid=$obs->speciesAmphibians->guid;
+                            if (intval($indexGuid)==131) {
+                                echo consoleMessage("info", "Guid 131 found, replaced by SN ".$sn_BC." in activity ".$output->activityId);
+                                $indexGuid=$sn_BC;
+                            }   
+
+                            if (!isset($indexGuid) || !isset($array_species_art[$animals][$indexGuid]["art"])) {
                                 $art="ERROR";
-                                echo consoleMessage("error", "No ART for ".$animals." / ".$obs->speciesAmphibians->guid. " in activity ".$output->activityId);
+                                echo consoleMessage("error", "No ART for ".$animals." / ".$indexGuid. " in activity ".$output->activityId);
                             }
                             else {
-                                $art=str_pad($array_species_art[$animals][$obs->speciesAmphibians->guid]["art"], 3, "0", STR_PAD_LEFT);
+                                $art=str_pad($array_species_art[$animals][$indexGuid]["art"], 3, "0", STR_PAD_LEFT);
                             }
                             break;
+
                         case "mammals":
 
 /*
